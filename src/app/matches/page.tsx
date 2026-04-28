@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { getMatches } from "@/app/actions/matches";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function MatchesPage() {
   const { data: session, status } = useSession();

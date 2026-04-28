@@ -70,7 +70,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       animate={controls}
-      className="absolute w-full max-w-[400px] aspect-[4/5] cursor-grab active:cursor-grabbing z-50"
+      className="absolute w-full max-w-[400px] aspect-4/5 cursor-grab active:cursor-grabbing z-50"
     >
       <Card className="w-full h-full rounded-[2.5rem] overflow-hidden border-border-subtle shadow-premium bg-white flex flex-col relative group select-none">
         {/* Indicators Overlay */}
