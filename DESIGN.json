@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-04-27T10:00:00Z",
+  "title": "Design System: Skillr",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Skillr Emerald" },
+      "surface": { "role": "surface", "displayName": "Slate Surface" },
+      "surfaceWarm": { "role": "surface", "displayName": "Warm Profile Card" }
+    }
+  },
+  "colors": {
+    "primary": "#059669",
+    "primaryDark": "#064E3B",
+    "accent": "#F59E0B",
+    "background": "#FFFFFF",
+    "surface": "#F8FAFC",
+    "surfaceWarm": "#FDFCF9",
+    "text": "#0F172A",
+    "textSecondary": "#475569",
+    "muted": "#94A3B8",
+    "border": "#E2E8F0",
+    "borderStrong": "#CBD5E1",
+    "success": "#10B981",
+    "error": "#EF4444"
+  },
+  "fonts": {
+    "display": "Instrument Serif",
+    "sans": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "radii": {
+    "sm": "6px",
+    "md": "8px",
+    "lg": "12px",
+    "xl": "16px",
+    "full": "9999px"
+  },
+  "shadows": {
+    "sm": "0 1px 2px 0 rgba(15, 23, 42, 0.05)",
+    "md": "0 4px 8px -2px rgba(15, 23, 42, 0.08)",
+    "card": "0 0 0 1px rgba(15, 23, 42, 0.04), 0 4px 12px 0 rgba(15, 23, 42, 0.08)"
+  },
+  "motion": {
+    "snappy": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+    "swipe": "cubic-bezier(0.23, 1, 0.32, 1)",
+    "hoverDuration": "180ms",
+    "swipeDuration": "400ms"
+  }
+}

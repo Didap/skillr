@@ -1,26 +1,70 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* OKLCH Color Tokens - Pure and Dynamic */
+  --color-primary: oklch(0.45 0.15 160);
+  --color-primary-dark: oklch(0.25 0.08 160);
+  --color-accent: oklch(0.65 0.25 150);
+
+  --color-surface: oklch(0.98 0.005 160);
+  --color-surface-warm: oklch(0.99 0.005 80);
+
+  --color-text-primary: oklch(0.15 0.02 240);
+  --color-text-secondary: oklch(0.45 0.02 240);
+  --color-text-muted: oklch(0.65 0.02 240);
+
+  --color-border-subtle: oklch(0.94 0.01 240);
+  --color-border-strong: oklch(0.88 0.02 240);
+
+  --color-success: oklch(0.6 0.18 150);
+  --color-error: oklch(0.6 0.18 25);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 0 0 1px oklch(0.15 0.02 240 / 0.05), 0 8px 32px -8px oklch(0.15 0.02 240 / 0.08);
+  --shadow-premium: 0 0 0 1px oklch(0.15 0.02 240 / 0.02), 0 32px 64px -16px oklch(0.15 0.02 240 / 0.12);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-swipe: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  body {
+    background-color: oklch(0.99 0.005 160);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply tracking-tighter;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .font-display {
+    @apply italic;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Utilities for Premium UI */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
