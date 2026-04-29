@@ -6,12 +6,22 @@ import { Mail, Star, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/onboarding";
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(callbackUrl);
+    }
+  }, [status, router, callbackUrl]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);

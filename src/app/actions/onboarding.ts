@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users, professionalProfiles, companyProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { validateItalianVAT } from "@/lib/vat";
 
 export async function completeOnboardingAction(data: any) {
   console.log("--- Onboarding Action Started ---");
@@ -60,16 +61,29 @@ export async function completeOnboardingAction(data: any) {
         }
       });
     } else if (role === "company") {
+      // Server-side validation as a safety measure
+      const isVatValid = validateItalianVAT(data.vatNumber || "");
+      if (!isVatValid) {
+        return { error: "Partita IVA non valida." };
+      }
+      if (!data.vatDisclaimerAccepted) {
+        return { error: "È necessario accettare la clausola di responsabilità." };
+      }
+
       await db.insert(companyProfiles).values({
         userId,
         companyName: data.companyName || "",
         vatNumber: data.vatNumber || "",
+        vatDisclaimerAccepted: true,
+        vatVerifiedAt: new Date(), // Manual "verification" based on local check
         logoUrl: data.photoUrl || "",
       }).onConflictDoUpdate({
         target: companyProfiles.userId,
         set: {
           companyName: data.companyName || "",
           vatNumber: data.vatNumber || "",
+          vatDisclaimerAccepted: true,
+          vatVerifiedAt: new Date(),
           logoUrl: data.photoUrl || "",
         }
       });

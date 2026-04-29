@@ -13,10 +13,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
+import { registerUserAction } from "@/app/actions/auth";
 import { PhotoUpload } from "@/components/ui/photo-upload";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { validateItalianVAT } from "@/lib/vat";
+import { Switch } from "@/components/ui/switch";
 
 export default function OnboardingPage() {
   const { data: session, status, update } = useSession();
@@ -24,6 +27,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState<"professional" | "company" | null>(null);
+  const [isLoginMode, setIsLoginMode] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -38,10 +42,19 @@ export default function OnboardingPage() {
     bio: "",
     companyName: "",
     vatNumber: "",
+    vatDisclaimerAccepted: false,
+    email: "",
+    password: "",
   });
 
   const [catalog, setCatalog] = useState<any[]>([]);
   const [isCatalogLoading, setIsCatalogLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role) {
+      router.push("/dashboard");
+    }
+  }, [status, session, router]);
 
   useEffect(() => {
     async function fetchCatalog() {
@@ -101,7 +114,7 @@ export default function OnboardingPage() {
       
       if (result.success) {
         console.log("Onboarding success, updating session...");
-        await update(); // This is crucial to refresh the role in the session
+        await update({ role }); // Refresh session with new role
         router.push("/dashboard");
       } else {
         alert(result.error || "Si è verificato un errore durante il salvataggio.");
@@ -214,58 +227,126 @@ export default function OnboardingPage() {
 
               {step === 1 && (
                 <StepLayout 
-                  title="Crea il tuo account" 
-                  description="Per salvare i tuoi progressi e iniziare a fare swipe."
+                  title={isLoginMode ? "Accedi al tuo account" : "Crea il tuo account"} 
+                  description={isLoginMode ? "Bentornato! Inserisci le tue credenziali." : "Per salvare i tuoi progressi e iniziare a fare swipe."}
                   onBack={prevStep}
                   onNext={() => {}} // Non usato qui
                   hideNext
                 >
-                  <div className="grid gap-4 py-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
-                      className="w-full h-14 rounded-2xl border-slate-100 bg-white hover:bg-slate-50 transition-all font-bold text-slate-700 flex items-center justify-center gap-4"
-                    >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
-                        <path fill="#34A853" d="M16.04 18.013c-1.09.593-2.325.896-3.613.896a7.077 7.077 0 0 1-6.719-4.856l-4.021 3.11C3.645 21.127 7.564 24 12 24c3.082 0 5.855-1.023 7.855-2.773l-3.815-3.214z" />
-                        <path fill="#4285F4" d="M19.855 21.227c2.325-2.062 3.655-5.127 3.655-8.864 0-.833-.083-1.636-.233-2.39H12v4.527h6.41c-.267 1.44-.099 2.708-.736 3.842l2.181 2.885z" />
-                        <path fill="#FBBC05" d="M5.668 14.053a7.033 7.033 0 0 1 0-4.288L1.647 6.655A12.022 12.022 0 0 0 0 12c0 1.91.445 3.718 1.245 5.345l4.423-3.292z" />
-                      </svg>
-                      Registrati con Google
-                    </Button>
-                    <div className="relative my-4">
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-xs font-bold text-slate-500 ml-1">Email</Label>
+                        <Input 
+                          placeholder="mario.rossi@email.com" 
+                          type="email" 
+                          id="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="h-14 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="password" className="text-xs font-bold text-slate-500 ml-1">Password</Label>
+                        <Input 
+                          placeholder="Minimo 8 caratteri" 
+                          type="password" 
+                          id="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          className="h-14 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-all"
+                        />
+                      </div>
+                      
+                      <Button 
+                        disabled={isSubmitting || !formData.email || formData.password.length < 8}
+                        onClick={async () => {
+                          setIsSubmitting(true);
+                          try {
+                            if (isLoginMode) {
+                              // LOGIN
+                              const res = await signIn("credentials", { 
+                                email: formData.email, 
+                                password: formData.password, 
+                                redirect: false 
+                              });
+                              
+                              if (res?.error) {
+                                alert("Credenziali non valide.");
+                              } else {
+                                await update();
+                                setStep(2);
+                              }
+                            } else {
+                              // REGISTRATION
+                              const res = await registerUserAction({ email: formData.email, password: formData.password });
+                              if (res.success) {
+                                const signInRes = await signIn("credentials", { 
+                                  email: formData.email, 
+                                  password: formData.password, 
+                                  redirect: false 
+                                });
+                                
+                                if (signInRes?.error) {
+                                  alert("Registrazione completata, ma errore nel login automatico. Per favore accedi manualmente.");
+                                  setIsLoginMode(true);
+                                } else {
+                                  await update();
+                                  setStep(2);
+                                }
+                              } else {
+                                alert(res.error || "Errore nella registrazione");
+                              }
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            alert("Si è verificato un errore.");
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                        className="w-full h-14 rounded-2xl bg-slate-950 hover:bg-emerald-800 text-white transition-all font-bold text-lg shadow-xl shadow-slate-200 mt-2 flex items-center justify-center gap-2 group"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <>
+                            <span>{isLoginMode ? "Accedi" : "Crea Account"}</span>
+                            <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="relative my-6">
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-slate-100"></span>
                       </div>
                       <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black text-slate-300">
-                        <span className="bg-white px-4">Oppure via email</span>
+                        <span className="bg-white px-4">Oppure</span>
                       </div>
                     </div>
-                    <div className="space-y-3">
-                      <Input 
-                        placeholder="Inserisci la tua email" 
-                        type="email" 
-                        id="email_signup"
-                        className="h-14 rounded-2xl border-slate-100"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            signIn("resend", { email: (e.target as HTMLInputElement).value, callbackUrl: "/onboarding" });
-                          }
-                        }}
-                      />
-                      <Button 
-                        onClick={() => {
-                          const email = (document.getElementById("email_signup") as HTMLInputElement).value;
-                          if (email) signIn("resend", { email, callbackUrl: "/onboarding" });
-                        }}
-                        className="w-full h-14 rounded-2xl bg-slate-950 hover:bg-emerald-800 transition-all font-bold shadow-lg"
+
+                    <div className="grid gap-3">
+                       <Button 
+                        variant="outline" 
+                        onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
+                        className="w-full h-12 rounded-xl border-slate-100 bg-white hover:bg-slate-50 transition-all font-bold text-slate-700 flex items-center justify-center gap-3 text-sm"
                       >
-                        Invia Magic Link
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
+                          <path fill="#34A853" d="M16.04 18.013c-1.09.593-2.325.896-3.613.896a7.077 7.077 0 0 1-6.719-4.856l-4.021 3.11C3.645 21.127 7.564 24 12 24c3.082 0 5.855-1.023 7.855-2.773l-3.815-3.214z" />
+                          <path fill="#4285F4" d="M19.855 21.227c2.325-2.062 3.655-5.127 3.655-8.864 0-.833-.083-1.636-.233-2.39H12v4.527h6.41c-.267 1.44-.099 2.708-.736 3.842l2.181 2.885z" />
+                          <path fill="#FBBC05" d="M5.668 14.053a7.033 7.033 0 0 1 0-4.288L1.647 6.655A12.022 12.022 0 0 0 0 12c0 1.91.445 3.718 1.245 5.345l4.423-3.292z" />
+                        </svg>
+                        {isLoginMode ? "Accedi con Google" : "Registrati con Google"}
                       </Button>
+                      <div className="text-center mt-2">
+                        <p className="text-[11px] text-slate-400 font-medium">
+                          {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-emerald-600 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </StepLayout>
+                  </StepLayout>
               )}
 
               {step === 2 && role === "professional" && (
@@ -449,6 +530,7 @@ export default function OnboardingPage() {
                   onNext={handleComplete}
                   nextLabel={isSubmitting ? "Salvataggio..." : "Conferma e Inizia"}
                   loading={isSubmitting}
+                  nextDisabled={!validateItalianVAT(formData.vatNumber) || !formData.vatDisclaimerAccepted || !formData.companyName}
                 >
                   <div className="space-y-3">
                     <Label htmlFor="companyName" className="font-bold text-slate-700 ml-1">Nome Azienda</Label>
@@ -456,16 +538,49 @@ export default function OnboardingPage() {
                   </div>
                   <div className="space-y-3">
                     <Label htmlFor="vatNumber" className="font-bold text-slate-700 ml-1">Partita IVA</Label>
-                    <Input id="vatNumber" value={formData.vatNumber} onChange={handleChange} placeholder="11 cifre" className="h-12 rounded-xl border-slate-100" maxLength={11} />
+                    <Input 
+                      id="vatNumber" 
+                      value={formData.vatNumber} 
+                      onChange={handleChange} 
+                      placeholder="11 cifre (es. 12345678901)" 
+                      className={cn(
+                        "h-12 rounded-xl border-slate-100",
+                        formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) && "border-red-500 focus:ring-red-500",
+                        formData.vatNumber.length > 0 && validateItalianVAT(formData.vatNumber) && "border-emerald-500 focus:ring-emerald-500"
+                      )} 
+                      maxLength={13} 
+                    />
+                    {formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) && (
+                      <p className="text-[10px] text-red-500 font-bold ml-1">Formato Partita IVA non valido.</p>
+                    )}
                   </div>
                   <PhotoUpload 
                     label="Logo Aziendale" 
                     value={formData.photoUrl} 
                     onChange={(url) => setFormData({ ...formData, photoUrl: url })} 
                   />
-                  <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 mt-4">
-                    <ShieldCheck className="text-slate-400" size={24} />
-                    <p className="text-xs text-slate-500 font-medium">
+                  
+                  {/* Disclaimer */}
+                  <div className="mt-6 p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="mt-1">
+                        <Switch 
+                          checked={formData.vatDisclaimerAccepted}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, vatDisclaimerAccepted: checked }))}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-sm font-bold text-slate-700 leading-none">Assunzione di Responsabilità</Label>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          Dichiaro che i dati forniti sono veritieri. La piattaforma non si assume responsabilità per dichiarazioni false o mendaci.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 mt-4">
+                    <ShieldCheck className="text-emerald-600" size={24} />
+                    <p className="text-[10px] text-emerald-800 font-bold leading-relaxed">
                       La verifica della P.IVA garantisce che sulla piattaforma ci siano solo realtà professionali serie.
                     </p>
                   </div>
