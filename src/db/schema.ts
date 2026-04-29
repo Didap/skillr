@@ -4,6 +4,8 @@ import { relations } from "drizzle-orm";
 export const roleEnum = pgEnum('role', ['professional', 'company']);
 export const rateTypeEnum = pgEnum('rate_type', ['ral_annual', 'daily', 'hourly']);
 export const matchStatusEnum = pgEnum('match_status', ['pending', 'liked', 'passed']);
+export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesign']);
+export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
 
 export const users = pgTable("user", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -149,6 +151,20 @@ export const skills = pgTable("skills", {
   clusterId: text("cluster_id").notNull().references(() => clusters.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(),
   label: text("label").notNull(),
+});
+
+export const paLeads = pgTable("pa_leads", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  organization: text("organization").notNull(),
+  entityType: paEntityTypeEnum("entity_type"),
+  role: text("role"),
+  service: paServiceEnum("service"),
+  deadline: timestamp("deadline"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // RELATIONS
