@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
-import { savePaLead, PaLead } from "@/app/actions/pa";
+import { savePaLeadAction, PaLead } from "@/app/actions/pa";
 import { cn } from "@/lib/utils";
 import { Turnstile } from "@marsidev/react-turnstile";
 
@@ -99,7 +99,7 @@ export default function PaLeadForm() {
     };
 
     try {
-      const res = await savePaLead(data);
+      const res = await savePaLeadAction(data);
       if (res.success) {
         toast.success("Richiesta inviata con successo!");
         (e.target as HTMLFormElement).reset();
