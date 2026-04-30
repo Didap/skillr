@@ -184,12 +184,12 @@ function LoginPageInner() {
             <div className="p-4 bg-emerald-50/50 rounded-2xl w-full border border-emerald-100/50 text-center">
               <p className="text-sm text-slate-600 font-medium">
                 Nuovo su Skillr?{" "}
-                <button 
-                  onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
-                  className="text-emerald-700 hover:underline font-bold bg-transparent border-none p-0 cursor-pointer"
+                <Link 
+                  href="/onboarding"
+                  className="text-emerald-700 hover:underline font-bold"
                 >
                   Crea un account
-                </button>
+                </Link>
               </p>
             </div>
           </CardFooter>
