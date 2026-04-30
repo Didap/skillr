@@ -20,7 +20,9 @@ const paLeadSchema = z.object({
   turnstileToken: z.string(),
 });
 
-export async function savePaLead(data: z.infer<typeof paLeadSchema>) {
+export type PaLead = z.infer<typeof paLeadSchema>;
+
+export async function savePaLead(data: PaLead) {
   try {
     // 1. Verification (Anti-Spam)
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;

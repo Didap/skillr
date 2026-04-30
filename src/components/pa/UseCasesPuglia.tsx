@@ -72,7 +72,7 @@ export function UseCasesPuglia() {
                 <div className="space-y-4">
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-white group-hover:border-pa-blue/10 transition-colors">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-2">Scenario</p>
-                    <p className="text-sm text-pa-blue font-medium leading-relaxed italic">"{useCase.scenario}"</p>
+                    <p className="text-sm text-pa-blue font-medium leading-relaxed italic">&quot;{useCase.scenario}&quot;</p>
                   </div>
                   
                   <div className="flex items-start gap-3 px-1">

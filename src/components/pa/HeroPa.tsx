@@ -1,12 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { ArrowRight, BarChart3, CheckCircle2, FileText, Target, Users, TrendingUp, Search } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function HeroPa() {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -17,12 +17,12 @@ export function HeroPa() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as any } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
   };
 
-  const dashboardVariants = {
+  const dashboardVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95, y: 40 },
     visible: { 
       opacity: 1, 
@@ -31,7 +31,7 @@ export function HeroPa() {
       transition: { 
         duration: 0.8, 
         delay: 0.5,
-        ease: [0.16, 1, 0.3, 1] as any 
+        ease: [0.16, 1, 0.3, 1] 
       } 
     },
   };

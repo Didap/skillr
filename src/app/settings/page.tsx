@@ -145,7 +145,7 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email">Indirizzo Email</Label>
                     <Input id="email" defaultValue="elena@example.com" disabled className="rounded-xl h-12 bg-surface-warm" />
-                    <p className="text-xs text-text-muted">L'email può essere modificata solo contattando il supporto.</p>
+                    <p className="text-xs text-text-muted">L&apos;email può essere modificata solo contattando il supporto.</p>
                   </div>
                </CardContent>
                <CardFooter className="border-t border-border-subtle pt-6 mt-6">

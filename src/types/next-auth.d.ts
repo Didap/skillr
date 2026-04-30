@@ -12,3 +12,9 @@ declare module "next-auth" {
     role: "professional" | "company" | null;
   }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: "professional" | "company" | null;
+  }
+}

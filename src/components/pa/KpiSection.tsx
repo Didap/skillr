@@ -29,7 +29,7 @@ export function KpiSection() {
               </p>
             </div>
             <p className="text-lg text-text-secondary leading-relaxed">
-              Skillr traccia nativamente gli indicatori richiesti dai programmi PNRR, GOL e FSE+, eliminando il carico manuale per l'ente.
+              Skillr traccia nativamente gli indicatori richiesti dai programmi PNRR, GOL e FSE+, eliminando il carico manuale per l&apos;ente.
             </p>
             
             <div className="p-6 bg-pa-gray-warm rounded-[2rem] border border-pa-blue/5 space-y-4">

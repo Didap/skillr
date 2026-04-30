@@ -35,7 +35,7 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
         className="text-center"
       >
         <h2 className="font-display text-6xl md:text-8xl italic font-bold text-white mb-8">
-          It's a Match!
+          It&apos;s a Match!
         </h2>
         <p className="text-xl text-emerald-100 mb-12">
           Tu e {profileName} vi siete piaciuti.

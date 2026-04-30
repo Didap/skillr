@@ -11,10 +11,19 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+interface MatchSummary {
+  id: string;
+  matchedAt: Date | string | null;
+  targetName: string;
+  targetTitle: string | null;
+  targetImage: string | null;
+  status: string;
+}
+
 export default function MatchesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [matches, setMatches] = useState<any[]>([]);
+  const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -61,7 +70,7 @@ export default function MatchesPage() {
         </Link>
         <div className="ml-6">
            <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">I Tuoi Match</h1>
-           <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">L'inizio di qualcosa di grande</p>
+           <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">L&apos;inizio di qualcosa di grande</p>
         </div>
       </header>
 
@@ -135,7 +144,7 @@ export default function MatchesPage() {
                           <span>Fissa la call</span>
                         </div>
                         <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                        <span>{new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span>
+                        <span>{match.matchedAt ? new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : 'Da definire'}</span>
                       </div>
                     </div>
 

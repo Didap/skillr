@@ -6,6 +6,26 @@ import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { BookingSection } from "@/components/matches/BookingSection";
 
+interface ProposedSlot {
+  id: string;
+  startTime: Date;
+  endTime: Date;
+  isAccepted: boolean;
+}
+
+interface MatchDetail {
+  id: string;
+  targetName: string;
+  targetTitle: string | null;
+  targetImage: string | null;
+  targetEmail: string | null;
+  targetBio: string | null;
+  targetSkills: string[] | null;
+  proposedSlots: ProposedSlot[];
+  scheduledAt: Date | null;
+  meetingLink: string | null;
+}
+
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await auth();
@@ -20,7 +40,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  const match = res.data;
+  const match = res.data as MatchDetail;
   const role = session.user.role as "professional" | "company";
 
   return (
@@ -133,7 +153,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
               <BookingSection 
                 matchId={match.id}
                 role={role}
-                proposedSlots={match.proposedSlots.map((s: any) => ({
+                proposedSlots={match.proposedSlots.map((s: ProposedSlot) => ({
                   id: s.id,
                   startTime: s.startTime,
                   endTime: s.endTime,

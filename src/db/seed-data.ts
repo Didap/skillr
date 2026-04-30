@@ -352,7 +352,7 @@ async function seed() {
   const giuliaId = profIds[1];
 
   // Match 1: Mario Rossi + Tech Solutions (Confirmed)
-  const [match1] = await db.insert(matches).values({
+  await db.insert(matches).values({
     professionalId: marioId,
     companyId: techSolutionsId,
     jobId: job1.id,
@@ -361,7 +361,7 @@ async function seed() {
     matchedAt: new Date(Date.now() - 86400000 * 2), // 2 days ago
     scheduledAt: new Date(Date.now() + 86400000 * 3), // 3 days in future
     meetingLink: "https://meet.google.com/abc-defg-hij",
-  }).returning();
+  });
 
   // Match 2: Giulia Bianchi + Visionary Studio (Proposed)
   const [match2] = await db.insert(matches).values({

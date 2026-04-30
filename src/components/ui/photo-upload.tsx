@@ -34,7 +34,8 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
       }
     } catch (err) {
       console.error(err);
-      toast.error("Errore di connessione");
+      const message = err instanceof Error ? err.message : "Errore di connessione";
+      toast.error(message);
     } finally {
       setIsUploading(false);
     }

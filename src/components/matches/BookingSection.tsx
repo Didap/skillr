@@ -81,8 +81,9 @@ export function BookingSection({
       setMeetingMethod("meet"); // Reset method
       setCustomMeetingLink("");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Errore durante l'invio");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Errore durante l'invio";
+      toast.error(message);
     } finally {
       setIsPending(false);
     }
@@ -97,8 +98,9 @@ export function BookingSection({
       
       toast.success("Colloquio confermato!");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Errore durante la conferma");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Errore durante la conferma";
+      toast.error(message);
     } finally {
       setIsPending(false);
     }
@@ -538,7 +540,7 @@ END:VCALENDAR`;
               Scegli quando incontrarvi
             </h3>
             <p className="text-text-secondary text-lg md:text-xl max-w-xl leading-relaxed">
-              L'azienda ha proposto questi slot. Seleziona quello che preferisci per finalizzare il match.
+              L&apos;azienda ha proposto questi slot. Seleziona quello che preferisci per finalizzare il match.
             </p>
           </div>
           
@@ -636,9 +638,9 @@ END:VCALENDAR`;
               <Calendar size={48} strokeWidth={1.5} />
            </div>
            <div className="space-y-2">
-             <h3 className="text-2xl font-display italic font-bold text-text-primary">In attesa dell'azienda</h3>
+             <h3 className="text-2xl font-display italic font-bold text-text-primary">In attesa dell&apos;azienda</h3>
              <p className="text-text-secondary text-lg leading-relaxed">
-               L'azienda non ha ancora proposto degli slot. Riceverai una notifica non appena potrai scegliere l'orario del colloquio.
+               L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica non appena potrai scegliere l&apos;orario del colloquio.
              </p>
            </div>
         </div>

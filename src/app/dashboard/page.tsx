@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Profile } from "@/types/profile";
 import { useEffect, useState } from "react";
 import { SwipeStack } from "@/components/swipe/SwipeStack";
 import { getPotentialMatches } from "@/app/actions/matches";
@@ -15,7 +16,7 @@ import { cn } from "@/lib/utils";
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function DashboardPage() {
           
           <div className="w-full max-w-md relative">
             {profiles.length > 0 ? (
-              <SwipeStack initialProfiles={profiles} userRole={session.user.role as any} />
+              <SwipeStack initialProfiles={profiles} userRole={session.user.role as "professional" | "company"} />
             ) : (
               <div className="text-center py-20 bg-white rounded-[2.5rem] border border-slate-100 shadow-premium p-10">
                  <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 mx-auto mb-8 animate-bounce">

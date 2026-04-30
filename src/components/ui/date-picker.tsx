@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { it } from "react-day-picker/locale"
+import { it } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ export function DatePicker({
         <CalendarIcon className="mr-3 size-4 text-primary" />
         {value ? (
           <span className="text-text-primary font-semibold">
-            {format(value, "dd/MM/yyyy", { locale: it as any })}
+            {format(value, "dd/MM/yyyy", { locale: it })}
           </span>
         ) : (
           <span>{placeholder}</span>
@@ -62,7 +62,7 @@ export function DatePicker({
             onChange?.(date)
             setOpen(false)
           }}
-          locale={it as any}
+          locale={it}
           disabled={disablePast ? { before: new Date() } : undefined}
           className="rounded-2xl"
         />

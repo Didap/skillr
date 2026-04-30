@@ -2,14 +2,11 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, companyProfiles, matches, jobs } from "@/db/schema";
-import { eq, ne, and, or, notInArray, isNull, desc } from "drizzle-orm";
+import { users, professionalProfiles, companyProfiles, matches } from "@/db/schema";
+import { eq, ne, and, notInArray, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
-import { BookingEmail } from "@/emails/BookingEmail";
-import { ConfirmationEmail } from "@/emails/ConfirmationEmail";
-import { proposedSlots } from "@/db/schema";
 
 export async function getMatches() {
   const session = await auth();
@@ -44,19 +41,21 @@ export async function getMatches() {
         
         let targetName = "";
         if (isCompanyView) {
-          targetName = (targetProfile as any)?.firstName 
-            ? `${(targetProfile as any).firstName} ${(targetProfile as any).lastName}` 
+          targetName = m.professional?.professionalProfile?.firstName 
+            ? `${m.professional.professionalProfile.firstName} ${m.professional.professionalProfile.lastName}` 
             : targetUser?.name || "Professionista";
         } else {
-          targetName = (targetProfile as any)?.companyName || targetUser?.name || "Azienda";
+          targetName = m.company?.companyProfile?.companyName || targetUser?.name || "Azienda";
         }
 
         return {
           id: m.id,
           matchedAt: m.matchedAt,
           targetName,
-          targetTitle: isCompanyView ? (targetProfile as any)?.title : (m.job?.title || "Opportunità IT"),
-          targetImage: (targetProfile as any)?.photoUrl || (targetProfile as any)?.logoUrl || targetUser?.image,
+          targetTitle: isCompanyView ? (m.professional?.professionalProfile?.title) : (m.job?.title || "Opportunità IT"),
+          targetImage: isCompanyView 
+            ? (m.professional?.professionalProfile?.photoUrl || m.professional?.image)
+            : (m.company?.companyProfile?.logoUrl || m.company?.image),
           status: "Match confermato",
         };
       })
@@ -104,7 +103,7 @@ export async function getPotentialMatches() {
           skills: p.topSkills || [],
           image: p.photoUrl || p.user.image,
           bioShort: p.bioShort || "",
-          type: "professional"
+          type: "professional" as const
         }))
       };
 
@@ -134,7 +133,7 @@ export async function getPotentialMatches() {
           location: c.city || "Remote",
           skills: ["Software Development"],
           image: c.logoUrl || c.user.image,
-          type: "company"
+          type: "company" as const
         }))
       };
     }
@@ -274,13 +273,17 @@ export async function getMatchDetail(matchId: string) {
       data: {
         ...match,
         targetName: (isCompanyView 
-          ? `${(targetProfile as any)?.firstName || ''} ${(targetProfile as any)?.lastName || ''}`.trim() 
-          : (targetProfile as any)?.companyName) || targetUser?.name || "Utente",
-        targetTitle: isCompanyView ? (targetProfile as any)?.title : (match.job?.title || "Opportunità IT"),
-        targetImage: (targetProfile as any)?.photoUrl || (targetProfile as any)?.logoUrl || targetUser?.image,
+          ? `${match.professional?.professionalProfile?.firstName || ''} ${match.professional?.professionalProfile?.lastName || ''}`.trim() 
+          : match.company?.companyProfile?.companyName) || targetUser?.name || "Utente",
+        targetTitle: isCompanyView ? match.professional?.professionalProfile?.title : (match.job?.title || "Opportunità IT"),
+        targetImage: isCompanyView 
+          ? (match.professional?.professionalProfile?.photoUrl || match.professional?.image)
+          : (match.company?.companyProfile?.logoUrl || match.company?.image),
         targetEmail: targetUser?.email,
-        targetBio: (targetProfile as any)?.bioShort || (targetProfile as any)?.description || "",
-        targetSkills: (targetProfile as any)?.topSkills || [],
+        targetBio: isCompanyView 
+          ? (match.professional?.professionalProfile?.bioShort || "")
+          : (match.company?.companyProfile?.description || ""),
+        targetSkills: isCompanyView ? (match.professional?.professionalProfile?.topSkills || []) : [],
       }
     };
   } catch (error) {

@@ -8,11 +8,13 @@ import { createJob } from "@/app/actions/jobs";
 import { JobForm } from "@/components/jobs/JobForm";
 import { toast } from "sonner";
 
+import { JobData } from "@/types/job";
+
 export default function NewJobPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(data: any) {
+  async function handleSubmit(data: JobData) {
     setLoading(true);
 
     const res = await createJob(data);

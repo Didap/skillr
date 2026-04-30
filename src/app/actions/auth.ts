@@ -29,7 +29,7 @@ async function verifyTurnstile(token: string) {
   }
 }
 
-export async function registerUserAction(formData: any) {
+export async function registerUserAction(formData: { email?: string; password?: string; turnstileToken?: string }) {
   const { email, password, turnstileToken } = formData;
 
   if (!email || !password) {
@@ -72,8 +72,9 @@ export async function registerUserAction(formData: any) {
     await generateVerificationCode(email);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Errore sconosciuto";
     console.error("Registration error:", error);
-    return { error: `Errore durante la registrazione: ${error.message || "Errore sconosciuto"}` };
+    return { error: `Errore durante la registrazione: ${message}` };
   }
 }

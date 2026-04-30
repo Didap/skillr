@@ -48,7 +48,7 @@ export const ConfirmationEmail = ({
             </Text>
           )}
           <Text style={styles.text}>
-            We've attached a calendar invite (.ics) to this email for your convenience.
+            We&apos;ve attached a calendar invite (.ics) to this email for your convenience.
           </Text>
         </Section>
         <Hr style={styles.hr} />

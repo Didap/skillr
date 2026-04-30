@@ -1,22 +1,13 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence, PanInfo } from "framer-motion";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Zap, X, Heart, Info, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Profile {
-  id: string;
-  name: string;
-  title: string;
-  rate: string;
-  location: string;
-  skills: string[];
-  image?: string;
-  bioShort?: string;
-}
+import { Profile } from "@/types/profile";
 
 interface SwipeCardProps {
   profile: Profile;
@@ -33,7 +24,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
 
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
-  const handleDragEnd = async (_: any, info: any) => {
+  const handleDragEnd = async (_: unknown, info: PanInfo) => {
     if (info.offset.x > 100) {
       await controls.start({ x: 500, opacity: 0, transition: { duration: 0.3 } });
       onSwipe("right");
@@ -46,7 +37,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
     setSwipeDirection(null);
   };
 
-  const handleDrag = (_: any, info: any) => {
+  const handleDrag = (_: unknown, info: PanInfo) => {
     if (info.offset.x > 50) setSwipeDirection("right");
     else if (info.offset.x < -50) setSwipeDirection("left");
     else setSwipeDirection(null);
@@ -146,7 +137,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
              
              {profile.bioShort && (
                <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2 italic">
-                 "{profile.bioShort}"
+                 &quot;{profile.bioShort}&quot;
                </p>
              )}
           </div>

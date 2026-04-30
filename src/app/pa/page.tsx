@@ -32,7 +32,7 @@ export default function PALandingPage() {
         
         <div className="max-w-7xl w-full mx-auto px-6 relative z-10">
           <div className="max-w-3xl mb-16 space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue-light/80">L'Urgenza del Territorio</h2>
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue-light/80">L&apos;Urgenza del Territorio</h2>
             <p className="text-3xl font-display italic font-medium leading-tight">
               I numeri della crisi NEET in Puglia richiedono un cambio di paradigma tecnologico.
             </p>
@@ -45,7 +45,7 @@ export default function PALandingPage() {
                 <p className="text-7xl font-display italic font-bold text-white relative">23.4%<sup className="text-xl text-pa-blue-light ml-1">1</sup></p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold italic leading-tight text-white/90">Tasso NEET in Puglia, tra i più alti d'Italia.</h3>
+                <h3 className="text-xl font-bold italic leading-tight text-white/90">Tasso NEET in Puglia, tra i più alti d&apos;Italia.</h3>
                 <p className="text-white/50 text-sm leading-relaxed">
                   Oltre un giovane su quattro non studia e non lavora, un capitale umano disperso che attende risposte concrete.
                 </p>
@@ -58,7 +58,7 @@ export default function PALandingPage() {
                 <p className="text-7xl font-display italic font-bold text-white relative">65%<sup className="text-xl text-pa-blue-light ml-1">2</sup></p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold italic leading-tight text-white/90">I "Sommersi" non iscritti ai Centri per l'Impiego.</h3>
+                <h3 className="text-xl font-bold italic leading-tight text-white/90">I &quot;Sommersi&quot; non iscritti ai Centri per l&apos;Impiego.</h3>
                 <p className="text-white/50 text-sm leading-relaxed">
                   La maggior parte dei NEET invisibili sfugge ai canali istituzionali. Skillr Outreach li intercetta dove vivono: online.
                 </p>

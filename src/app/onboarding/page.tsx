@@ -25,6 +25,19 @@ import { validateItalianVAT } from "@/lib/vat";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
+interface Skill {
+  id: string;
+  label: string;
+  slug: string;
+}
+
+interface CatalogItem {
+  id: string;
+  label: string;
+  slug: string;
+  skills: Skill[];
+}
+
 export default function OnboardingPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
@@ -36,7 +49,7 @@ export default function OnboardingPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     title: "",
@@ -54,7 +67,7 @@ export default function OnboardingPage() {
     password: "",
   });
 
-  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [isCatalogLoading, setIsCatalogLoading] = useState(false);
 
   useEffect(() => {
@@ -80,14 +93,16 @@ export default function OnboardingPage() {
     const savedData = localStorage.getItem("onboarding_draft");
     if (savedData) {
       const parsed = JSON.parse(savedData);
-      setRole(parsed.role);
-      setFormData(prev => ({ ...prev, ...parsed.formData }));
-      // Se l'utente è appena tornato da un login, saltiamo allo step 2 (dati personali)
-      if (status === "authenticated" && step === 1) {
-        setStep(2);
-      }
+      Promise.resolve().then(() => {
+        if (parsed.role) setRole(parsed.role);
+        if (parsed.formData) setFormData(prev => ({ ...prev, ...parsed.formData }));
+        // Se l'utente è appena tornato da un login, saltiamo allo step 2 (dati personali)
+        if (status === "authenticated" && step === 1) {
+          setStep(2);
+        }
+      });
     }
-  }, [status]);
+  }, [status, step]);
 
   useEffect(() => {
     if (role) {
@@ -113,9 +128,11 @@ export default function OnboardingPage() {
     setIsSubmitting(true);
     console.log("Submitting onboarding data...");
     
+    if (!role) return;
+    
     try {
       const result = await completeOnboardingAction({
-        role,
+        role: role as "professional" | "company",
         ...formData
       });
       
@@ -198,7 +215,7 @@ export default function OnboardingPage() {
                   <CardContent className="px-8 pb-8 pt-4">
                     <RadioGroup 
                       value={role || ""}
-                      onValueChange={(val) => setRole(val as any)}
+                      onValueChange={(val) => setRole(val as "professional" | "company")}
                       className="grid grid-cols-2 gap-4"
                     >
                       <RoleOption 
@@ -370,11 +387,11 @@ export default function OnboardingPage() {
                               }
                             } else {
                               // REGISTRATION
-                              const res = await registerUserAction({ 
-                                email: formData.email, 
-                                password: formData.password,
-                                turnstileToken
-                              });
+                               const res = await registerUserAction({ 
+                                 email: formData.email, 
+                                 password: formData.password,
+                                 turnstileToken: turnstileToken || undefined
+                               });
 
                               if (res.success) {
                                 if (res.message) {
@@ -517,7 +534,7 @@ export default function OnboardingPage() {
                       <div key={cluster.id} className="space-y-3">
                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">{cluster.label}</h3>
                         <div className="flex flex-wrap gap-2">
-                          {cluster.skills.map((skill: any) => (
+                          {cluster.skills.map((skill: Skill) => (
                             <button
                               key={skill.id}
                               onClick={() => {
@@ -572,7 +589,7 @@ export default function OnboardingPage() {
                       <Label htmlFor="rateType" className="font-bold text-slate-700 ml-1">Tipo</Label>
                       <Select 
                         value={formData.rateType}
-                        onValueChange={(val) => setFormData({ ...formData, rateType: val as any })}
+                        onValueChange={(val) => setFormData({ ...formData, rateType: val as "daily" | "hourly" | "ral_annual" })}
                       >
                         <SelectTrigger className="h-12 rounded-xl border-slate-100">
                           <SelectValue />

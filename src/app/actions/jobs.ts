@@ -6,16 +6,9 @@ import { jobs } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function createJob(data: {
-  title: string;
-  description?: string;
-  skills: string[];
-  budgetMinEur: number;
-  budgetMaxEur: number;
-  rateType: "ral_annual" | "daily" | "hourly";
-  location?: string;
-  remoteOk?: boolean;
-}) {
+import { JobData } from "@/types/job";
+
+export async function createJob(data: JobData) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Non autorizzato" };
 
@@ -97,16 +90,7 @@ export async function deleteJob(jobId: string) {
   }
 }
 
-export async function updateJob(jobId: string, data: {
-  title: string;
-  description?: string;
-  skills: string[];
-  budgetMinEur: number;
-  budgetMaxEur: number;
-  rateType: "ral_annual" | "daily" | "hourly";
-  location?: string;
-  remoteOk?: boolean;
-}) {
+export async function updateJob(jobId: string, data: JobData) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Non autorizzato" };
 

@@ -36,7 +36,7 @@ export function HowItWorksPa() {
             Dalla presa in carico alla rendicontazione.
           </p>
           <p className="text-lg text-text-secondary">
-            Un processo fluido e trasparente che riduce il carico burocratico e massimizza l'efficacia delle politiche attive.
+            Un processo fluido e trasparente che riduce il carico burocratico e massimizza l&apos;efficacia delle politiche attive.
           </p>
         </div>
 

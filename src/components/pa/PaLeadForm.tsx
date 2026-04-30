@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
-import { savePaLead } from "@/app/actions/pa";
+import { savePaLead, PaLead } from "@/app/actions/pa";
 import { cn } from "@/lib/utils";
 import { Turnstile } from "@marsidev/react-turnstile";
 
@@ -59,16 +59,18 @@ export default function PaLeadForm() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [deadline, setDeadline] = useState<Date>();
-  const [entityType, setEntityType] = useState<string>("");
+  const [entityType, setEntityType] = useState<PaLead["entityType"] | undefined>(undefined);
   const [role, setRole] = useState<string>("");
-  const [service, setService] = useState<string>("");
+  const [service, setService] = useState<PaLead["service"] | undefined>(undefined);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // Pre-fill service from query params
   useEffect(() => {
     const serviceParam = searchParams.get("service");
     if (serviceParam && services.some(s => s.value === serviceParam)) {
-      setService(serviceParam);
+      Promise.resolve().then(() => {
+        setService(serviceParam as PaLead["service"]);
+      });
     }
   }, [searchParams]);
 
@@ -83,28 +85,28 @@ export default function PaLeadForm() {
     }
 
     const formData = new FormData(e.currentTarget);
-    const data = {
+    const data: PaLead = {
       fullName: formData.get("fullName") as string,
       email: formData.get("email") as string,
-      phone: formData.get("phone") as string,
+      phone: (formData.get("phone") as string) || undefined,
       organization: formData.get("organization") as string,
-      entityType: entityType,
+      entityType: entityType as PaLead["entityType"],
       role: role,
-      service: service,
+      service: service as PaLead["service"],
       deadline: deadline,
-      notes: formData.get("notes") as string,
+      notes: (formData.get("notes") as string) || undefined,
       turnstileToken: turnstileToken,
     };
 
     try {
-      const res = await savePaLead(data as any);
+      const res = await savePaLead(data);
       if (res.success) {
         toast.success("Richiesta inviata con successo!");
         (e.target as HTMLFormElement).reset();
         setDeadline(undefined);
-        setEntityType("");
+        setEntityType(undefined);
         setRole("");
-        setService("");
+        setService(undefined);
         setTurnstileToken(null);
       } else {
         toast.error(res.error || "Si è verificato un errore.");
@@ -150,7 +152,7 @@ export default function PaLeadForm() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="role" className="text-[11px] font-bold text-slate-500 ml-1">Il Tuo Ruolo</Label>
-                <Select value={role} onValueChange={(v) => setRole(v ?? "")} required>
+                <Select value={role} onValueChange={(v: string | null) => setRole(v ?? "")} required>
                   <SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-pa-blue text-sm">
                     <SelectValue placeholder="Seleziona ruolo">
                       {role ? roles.find(r => r.value === role)?.label : null}
@@ -177,7 +179,7 @@ export default function PaLeadForm() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="entityType" className="text-[11px] font-bold text-slate-500 ml-1">Tipo di Ente</Label>
-                <Select value={entityType} onValueChange={(v) => setEntityType(v ?? "")} required>
+                <Select value={entityType} onValueChange={(v) => setEntityType(v as PaLead["entityType"] | undefined)} required>
                   <SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-pa-blue text-sm">
                     <SelectValue placeholder="Scegli tipo">
                       {entityType ? entityTypes.find(e => e.value === entityType)?.label : null}
@@ -190,7 +192,7 @@ export default function PaLeadForm() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="service" className="text-[11px] font-bold text-slate-500 ml-1">Servizio Richiesto</Label>
-                <Select value={service} onValueChange={(v) => setService(v ?? "")} required>
+                <Select value={service} onValueChange={(v) => setService(v as PaLead["service"] | undefined)} required>
                   <SelectTrigger className="h-12 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-pa-blue text-sm">
                     <SelectValue placeholder="Quale soluzione ti serve?">
                       {service ? services.find(s => s.value === service)?.label : null}

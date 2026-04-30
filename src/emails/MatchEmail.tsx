@@ -31,11 +31,11 @@ export const MatchEmail = ({
 }: MatchEmailProps) => (
   <Html>
     <Head />
-    <Preview>It's a Match! You matched with {matchedName} on Skillr</Preview>
+    <Preview>It&apos;s a Match! You matched with {matchedName} on Skillr</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
-          <Heading style={styles.h1}>It's a Match!</Heading>
+          <Heading style={styles.h1}>It&apos;s a Match!</Heading>
         </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>Hi {userName},</Text>

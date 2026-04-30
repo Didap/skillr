@@ -8,11 +8,13 @@ import { updateJob } from "@/app/actions/jobs";
 import { JobForm } from "@/components/jobs/JobForm";
 import { toast } from "sonner";
 
-export default function EditJobClient({ initialData }: { initialData: any }) {
+import { JobData } from "@/types/job";
+
+export default function EditJobClient({ initialData }: { initialData: JobData & { id: string } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(data: any) {
+  async function handleSubmit(data: JobData) {
     setLoading(true);
 
     const res = await updateJob(initialData.id, data);

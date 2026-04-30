@@ -7,7 +7,23 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { validateItalianVAT } from "@/lib/vat";
 
-export async function completeOnboardingAction(data: any) {
+export interface OnboardingData {
+  role: "professional" | "company";
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  photoUrl?: string;
+  topSkills?: string[];
+  selectedClusters?: string[];
+  rateAmount?: string;
+  rateType?: "ral_annual" | "daily" | "hourly";
+  bio?: string;
+  companyName?: string;
+  vatNumber?: string;
+  vatDisclaimerAccepted?: boolean;
+}
+
+export async function completeOnboardingAction(data: OnboardingData) {
   console.log("--- Onboarding Action Started ---");
   console.log("Data received:", JSON.stringify(data, null, 2));
 

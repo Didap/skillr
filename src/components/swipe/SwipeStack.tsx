@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Zap } from "lucide-react";
 import { recordSwipe } from "@/app/actions/matches";
 import { useRouter } from "next/navigation";
+import { Profile } from "@/types/profile";
 
-export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: any[], userRole: "professional" | "company" }) {
-  const [profiles, setProfiles] = useState(initialProfiles);
+export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Profile[], userRole: "professional" | "company" }) {
+  const [profiles] = useState<Profile[]>(initialProfiles);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchData, setMatchData] = useState<{ name: string, image?: string, matchId: string } | null>(null);
+  const [matchData, setMatchData] = useState<{ name: string, image: string | null, matchId: string } | null>(null);
   const router = useRouter();
 
   const handleSwipe = async (direction: "left" | "right") => {
@@ -86,7 +87,7 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: any
         {matchData && (
           <MatchOverlay 
             profileName={matchData.name}
-            profileImage={matchData.image}
+            profileImage={matchData.image || undefined}
             matchId={matchData.matchId}
             onClose={() => setMatchData(null)}
           />

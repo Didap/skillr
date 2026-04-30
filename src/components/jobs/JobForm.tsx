@@ -13,25 +13,30 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 
+import { JobData } from "@/types/job";
+
 interface JobFormProps {
-  initialData?: {
-    id?: string;
-    title: string;
-    description?: string | null;
-    skills: string[] | null;
-    budgetMinEur: number | null;
-    budgetMaxEur: number | null;
-    rateType: "ral_annual" | "daily" | "hourly" | null;
-    location?: string | null;
-    remoteOk: boolean | null;
-  };
-  onSubmit: (data: any) => Promise<void>;
+  initialData?: JobData & { id?: string };
+  onSubmit: (data: JobData) => Promise<void>;
   submitLabel: string;
   loading: boolean;
 }
 
+interface Skill {
+  id: string;
+  label: string;
+  slug: string;
+}
+
+interface CatalogItem {
+  id: string;
+  label: string;
+  slug: string;
+  skills: Skill[];
+}
+
 export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobFormProps) {
-  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skills || []);
 
@@ -44,8 +49,8 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
         // If editing, auto-select clusters based on initial skills
         if (initialData?.skills?.length) {
           const clustersToSelect = new Set<string>();
-          res.data.forEach((cluster: any) => {
-            if (cluster.skills.some((s: any) => initialData.skills?.includes(s.slug))) {
+          res.data.forEach((cluster: CatalogItem) => {
+            if (cluster.skills.some((s: Skill) => initialData.skills?.includes(s.slug))) {
               clustersToSelect.add(cluster.slug);
             }
           });
@@ -132,7 +137,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Tipo di Retribuzione</Label>
-                  <Select name="rateType" value={rateType} onValueChange={setRateType as any}>
+                  <Select name="rateType" value={rateType} onValueChange={(v: string | null) => setRateType((v ?? "daily") as "ral_annual" | "daily" | "hourly")}>
                     <SelectTrigger className="rounded-2xl h-14 bg-white border-border-subtle px-6 text-base font-bold text-text-primary">
                       <SelectValue>
                         {rateTypeLabels[rateType as keyof typeof rateTypeLabels]}
@@ -273,7 +278,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                       <div key={cluster.id} className="space-y-3">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-60 pl-1">{cluster.label}</p>
                         <div className="flex flex-wrap gap-2">
-                          {cluster.skills.map((skill: any) => (
+                          {cluster.skills.map((skill: Skill) => (
                             <button
                               key={skill.id}
                               type="button"

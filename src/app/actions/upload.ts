@@ -18,7 +18,7 @@ export async function uploadImageAction(formData: FormData) {
   const buffer = Buffer.from(arrayBuffer);
 
   try {
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: "skillr",
@@ -27,14 +27,14 @@ export async function uploadImageAction(formData: FormData) {
             { width: 500, height: 500, crop: "fill", gravity: "face" }
           ]
         },
-        (error, result) => {
+        (error, res) => {
           if (error) reject(error);
-          else resolve(result);
+          else resolve(res as { secure_url: string });
         }
       ).end(buffer);
     });
 
-    return { success: true, url: (result as any).secure_url };
+    return { success: true, url: result.secure_url };
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     return { error: "Errore durante l'upload dell'immagine" };

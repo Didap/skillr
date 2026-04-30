@@ -126,7 +126,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-slate-950 tracking-tight">Doppio Opt-in</h3>
                 <p className="text-slate-500 leading-relaxed font-medium">
-                  Il contatto avviene solo se l'interesse è reciproco. Un sistema pulito che protegge la tua inbox e la tua attenzione.
+                  Il contatto avviene solo se l&apos;interesse è reciproco. Un sistema pulito che protegge la tua inbox e la tua attenzione.
                 </p>
               </div>
 

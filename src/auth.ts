@@ -3,7 +3,6 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "./db";
 import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
@@ -46,7 +45,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        // @ts-ignore
         token.role = user.role;
       }
       
@@ -67,10 +65,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user && token.sub) {
-        // @ts-ignore
         session.user.id = token.sub;
-        // @ts-ignore
-        session.user.role = token.role;
+        session.user.role = token.role as "professional" | "company" | null;
       }
       return session;
     },

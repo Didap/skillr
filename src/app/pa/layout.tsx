@@ -57,8 +57,8 @@ export default function PALayout({
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 border border-white/20 px-2 py-0.5 rounded">Per la PA</span>
               </div>
               <p className="text-white/70 max-w-md text-sm leading-relaxed">
-                Skillr è un'iniziativa dedicata all'innovazione sociale e al matching occupazionale. 
-                Sviluppiamo soluzioni tecnologiche per facilitare l'incontro tra talento e opportunità 
+                Skillr è un&apos;iniziativa dedicata all&apos;innovazione sociale e al matching occupazionale. 
+                Sviluppiamo soluzioni tecnologiche per facilitare l&apos;incontro tra talento e opportunità 
                 nel rispetto dei requisiti di trasparenza e rendicontazione della Pubblica Amministrazione.
               </p>
             </div>

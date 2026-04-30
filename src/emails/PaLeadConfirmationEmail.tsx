@@ -47,7 +47,7 @@ export const PaLeadConfirmationEmail = ({
           </Text>
           <Section style={paStyles.card}>
             <Text style={{ ...paStyles.text, fontStyle: 'italic', margin: 0 }}>
-              "Tecnologia e dati al servizio dell'impiego pubblico."
+              &quot;Tecnologia e dati al servizio dell&apos;impiego pubblico.&quot;
             </Text>
           </Section>
           <Text style={paStyles.text}>

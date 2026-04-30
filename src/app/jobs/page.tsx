@@ -9,21 +9,28 @@ import { getCompanyJobs, deleteJob, toggleJobStatus } from "@/app/actions/jobs";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+import { JobData } from "@/types/job";
+
+interface JobWithStats extends JobData {
+  id: string;
+  isActive: boolean;
+  matchCount: number;
+}
+
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<JobWithStats[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function loadJobs() {
-    setLoading(true);
     const res = await getCompanyJobs();
     if (res.success) {
-      setJobs(res.data);
+      setJobs((res.data || []) as JobWithStats[]);
     }
     setLoading(false);
   }
 
   useEffect(() => {
-    loadJobs();
+    Promise.resolve().then(() => loadJobs());
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -130,7 +137,7 @@ export default function JobsPage() {
                             {skill.replace(/-/g, ' ')}
                           </Badge>
                         ))}
-                        {job.skills?.length > 5 && (
+                        {job.skills && job.skills.length > 5 && (
                           <Badge variant="outline" className="bg-surface border-border-subtle text-text-muted font-medium text-[10px] h-5">
                             +{job.skills.length - 5}
                           </Badge>

@@ -1,8 +1,6 @@
 "use server";
 
 import { db } from "@/db";
-import { clusters, skills } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function getMetadataCatalog() {
   try {
