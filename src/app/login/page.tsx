@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Star, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +11,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FDFDFC]" />}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();

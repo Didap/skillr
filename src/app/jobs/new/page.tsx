@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Briefcase, Info, MapPin, Laptop, Euro } from "lucide-react";
@@ -27,13 +27,13 @@ export default function NewJobPage() {
   const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
-  useState(() => {
+  useEffect(() => {
     async function fetchCatalog() {
       const res = await getMetadataCatalog();
       if (res.success) setCatalog(res.data);
     }
     fetchCatalog();
-  });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
