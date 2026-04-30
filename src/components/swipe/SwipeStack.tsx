@@ -26,7 +26,7 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: any
       setMatchData({
         name: swipedProfile.name,
         image: swipedProfile.image,
-        matchId: swipedProfile.id // In a real app, this should be the actual Match ID returned from the DB
+        matchId: res.matchId || swipedProfile.id
       });
     }
   };

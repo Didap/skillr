@@ -7,11 +7,31 @@
 @theme {
   /* OKLCH Color Tokens - Pure and Dynamic */
   --color-primary: oklch(0.45 0.15 160);
+  --color-primary-foreground: oklch(0.99 0.005 160);
   --color-primary-dark: oklch(0.25 0.08 160);
   --color-accent: oklch(0.65 0.25 150);
+  --color-accent-foreground: oklch(0.15 0.02 240);
+
+  --color-secondary: oklch(0.94 0.01 240);
+  --color-secondary-foreground: oklch(0.15 0.02 240);
+
+  --color-muted: oklch(0.96 0.005 240);
+  --color-muted-foreground: oklch(0.45 0.02 240);
+
+  --color-background: oklch(0.99 0.005 160);
+  --color-foreground: oklch(0.15 0.02 240);
 
   --color-surface: oklch(0.98 0.005 160);
   --color-surface-warm: oklch(0.99 0.005 80);
+
+  --color-input: oklch(0.88 0.02 240);
+  --color-ring: oklch(0.45 0.15 160);
+
+  --color-popover: oklch(0.99 0.005 160);
+  --color-popover-foreground: oklch(0.15 0.02 240);
+
+  --color-destructive: oklch(0.6 0.18 25);
+  --color-destructive-foreground: oklch(0.99 0.005 160);
 
   --color-text-primary: oklch(0.15 0.02 240);
   --color-text-secondary: oklch(0.45 0.02 240);
@@ -35,6 +55,12 @@
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-swipe: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* PA Institutional Palette */
+  --color-pa-blue: oklch(0.35 0.12 245);
+  --color-pa-blue-dark: oklch(0.25 0.08 245);
+  --color-pa-gray-warm: oklch(0.98 0.01 60);
+  --color-pa-gray-cold: oklch(0.96 0.005 240);
 }
 
 @layer base {

@@ -79,7 +79,10 @@ export async function getPotentialMatches() {
   try {
     if (role === "company") {
       const swiped = await db.query.matches.findMany({
-        where: eq(matches.companyId, userId),
+        where: and(
+          eq(matches.companyId, userId),
+          ne(matches.companyStatus, 'pending')
+        ),
         columns: { professionalId: true }
       });
       const swipedIds = swiped.map(m => m.professionalId);
@@ -107,7 +110,10 @@ export async function getPotentialMatches() {
 
     } else if (role === "professional") {
       const swiped = await db.query.matches.findMany({
-        where: eq(matches.professionalId, userId),
+        where: and(
+          eq(matches.professionalId, userId),
+          ne(matches.professionalStatus, 'pending')
+        ),
         columns: { companyId: true }
       });
       const swipedIds = swiped.map(m => m.companyId);
@@ -237,138 +243,48 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
   }
 }
 
-export async function proposeSlots(matchId: string, slots: { startTime: Date, endTime: Date }[]) {
+export async function getMatchDetail(matchId: string) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') return { error: "Non autorizzato" };
+  if (!session?.user?.id) return { error: "Non autorizzato" };
 
   try {
     const match = await db.query.matches.findFirst({
-      where: and(eq(matches.id, matchId), eq(matches.companyId, session.user.id)),
-      with: { 
+      where: eq(matches.id, matchId),
+      with: {
         professional: { with: { professionalProfile: true } },
-        company: { with: { companyProfile: true } }
-      }
+        company: { with: { companyProfile: true } },
+        job: true,
+        proposedSlots: true,
+      },
     });
 
     if (!match) return { error: "Match non trovato" };
 
-    // Insert slots
-    await db.insert(proposedSlots).values(
-      slots.map(s => ({
-        matchId,
-        startTime: s.startTime,
-        endTime: s.endTime,
-      }))
-    );
-
-    // Send Booking Email to professional
-    const profName = `${match.professional.professionalProfile?.firstName || ''} ${match.professional.professionalProfile?.lastName || ''}`.trim() || match.professional.name || "Professionista";
-    const compName = match.company.companyProfile?.companyName || match.company.name || "Azienda";
-    
-    await sendEmail({
-      to: match.professional.email,
-      subject: `Proposta colloquio da ${compName}`,
-      react: BookingEmail({
-        userName: profName,
-        companyName: compName,
-        companyLogo: match.company.companyProfile?.logoUrl || undefined,
-        bookingUrl: `${process.env.NEXTAUTH_URL}/matches/${matchId}`,
-      })
-    });
-
-    revalidatePath(`/matches/${matchId}`);
-    return { success: true };
-  } catch (error) {
-    console.error("Error proposing slots:", error);
-    return { error: "Errore durante l'invio della proposta" };
-  }
-}
-
-export async function confirmSlot(slotId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'professional') return { error: "Non autorizzato" };
-
-  try {
-    const slot = await db.query.proposedSlots.findFirst({
-      where: eq(proposedSlots.id, slotId),
-      with: {
-        match: {
-          with: {
-            professional: { with: { professionalProfile: true } },
-            company: { with: { companyProfile: true } }
-          }
-        }
-      }
-    });
-
-    if (!slot || slot.match.professionalId !== session.user.id) {
-      return { error: "Slot non trovato o non autorizzato" };
+    // Check authorization: must be either the professional or the company
+    if (match.professionalId !== session.user.id && match.companyId !== session.user.id) {
+      return { error: "Non autorizzato a vedere questo match" };
     }
 
-    // Update slot
-    await db.update(proposedSlots)
-      .set({ isAccepted: true })
-      .where(eq(proposedSlots.id, slotId));
+    const isCompanyView = session.user.role === 'company';
+    const targetUser = isCompanyView ? match.professional : match.company;
+    const targetProfile = isCompanyView ? match.professional?.professionalProfile : match.company?.companyProfile;
 
-    // Send Confirmation Emails to both
-    const profName = `${slot.match.professional.professionalProfile?.firstName || ''} ${slot.match.professional.professionalProfile?.lastName || ''}`.trim() || slot.match.professional.name || "Professionista";
-    const compName = slot.match.company.companyProfile?.companyName || slot.match.company.name || "Azienda";
-    const startTimeFormatted = slot.startTime.toLocaleString('it-IT', { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-    });
-
-    // Generate ICS content
-    const formatICSDate = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Skillr//NONSGML Event//EN
-BEGIN:VEVENT
-UID:${crypto.randomUUID()}
-DTSTAMP:${formatICSDate(new Date())}
-DTSTART:${formatICSDate(slot.startTime)}
-DTEND:${formatICSDate(slot.endTime)}
-SUMMARY:Colloquio Skillr: ${profName} / ${compName}
-DESCRIPTION:Colloquio conoscitivo su Skillr tra ${profName} e ${compName}.
-END:VEVENT
-END:VCALENDAR`;
-
-    await Promise.all([
-      sendEmail({
-        to: slot.match.professional.email,
-        subject: "Colloquio confermato!",
-        react: ConfirmationEmail({
-          userName: profName,
-          otherPartyName: compName,
-          startTime: startTimeFormatted,
-        }),
-        attachments: [
-          {
-            filename: 'invito.ics',
-            content: Buffer.from(icsContent).toString('base64'),
-          }
-        ]
-      }),
-      sendEmail({
-        to: slot.match.company.email,
-        subject: "Colloquio confermato!",
-        react: ConfirmationEmail({
-          userName: compName,
-          otherPartyName: profName,
-          startTime: startTimeFormatted,
-        }),
-        attachments: [
-          {
-            filename: 'invito.ics',
-            content: Buffer.from(icsContent).toString('base64'),
-          }
-        ]
-      })
-    ]);
-
-    revalidatePath(`/matches/${slot.match.id}`);
-    return { success: true };
+    return {
+      success: true,
+      data: {
+        ...match,
+        targetName: (isCompanyView 
+          ? `${(targetProfile as any)?.firstName || ''} ${(targetProfile as any)?.lastName || ''}`.trim() 
+          : (targetProfile as any)?.companyName) || targetUser?.name || "Utente",
+        targetTitle: isCompanyView ? (targetProfile as any)?.title : (match.job?.title || "Opportunità IT"),
+        targetImage: (targetProfile as any)?.photoUrl || (targetProfile as any)?.logoUrl || targetUser?.image,
+        targetEmail: targetUser?.email,
+        targetBio: (targetProfile as any)?.bioShort || (targetProfile as any)?.description || "",
+        targetSkills: (targetProfile as any)?.topSkills || [],
+      }
+    };
   } catch (error) {
-    console.error("Error confirming slot:", error);
-    return { error: "Errore durante la conferma" };
+    console.error("Error fetching match detail:", error);
+    return { error: "Errore durante il caricamento del dettaglio" };
   }
 }

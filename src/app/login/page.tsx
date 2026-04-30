@@ -4,11 +4,15 @@ import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Star, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession, signIn } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   return (
@@ -34,6 +38,7 @@ function LoginPageInner() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +48,7 @@ function LoginPageInner() {
       await signIn("resend", { email, callbackUrl });
     } catch (error) {
       console.error(error);
-      alert("Errore nell'invio del magic link.");
+      toast.error("Errore nell'invio del magic link.");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +67,7 @@ function LoginPageInner() {
       });
     } catch (error) {
       console.error(error);
-      alert("Credenziali non valide.");
+      toast.error("Credenziali non valide.");
     } finally {
       setIsLoading(false);
     }
@@ -124,27 +129,44 @@ function LoginPageInner() {
             </div>
 
             <form onSubmit={showPassword ? handleCredentialsLogin : handleMagicLink} className="grid gap-3">
-               <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="La tua email"
-                  required
-                  className="flex h-14 w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-4 py-1 text-sm font-medium transition-all placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500"
-               />
-               {showPassword && (
-                 <input 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="La tua password"
+               <div className="space-y-1.5">
+                 <Label htmlFor="login-email" className="text-xs font-bold text-slate-500 ml-1">Email</Label>
+                 <Input 
+                    id="login-email"
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="La tua email"
                     required
-                    className="flex h-14 w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-4 py-1 text-sm font-medium transition-all placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500"
+                    className="h-14 rounded-2xl border-slate-100 bg-slate-50/50"
                  />
+               </div>
+               {showPassword && (
+                 <div className="space-y-1.5">
+                   <Label htmlFor="login-password" className="text-xs font-bold text-slate-500 ml-1">Password</Label>
+                   <Input 
+                      id="login-password"
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="La tua password"
+                      required
+                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50"
+                   />
+                 </div>
                )}
+               
+               <div className="py-2 flex justify-center">
+                 <Turnstile 
+                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                   options={{ theme: "light" }}
+                   onSuccess={(token) => setTurnstileToken(token)}
+                 />
+               </div>
+
                <Button 
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !turnstileToken}
                 className="w-full h-14 rounded-2xl bg-slate-950 text-white hover:bg-emerald-800 transition-all font-bold text-lg shadow-xl shadow-slate-200"
                >
                  {isLoading ? "Invio in corso..." : showPassword ? "Accedi" : "Invia Magic Link"}

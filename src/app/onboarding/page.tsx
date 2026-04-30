@@ -11,15 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { registerUserAction } from "@/app/actions/auth";
+import { verifyEmailCodeAction, generateVerificationCode } from "@/app/actions/verification";
 import { PhotoUpload } from "@/components/ui/photo-upload";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { validateItalianVAT } from "@/lib/vat";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 export default function OnboardingPage() {
   const { data: session, status, update } = useSession();
@@ -28,6 +32,9 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState<"professional" | "company" | null>(null);
   const [isLoginMode, setIsLoginMode] = useState(false);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -117,11 +124,11 @@ export default function OnboardingPage() {
         await update({ role }); // Refresh session with new role
         router.push("/dashboard");
       } else {
-        alert(result.error || "Si è verificato un errore durante il salvataggio.");
+        toast.error(result.error || "Si è verificato un errore durante il salvataggio.");
       }
     } catch (err) {
       console.error("Onboarding submission error:", err);
-      alert("Errore di connessione. Riprova tra poco.");
+      toast.error("Errore di connessione. Riprova tra poco.");
     } finally {
       setIsSubmitting(false);
     }
@@ -227,13 +234,88 @@ export default function OnboardingPage() {
 
               {step === 1 && (
                 <StepLayout 
-                  title={isLoginMode ? "Accedi al tuo account" : "Crea il tuo account"} 
-                  description={isLoginMode ? "Bentornato! Inserisci le tue credenziali." : "Per salvare i tuoi progressi e iniziare a fare swipe."}
-                  onBack={prevStep}
+                  title={isVerifyingEmail ? "Verifica la tua email" : (isLoginMode ? "Accedi al tuo account" : "Crea il tuo account")} 
+                  description={
+                    isVerifyingEmail 
+                      ? `Abbiamo inviato un codice a 6 cifre a ${formData.email}` 
+                      : (isLoginMode ? "Bentornato! Inserisci le tue credenziali." : "Per salvare i tuoi progressi e iniziare a fare swipe.")
+                  }
+                  onBack={() => isVerifyingEmail ? setIsVerifyingEmail(false) : prevStep()}
                   onNext={() => {}} // Non usato qui
                   hideNext
                 >
-                  <div className="space-y-4">
+                  {isVerifyingEmail ? (
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="verificationCode" className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-widest">Codice di Verifica</Label>
+                        <Input 
+                          placeholder="000000" 
+                          type="text" 
+                          id="verificationCode"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          className="h-16 text-center text-3xl font-black tracking-[0.5em] rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-bold"
+                          maxLength={6}
+                        />
+                      </div>
+                      
+                      <Button 
+                        disabled={isSubmitting || verificationCode.length !== 6}
+                        onClick={async () => {
+                          setIsSubmitting(true);
+                          try {
+                            const res = await verifyEmailCodeAction(formData.email, verificationCode);
+                            if (res.success) {
+                              toast.success("Email verificata con successo!");
+                              // Now login automatically
+                              const signInRes = await signIn("credentials", { 
+                                email: formData.email, 
+                                password: formData.password, 
+                                redirect: false 
+                              });
+                              
+                              if (signInRes?.error) {
+                                toast.error("Verifica completata, ma errore nel login. Per favore accedi manualmente.");
+                                setIsVerifyingEmail(false);
+                                setIsLoginMode(true);
+                              } else {
+                                await update();
+                                setStep(2);
+                              }
+                            } else {
+                              toast.error(res.error || "Codice non valido.");
+                            }
+                          } catch (err) {
+                            toast.error("Errore durante la verifica.");
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                        className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all font-bold text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 group"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (
+                          <>
+                            <span>Verifica e Continua</span>
+                            <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+
+                      <div className="text-center">
+                        <button 
+                          onClick={async () => {
+                            toast.info("Invio nuovo codice...");
+                            await generateVerificationCode(formData.email);
+                            toast.success("Codice inviato!");
+                          }}
+                          className="text-xs font-bold text-slate-400 hover:text-pa-blue transition-colors"
+                        >
+                          Non hai ricevuto il codice? <span className="text-pa-blue underline underline-offset-4">Inviamene un altro</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-xs font-bold text-slate-500 ml-1">Email</Label>
                         <Input 
@@ -257,8 +339,18 @@ export default function OnboardingPage() {
                         />
                       </div>
                       
+                      {!isLoginMode && (
+                        <div className="py-2 flex justify-center">
+                          <Turnstile 
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                            options={{ theme: "light" }}
+                            onSuccess={(token) => setTurnstileToken(token)}
+                          />
+                        </div>
+                      )}
+
                       <Button 
-                        disabled={isSubmitting || !formData.email || formData.password.length < 8}
+                        disabled={isSubmitting || !formData.email || formData.password.length < 8 || (!isLoginMode && !turnstileToken)}
                         onClick={async () => {
                           setIsSubmitting(true);
                           try {
@@ -271,35 +363,33 @@ export default function OnboardingPage() {
                               });
                               
                               if (res?.error) {
-                                alert("Credenziali non valide.");
+                                toast.error("Credenziali non valide.");
                               } else {
                                 await update();
                                 setStep(2);
                               }
                             } else {
                               // REGISTRATION
-                              const res = await registerUserAction({ email: formData.email, password: formData.password });
+                              const res = await registerUserAction({ 
+                                email: formData.email, 
+                                password: formData.password,
+                                turnstileToken
+                              });
+
                               if (res.success) {
-                                const signInRes = await signIn("credentials", { 
-                                  email: formData.email, 
-                                  password: formData.password, 
-                                  redirect: false 
-                                });
-                                
-                                if (signInRes?.error) {
-                                  alert("Registrazione completata, ma errore nel login automatico. Per favore accedi manualmente.");
-                                  setIsLoginMode(true);
+                                if (res.message) {
+                                  toast.info(res.message);
                                 } else {
-                                  await update();
-                                  setStep(2);
+                                  toast.success("Account creato! Verifica la tua email.");
                                 }
+                                setIsVerifyingEmail(true);
                               } else {
-                                alert(res.error || "Errore nella registrazione");
+                                toast.error(res.error || "Errore nella registrazione");
                               }
                             }
                           } catch (err) {
                             console.error(err);
-                            alert("Si è verificato un errore.");
+                            toast.error("Si è verificato un errore.");
                           } finally {
                             setIsSubmitting(false);
                           }
@@ -315,38 +405,39 @@ export default function OnboardingPage() {
                           </>
                         )}
                       </Button>
-                    </div>
 
-                    <div className="relative my-6">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-slate-100"></span>
+                      <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-slate-100"></span>
+                        </div>
+                        <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black text-slate-300">
+                          <span className="bg-white px-4">Oppure</span>
+                        </div>
                       </div>
-                      <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black text-slate-300">
-                        <span className="bg-white px-4">Oppure</span>
-                      </div>
-                    </div>
 
-                    <div className="grid gap-3">
-                       <Button 
-                        variant="outline" 
-                        onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
-                        className="w-full h-12 rounded-xl border-slate-100 bg-white hover:bg-slate-50 transition-all font-bold text-slate-700 flex items-center justify-center gap-3 text-sm"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24">
-                          <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
-                          <path fill="#34A853" d="M16.04 18.013c-1.09.593-2.325.896-3.613.896a7.077 7.077 0 0 1-6.719-4.856l-4.021 3.11C3.645 21.127 7.564 24 12 24c3.082 0 5.855-1.023 7.855-2.773l-3.815-3.214z" />
-                          <path fill="#4285F4" d="M19.855 21.227c2.325-2.062 3.655-5.127 3.655-8.864 0-.833-.083-1.636-.233-2.39H12v4.527h6.41c-.267 1.44-.099 2.708-.736 3.842l2.181 2.885z" />
-                          <path fill="#FBBC05" d="M5.668 14.053a7.033 7.033 0 0 1 0-4.288L1.647 6.655A12.022 12.022 0 0 0 0 12c0 1.91.445 3.718 1.245 5.345l4.423-3.292z" />
-                        </svg>
-                        {isLoginMode ? "Accedi con Google" : "Registrati con Google"}
-                      </Button>
-                      <div className="text-center mt-2">
-                        <p className="text-[11px] text-slate-400 font-medium">
-                          {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-emerald-600 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
-                        </p>
+                      <div className="grid gap-3">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
+                          className="w-full h-12 rounded-xl border-slate-100 bg-white hover:bg-slate-50 transition-all font-bold text-slate-700 flex items-center justify-center gap-3 text-sm"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
+                            <path fill="#34A853" d="M16.04 18.013c-1.09.593-2.325.896-3.613.896a7.077 7.077 0 0 1-6.719-4.856l-4.021 3.11C3.645 21.127 7.564 24 12 24c3.082 0 5.855-1.023 7.855-2.773l-3.815-3.214z" />
+                            <path fill="#4285F4" d="M19.855 21.227c2.325-2.062 3.655-5.127 3.655-8.864 0-.833-.083-1.636-.233-2.39H12v4.527h6.41c-.267 1.44-.099 2.708-.736 3.842l2.181 2.885z" />
+                            <path fill="#FBBC05" d="M5.668 14.053a7.033 7.033 0 0 1 0-4.288L1.647 6.655A12.022 12.022 0 0 0 0 12c0 1.91.445 3.718 1.245 5.345l4.423-3.292z" />
+                          </svg>
+                          {isLoginMode ? "Accedi con Google" : "Registrati con Google"}
+                        </Button>
+                        <div className="text-center mt-2">
+                          <p className="text-[11px] text-slate-400 font-medium">
+                            {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-emerald-600 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </StepLayout>
+                  )}
+                </StepLayout>
               )}
 
               {step === 2 && role === "professional" && (
@@ -479,16 +570,19 @@ export default function OnboardingPage() {
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="rateType" className="font-bold text-slate-700 ml-1">Tipo</Label>
-                      <select 
-                        id="rateType"
+                      <Select 
                         value={formData.rateType}
-                        onChange={handleChange}
-                        className="w-full h-12 rounded-xl border border-slate-100 bg-white px-3 py-1 text-sm font-bold shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        onValueChange={(val) => setFormData({ ...formData, rateType: val as any })}
                       >
-                        <option value="daily">Giorno</option>
-                        <option value="hourly">Ora</option>
-                        <option value="ral_annual">RAL</option>
-                      </select>
+                        <SelectTrigger className="h-12 rounded-xl border-slate-100">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">Giorno</SelectItem>
+                          <SelectItem value="hourly">Ora</SelectItem>
+                          <SelectItem value="ral_annual">RAL</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </StepLayout>

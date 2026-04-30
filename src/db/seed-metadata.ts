@@ -1,73 +1,178 @@
-import { db } from "./index";
-import { clusters, skills } from "./schema";
+import { config } from "dotenv";
+import { resolve } from "path";
 
-const metadata = [
-  {
-    cluster: "Developer",
-    skills: ["React", "Next.js", "Node.js", "TypeScript", "Rust", "Python", "Go", "AWS", "Docker", "PostgreSQL", "Tailwind CSS", "React Native", "Vue.js", "Angular", "Java", "C#", "C++", "Ruby on Rails", "PHP", "Swift", "Kotlin", "Flutter", "GraphQL", "Kubernetes", "Redis", "MongoDB", "Framer Motion", "Three.js"]
-  },
-  {
-    cluster: "Designer",
-    skills: ["Figma", "UI Design", "UX Design", "Product Design", "Adobe Illustrator", "Adobe Photoshop", "Branding", "Design Systems", "Web Design", "Mobile Design", "Motion Design", "Interaction Design", "Prototyping", "User Research", "Visual Design", "Iconography", "Typography", "3D Modeling", "Blender"]
-  },
-  {
-    cluster: "Product / PM",
-    skills: ["Agile", "Scrum", "Product Roadmap", "User Stories", "Stakeholder Management", "Data Analysis", "Market Research", "Product Strategy", "Jira", "Linear", "Asana", "Product Analytics", "A/B Testing", "KPI Tracking", "Prioritization"]
-  },
-  {
-    cluster: "Marketing",
-    skills: ["SEO", "SEM", "Content Marketing", "Social Media Marketing", "Email Marketing", "Copywriting", "Performance Marketing", "Google Analytics", "Growth Hacking", "Brand Strategy", "Influencer Marketing", "Public Relations", "Community Management"]
-  },
-  {
-    cluster: "Sales",
-    skills: ["Lead Generation", "B2B Sales", "B2C Sales", "CRM Management", "Sales Strategy", "Negotiation", "Account Management", "Cold Calling", "Email Outreach", "Sales Pitching", "Customer Success"]
-  },
-  {
-    cluster: "Amministrazione / HR",
-    skills: ["Recruiting", "Payroll Management", "Talent Management", "Employee Onboarding", "Conflict Resolution", "HR Policy", "Performance Reviews", "Compliance", "Office Management", "Accounting", "Financial Planning"]
-  },
-  {
-    cluster: "Legale",
-    skills: ["Contract Law", "Corporate Law", "GDPR Compliance", "Intellectual Property", "Legal Research", "Litigation", "Employment Law", "Privacy Law", "Commercial Law"]
-  },
-  {
-    cluster: "Giornalismo / Comunicazione",
-    skills: ["Reporting", "Article Writing", "Editing", "Podcast Production", "Video Production", "Social Media Management", "Public Speaking", "Crisis Communication", "Content Strategy", "Storytelling"]
-  },
-  {
-    cluster: "Edilizia / Tecnici",
-    skills: ["AutoCAD", "BIM", "Project Management Edile", "Sicurezza sul lavoro", "Topografia", "Progettazione Strutturale", "Impiantistica", "Restauro", "Architettura", "Interior Design"]
-  }
-];
+// Load .env.local before anything else
+config({ path: resolve(process.cwd(), ".env.local") });
 
-export async function seedMetadata() {
-  console.log("Seeding clusters and skills...");
+async function seed() {
+  console.log("🌱 Seeding metadata...");
+  
+  // Dynamic imports to ensure env vars are loaded first
+  const { db } = await import("./index");
+  const { clusters, skills, jobCategories, jobTitles } = await import("./schema");
 
-  for (const item of metadata) {
-    const slug = item.cluster.toLowerCase().replace(/ \/ /g, '-').replace(/ /g, '-');
+  // 1. SKILL CLUSTERS
+  const skillClusters = [
+    { slug: "tech-development", label: "Software Development" },
+    { slug: "design-creative", label: "Design & Creative" },
+    { slug: "marketing-sales", label: "Marketing & Sales" },
+    { slug: "management-business", label: "Management & Business" },
+    { slug: "data-ai", label: "Data & AI" },
+    { slug: "soft-skills", label: "Soft Skills" },
+  ];
+
+  console.log("Inserting clusters...");
+  const insertedClusters = await Promise.all(
+    skillClusters.map((c) => 
+      db.insert(clusters).values(c).onConflictDoUpdate({ target: clusters.slug, set: { label: c.label } }).returning()
+    )
+  );
+
+  const clusterMap = Object.fromEntries(insertedClusters.map(c => [c[0].slug, c[0].id]));
+
+  // 2. SKILLS
+  const skillList = [
+    // Tech
+    { cluster: "tech-development", slug: "react", label: "React" },
+    { cluster: "tech-development", slug: "nextjs", label: "Next.js" },
+    { cluster: "tech-development", slug: "typescript", label: "TypeScript" },
+    { cluster: "tech-development", slug: "nodejs", label: "Node.js" },
+    { cluster: "tech-development", slug: "python", label: "Python" },
+    { cluster: "tech-development", slug: "postgresql", label: "PostgreSQL" },
+    { cluster: "tech-development", slug: "aws", label: "AWS" },
+    { cluster: "tech-development", slug: "docker", label: "Docker" },
+    { cluster: "tech-development", slug: "rust", label: "Rust" },
+    { cluster: "tech-development", slug: "go", label: "Go" },
     
-    // Insert cluster
-    const [cluster] = await db.insert(clusters).values({
-      slug,
-      label: item.cluster
-    }).onConflictDoUpdate({
-      target: clusters.slug,
-      set: { label: item.cluster }
-    }).returning();
+    { cluster: "tech-development", slug: "kubernetes", label: "Kubernetes" },
+    { cluster: "tech-development", slug: "flutter", label: "Flutter" },
+    { cluster: "tech-development", slug: "react-native", label: "React Native" },
+    { cluster: "tech-development", slug: "mongodb", label: "MongoDB" },
+    { cluster: "tech-development", slug: "redis", label: "Redis" },
+    
+    // Design
+    { cluster: "design-creative", slug: "ui-design", label: "UI Design" },
+    { cluster: "design-creative", slug: "ux-research", label: "UX Research" },
+    { cluster: "design-creative", slug: "figma", label: "Figma" },
+    { cluster: "design-creative", slug: "adobe-creative-suite", label: "Adobe Creative Suite" },
+    { cluster: "design-creative", slug: "motion-design", label: "Motion Design" },
+    { cluster: "design-creative", slug: "branding", label: "Branding" },
+    { cluster: "design-creative", slug: "illustration", label: "Illustration" },
+    { cluster: "design-creative", slug: "video-editing", label: "Video Editing" },
+    { cluster: "design-creative", slug: "3d-modeling", label: "3D Modeling" },
+    
+    // Marketing
+    { cluster: "marketing-sales", slug: "seo", label: "SEO" },
+    { cluster: "marketing-sales", slug: "content-strategy", label: "Content Strategy" },
+    { cluster: "marketing-sales", slug: "google-ads", label: "Google Ads" },
+    { cluster: "marketing-sales", slug: "growth-hacking", label: "Growth Hacking" },
+    { cluster: "marketing-sales", slug: "copywriting", label: "Copywriting" },
+    { cluster: "marketing-sales", slug: "email-marketing", label: "Email Marketing" },
+    { cluster: "marketing-sales", slug: "influencer-marketing", label: "Influencer Marketing" },
+    { cluster: "marketing-sales", slug: "crm", label: "CRM" },
+    
+    // Management
+    { cluster: "management-business", slug: "project-management", label: "Project Management" },
+    { cluster: "management-business", slug: "agile-scrum", label: "Agile & Scrum" },
+    { cluster: "management-business", slug: "product-strategy", label: "Product Strategy" },
+    { cluster: "management-business", slug: "public-speaking", label: "Public Speaking" },
+    { cluster: "management-business", slug: "stakeholder-management", label: "Stakeholder Management" },
+    { cluster: "management-business", slug: "financial-planning", label: "Financial Planning" },
+    { cluster: "management-business", slug: "risk-management", label: "Risk Management" },
+    
+    // Data & AI
+    { cluster: "data-ai", slug: "machine-learning", label: "Machine Learning" },
+    { cluster: "data-ai", slug: "data-analysis", label: "Data Analysis" },
+    { cluster: "data-ai", slug: "tensorflow", label: "TensorFlow" },
+    { cluster: "data-ai", slug: "sql-analytics", label: "SQL for Analytics" },
+    { cluster: "data-ai", slug: "generative-ai", label: "Generative AI" },
+    { cluster: "data-ai", slug: "nlp", label: "NLP" },
+    { cluster: "data-ai", slug: "computer-vision", label: "Computer Vision" },
+    { cluster: "data-ai", slug: "data-engineering", label: "Data Engineering" },
+    
+    // Soft Skills
+    { cluster: "soft-skills", slug: "leadership", label: "Leadership" },
+    { cluster: "soft-skills", slug: "problem-solving", label: "Problem Solving" },
+    { cluster: "soft-skills", slug: "teamwork", label: "Teamwork" },
+    { cluster: "soft-skills", slug: "emotional-intelligence", label: "Emotional Intelligence" },
+    { cluster: "soft-skills", slug: "critical-thinking", label: "Critical Thinking" },
+    { cluster: "soft-skills", slug: "adaptability", label: "Adaptability" },
+    { cluster: "soft-skills", slug: "time-management", label: "Time Management" },
+    { cluster: "soft-skills", slug: "negotiation", label: "Negotiation" },
+  ];
 
-    // Insert skills
-    for (const skillLabel of item.skills) {
-      const skillSlug = skillLabel.toLowerCase().replace(/ /g, '-').replace(/\./g, '-');
-      await db.insert(skills).values({
-        clusterId: cluster.id,
-        slug: skillSlug,
-        label: skillLabel
-      }).onConflictDoUpdate({
-        target: skills.slug,
-        set: { label: skillLabel }
-      });
-    }
-  }
+  console.log("Inserting skills...");
+  await Promise.all(
+    skillList.map((s) => 
+      db.insert(skills).values({
+        clusterId: clusterMap[s.cluster],
+        slug: s.slug,
+        label: s.label
+      }).onConflictDoUpdate({ target: skills.slug, set: { label: s.label, clusterId: clusterMap[s.cluster] } })
+    )
+  );
 
-  console.log("Seeding completed!");
+  // 3. JOB CATEGORIES
+  const jobCats = [
+    { slug: "it-software", label: "IT & Software" },
+    { slug: "creative-design", label: "Creative & Design" },
+    { slug: "marketing-comm", label: "Marketing & Communication" },
+    { slug: "hr-legal", label: "HR & Legal" },
+    { slug: "sales-business", label: "Sales & Business Development" },
+    { slug: "operations-logistics", label: "Operations & Logistics" },
+  ];
+
+  console.log("Inserting job categories...");
+  const insertedJobCats = await Promise.all(
+    jobCats.map((c) => 
+      db.insert(jobCategories).values(c).onConflictDoUpdate({ target: jobCategories.slug, set: { label: c.label } }).returning()
+    )
+  );
+
+  const jobCatMap = Object.fromEntries(insertedJobCats.map(c => [c[0].slug, c[0].id]));
+
+  // 4. JOB TITLES
+  const jobTitleList = [
+    { category: "it-software", slug: "frontend-developer", label: "Frontend Developer" },
+    { category: "it-software", slug: "backend-developer", label: "Backend Developer" },
+    { category: "it-software", slug: "fullstack-developer", label: "Fullstack Developer" },
+    { category: "it-software", slug: "devops-engineer", label: "DevOps Engineer" },
+    { category: "it-software", slug: "cto", label: "CTO / Technical Director" },
+    
+    { category: "creative-design", slug: "ui-ux-designer", label: "UI/UX Designer" },
+    { category: "creative-design", slug: "graphic-designer", label: "Graphic Designer" },
+    { category: "creative-design", slug: "art-director", label: "Art Director" },
+    
+    { category: "marketing-comm", slug: "marketing-manager", label: "Marketing Manager" },
+    { category: "marketing-comm", slug: "seo-specialist", label: "SEO Specialist" },
+    { category: "marketing-comm", slug: "social-media-manager", label: "Social Media Manager" },
+    { category: "marketing-comm", slug: "content-manager", label: "Content Manager" },
+    
+    { category: "hr-legal", slug: "hr-manager", label: "HR Manager" },
+    { category: "hr-legal", slug: "recruiter", label: "Recruiter" },
+    { category: "hr-legal", slug: "legal-counsel", label: "Legal Counsel" },
+    
+    { category: "sales-business", slug: "sales-account", label: "Sales Account Executive" },
+    { category: "sales-business", slug: "business-developer", label: "Business Developer" },
+    { category: "sales-business", slug: "customer-success-manager", label: "Customer Success Manager" },
+  ];
+
+  console.log("Inserting job titles...");
+  await Promise.all(
+    jobTitleList.map((t) => 
+      db.insert(jobTitles).values({
+        categoryId: jobCatMap[t.category],
+        slug: t.slug,
+        label: t.label
+      }).onConflictDoUpdate({ target: jobTitles.slug, set: { label: t.label, categoryId: jobCatMap[t.category] } })
+    )
+  );
+
+  console.log("✅ Seeding completed!");
+  process.exit(0);
 }
+
+seed().catch((err) => {
+  console.error("❌ Seeding failed:", err);
+  process.exit(1);
+});

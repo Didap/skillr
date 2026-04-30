@@ -224,6 +224,7 @@ export default function LandingPage() {
             Skillr<span className="text-emerald-600">.</span>
           </div>
           <div className="flex gap-12 text-sm font-bold text-slate-400">
+            <Link href="/pa" className="text-emerald-600 hover:text-emerald-700 transition-colors">Skillr per la PA</Link>
             <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-slate-900 transition-colors">Termini</Link>
             <Link href="/cookies" className="hover:text-slate-900 transition-colors">Cookies</Link>

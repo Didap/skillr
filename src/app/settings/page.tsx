@@ -111,13 +111,11 @@ export default function SettingsPage() {
                             <Eye size={20} />
                          </div>
                          <div>
-                            <p className="font-semibold">Profilo Visibile</p>
+                            <Label htmlFor="profile-visible" className="font-semibold cursor-pointer">Profilo Visibile</Label>
                             <p className="text-sm text-text-muted">Il tuo profilo apparirà nello swipe engine.</p>
                          </div>
                       </div>
-                      <div className="w-12 h-6 bg-primary rounded-full relative p-1 cursor-pointer">
-                         <div className="w-4 h-4 bg-white rounded-full ml-auto" />
-                      </div>
+                      <Switch id="profile-visible" defaultChecked />
                    </div>
 
                    <div className="flex items-center justify-between p-4 rounded-2xl border border-border-subtle bg-white">
@@ -126,13 +124,11 @@ export default function SettingsPage() {
                             <Bell size={20} />
                          </div>
                          <div>
-                            <p className="font-semibold">Notifiche Email</p>
+                            <Label htmlFor="email-notif" className="font-semibold cursor-pointer">Notifiche Email</Label>
                             <p className="text-sm text-text-muted">Ricevi avvisi per nuovi match e messaggi.</p>
                          </div>
                       </div>
-                      <div className="w-12 h-6 bg-primary rounded-full relative p-1 cursor-pointer">
-                         <div className="w-4 h-4 bg-white rounded-full ml-auto" />
-                      </div>
+                      <Switch id="email-notif" defaultChecked />
                    </div>
                 </CardContent>
              </Card>

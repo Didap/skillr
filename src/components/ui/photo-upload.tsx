@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
 import { uploadImageAction } from "@/app/actions/upload";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface PhotoUploadProps {
   value?: string;
@@ -28,11 +30,11 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
       if (result.success && result.url) {
         onChange(result.url);
       } else {
-        alert(result.error || "Errore durante l'upload");
+        toast.error(result.error || "Errore durante l'upload");
       }
     } catch (err) {
       console.error(err);
-      alert("Errore di connessione");
+      toast.error("Errore di connessione");
     } finally {
       setIsUploading(false);
     }
@@ -45,7 +47,7 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
 
   return (
     <div className={cn("space-y-3", className)}>
-      <label className="font-bold text-slate-700 ml-1">{label}</label>
+      <Label className="font-bold text-slate-700 ml-1">{label}</Label>
       <div className="flex items-center gap-6">
         <div className="relative group">
           <div className={cn(

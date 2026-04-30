@@ -61,6 +61,14 @@ export const verificationTokens = pgTable(
   })
 );
 
+export const verificationCodes = pgTable("verification_codes", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const professionalProfiles = pgTable("professional_profiles", {
   userId: text("user_id").references(() => users.id).primaryKey(),
   firstName: text("first_name"),
@@ -117,6 +125,10 @@ export const matches = pgTable("matches", {
   professionalStatus: matchStatusEnum("professional_status").default("pending"),
   companyStatus: matchStatusEnum("company_status").default("pending"),
   matchedAt: timestamp("matched_at"),
+  scheduledAt: timestamp("scheduled_at"),
+  meetingLink: text("meeting_link"),
+  googleEventId: text("google_event_id"),
+  callDuration: integer("call_duration"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -149,6 +161,19 @@ export const clusters = pgTable("clusters", {
 export const skills = pgTable("skills", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   clusterId: text("cluster_id").notNull().references(() => clusters.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull().unique(),
+  label: text("label").notNull(),
+});
+
+export const jobCategories = pgTable("job_categories", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  slug: text("slug").notNull().unique(),
+  label: text("label").notNull(),
+});
+
+export const jobTitles = pgTable("job_titles", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  categoryId: text("category_id").notNull().references(() => jobCategories.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(),
   label: text("label").notNull(),
 });
@@ -252,5 +277,16 @@ export const skillsRelations = relations(skills, ({ one }) => ({
   cluster: one(clusters, {
     fields: [skills.clusterId],
     references: [clusters.id],
+  }),
+}));
+
+export const jobCategoriesRelations = relations(jobCategories, ({ many }) => ({
+  titles: many(jobTitles),
+}));
+
+export const jobTitlesRelations = relations(jobTitles, ({ one }) => ({
+  category: one(jobCategories, {
+    fields: [jobTitles.categoryId],
+    references: [jobCategories.id],
   }),
 }));

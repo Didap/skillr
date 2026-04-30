@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power } from "lucide-react";
+import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { getCompanyJobs, deleteJob, toggleJobStatus } from "@/app/actions/jobs";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -29,6 +31,9 @@ export default function JobsPage() {
     const res = await deleteJob(id);
     if (res.success) {
       setJobs(jobs.filter(j => j.id !== id));
+      toast.success("Ricerca eliminata con successo");
+    } else {
+      toast.error(res.error || "Errore durante l'eliminazione");
     }
   };
 
@@ -36,6 +41,9 @@ export default function JobsPage() {
     const res = await toggleJobStatus(id, !currentStatus);
     if (res.success) {
       setJobs(jobs.map(j => j.id === id ? { ...j, isActive: !currentStatus } : j));
+      toast.success(currentStatus ? "Ricerca disattivata" : "Ricerca attivata");
+    } else {
+      toast.error(res.error || "Errore durante l'aggiornamento");
     }
   };
 
@@ -91,12 +99,43 @@ export default function JobsPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold text-xl text-text-primary">{job.title}</h3>
                         {!job.isActive && <span className="text-[10px] uppercase tracking-widest bg-text-muted/10 text-text-muted px-2 py-0.5 rounded-full">Inattiva</span>}
+                        {job.matchCount > 0 && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="relative"
+                          >
+                            <Badge variant="default" className="h-6 px-2 rounded-full flex items-center justify-center shadow-premium border-2 border-white">
+                              {job.matchCount} match
+                            </Badge>
+                          </motion.div>
+                        )}
                       </div>
-                      <p className="text-sm text-text-secondary">
-                        {job.location || "Remoto"} • {job.budgetMinEur}-{job.budgetMaxEur}€ / {
-                          job.rateType === 'ral_annual' ? 'anno' : job.rateType === 'daily' ? 'giorno' : 'ora'
-                        }
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <p className="text-sm text-text-secondary mr-2">
+                          {job.location || "Sede centrale"} • {job.budgetMinEur}-{job.budgetMaxEur}€ / {
+                            job.rateType === 'ral_annual' ? 'anno' : job.rateType === 'daily' ? 'giorno' : 'ora'
+                          }
+                        </p>
+                        {job.remoteOk && (
+                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase tracking-tight text-[10px] font-bold h-5">
+                            <Laptop className="size-3 mr-1" /> Remote OK
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {job.skills?.slice(0, 5).map((skill: string) => (
+                          <Badge key={skill} variant="outline" className="bg-surface-warm/50 border-border-subtle text-text-secondary font-medium text-[10px] h-5">
+                            {skill.replace(/-/g, ' ')}
+                          </Badge>
+                        ))}
+                        {job.skills?.length > 5 && (
+                          <Badge variant="outline" className="bg-surface border-border-subtle text-text-muted font-medium text-[10px] h-5">
+                            +{job.skills.length - 5}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -110,6 +149,15 @@ export default function JobsPage() {
                     >
                       <Power size={18} className={job.isActive ? "text-emerald-600" : "text-text-muted"} />
                     </Button>
+                    <Link href={`/jobs/${job.id}/edit`}>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="rounded-full border-border-strong hover:bg-surface transition-colors"
+                      >
+                        <Pencil size={18} />
+                      </Button>
+                    </Link>
                     <Button 
                       variant="outline" 
                       size="icon"

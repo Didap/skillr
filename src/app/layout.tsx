@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 
 import { SessionProvider } from "@/components/providers/session-provider";
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +36,7 @@ export default function RootLayout({
         <SessionProvider>
           {children}
         </SessionProvider>
+        <Toaster />
       </body>
     </html>
   );
