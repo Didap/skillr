@@ -4,7 +4,7 @@ import { resolve } from "path";
 // Load .env.local before anything else
 config({ path: resolve(process.cwd(), ".env.local") });
 
-async function seed() {
+export async function seedMetadata() {
   console.log("🌱 Seeding metadata...");
   
   // Dynamic imports to ensure env vars are loaded first
@@ -172,7 +172,7 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
+seedMetadata().catch((err) => {
   console.error("❌ Seeding failed:", err);
   process.exit(1);
 });
