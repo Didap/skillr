@@ -8,8 +8,8 @@ import { SwipeStack } from "@/components/swipe/SwipeStack";
 import { getPotentialMatches } from "@/app/actions/matches";
 import Link from "next/link";
 import { Zap, Calendar, User, Settings, LogOut, Briefcase, Star } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +70,10 @@ export default function DashboardPage() {
           <SidebarLink href="/dashboard" icon={<Zap size={20} />} label="Match" active />
           <SidebarLink href="/matches" icon={<Calendar size={20} />} label="I miei Match" />
           {session.user.role === 'company' && (
-            <SidebarLink href="/jobs" icon={<Briefcase size={20} />} label="Ricerche Attive" />
+            <>
+              <SidebarLink href="/jobs" icon={<Briefcase size={20} />} label="Ricerche Attive" />
+              <SidebarLink href="/dashboard/events" icon={<Zap size={20} />} label="Smart Interviews" />
+            </>
           )}
           <SidebarLink href="/profile" icon={<User size={20} />} label="Profilo" />
         </nav>
@@ -84,6 +87,12 @@ export default function DashboardPage() {
             <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
             <span className="hidden md:block">Esci</span>
           </button>
+        </div>
+
+        <div className="mt-auto pt-8 px-4 hidden md:flex flex-wrap gap-x-4 gap-y-2 opacity-40 hover:opacity-100 transition-opacity">
+          <Link href="/privacy" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy</Link>
+          <Link href="/terms" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Termini</Link>
+          <Link href="/cookies" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Cookies</Link>
         </div>
       </aside>
 
@@ -106,7 +115,7 @@ export default function DashboardPage() {
             </div>
             <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-card overflow-hidden ring-4 ring-slate-50">
                {session.user.image ? (
-                 <img src={session.user.image} alt="Avatar" className="w-full h-full object-cover" />
+                 <Image src={session.user.image} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" />
                ) : (
                  <div className="w-full h-full flex items-center justify-center text-slate-300">
                     <User size={24} />

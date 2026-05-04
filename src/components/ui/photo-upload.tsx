@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Camera, Loader2, X } from "lucide-react";
 import { uploadImageAction } from "@/app/actions/upload";
 import { Label } from "@/components/ui/label";
@@ -58,7 +59,7 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
             {isUploading ? (
               <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
             ) : value ? (
-              <img src={value} alt="Upload" className="w-full h-full object-cover" />
+              <Image src={value} alt="Upload" fill className="object-cover" unoptimized />
             ) : (
               <Camera className="w-8 h-8 text-slate-300 group-hover:text-emerald-400 transition-colors" />
             )}

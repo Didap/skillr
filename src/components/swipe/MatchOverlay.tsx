@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Calendar, X } from "lucide-react";
 import Link from "next/link";
@@ -52,10 +53,16 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", delay: 0.3 }}
-            className="w-32 h-32 rounded-full border-4 border-white bg-slate-800 shadow-2xl overflow-hidden"
+            className="relative w-32 h-32 rounded-full border-4 border-white bg-slate-800 shadow-2xl overflow-hidden"
           >
              {profileImage ? (
-               <img src={profileImage} alt={profileName} className="w-full h-full object-cover" />
+               <Image 
+                 src={profileImage} 
+                 alt={profileName} 
+                 fill 
+                 className="object-cover" 
+                 unoptimized 
+               />
              ) : (
                <div className="w-full h-full flex items-center justify-center text-white/20 font-display text-5xl italic font-bold">
                  {profileName[0]}

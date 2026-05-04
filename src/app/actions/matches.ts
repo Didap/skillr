@@ -56,6 +56,8 @@ export async function getMatches() {
           targetImage: isCompanyView 
             ? (m.professional?.professionalProfile?.photoUrl || m.professional?.image)
             : (m.company?.companyProfile?.logoUrl || m.company?.image),
+          targetRating: targetProfile?.averageRating || "0.0",
+          targetReviewCount: targetProfile?.reviewCount || 0,
           status: "Match confermato",
         };
       })
@@ -254,6 +256,7 @@ export async function getMatchDetail(matchId: string) {
         company: { with: { companyProfile: true } },
         job: true,
         proposedSlots: true,
+        reviews: true,
       },
     });
 
@@ -266,12 +269,14 @@ export async function getMatchDetail(matchId: string) {
 
     const isCompanyView = session.user.role === 'company';
     const targetUser = isCompanyView ? match.professional : match.company;
-    const targetProfile = isCompanyView ? match.professional?.professionalProfile : match.company?.companyProfile;
+
+    const hasReviewed = match.reviews.some(r => r.authorId === session.user.id);
 
     return {
       success: true,
       data: {
         ...match,
+        targetId: targetUser?.id,
         targetName: (isCompanyView 
           ? `${match.professional?.professionalProfile?.firstName || ''} ${match.professional?.professionalProfile?.lastName || ''}`.trim() 
           : match.company?.companyProfile?.companyName) || targetUser?.name || "Utente",
@@ -284,6 +289,7 @@ export async function getMatchDetail(matchId: string) {
           ? (match.professional?.professionalProfile?.bioShort || "")
           : (match.company?.companyProfile?.description || ""),
         targetSkills: isCompanyView ? (match.professional?.professionalProfile?.topSkills || []) : [],
+        hasReviewed,
       }
     };
   } catch (error) {

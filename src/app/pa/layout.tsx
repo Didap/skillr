@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Search, Info, Globe, Building2 } from "lucide-react";
+import { Globe, Building2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Skillr per la Pubblica Amministrazione | Puglia",

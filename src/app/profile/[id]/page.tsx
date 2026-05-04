@@ -1,13 +1,11 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles } from "@/db/schema";
+import { professionalProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { MapPin, Calendar, DollarSign, ArrowLeft, Zap, ExternalLink, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, DollarSign, ArrowLeft, Zap, ExternalLink, Globe } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 // Mock data for development if DB is empty or ID is mock
 const MOCK_PROFILE = {
@@ -27,7 +25,7 @@ const MOCK_PROFILE = {
 
 export default async function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await auth();
+  await auth();
 
   // Try to fetch from DB
   const profile = await db.query.professionalProfiles.findFirst({

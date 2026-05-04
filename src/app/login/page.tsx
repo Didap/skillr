@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Star, ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
 function LoginPageInner() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
@@ -59,7 +59,7 @@ function LoginPageInner() {
     if (!email || !password) return;
     setIsLoading(true);
     try {
-      const res = await signIn("credentials", { 
+      await signIn("credentials", { 
         email, 
         password, 
         callbackUrl,

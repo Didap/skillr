@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop, Globe } from "lucide-react";
+import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { JobData } from "@/types/job";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { cn } from "@/lib/utils";
 
 interface JobWithStats extends JobData {
   id: string;
@@ -20,6 +22,11 @@ interface JobWithStats extends JobData {
 export default function JobsPage() {
   const [jobs, setJobs] = useState<JobWithStats[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // State for UX Refactoring
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   async function loadJobs() {
     const res = await getCompanyJobs();
@@ -33,25 +40,48 @@ export default function JobsPage() {
     Promise.resolve().then(() => loadJobs());
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questa ricerca?")) return;
-    const res = await deleteJob(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    
+    // We wait for server for delete to ensure it's safe
+    const res = await deleteJob(deleteId);
     if (res.success) {
-      setJobs(jobs.filter(j => j.id !== id));
-      toast.success("Ricerca eliminata con successo");
+      setJobs(prev => prev.filter(j => j.id !== deleteId));
+      toast.success("Ricerca eliminata", {
+        description: "L'annuncio e i relativi match sono stati archiviati.",
+        icon: <Trash2 size={16} className="text-red-500" />,
+      });
+      setDeleteId(null);
     } else {
       toast.error(res.error || "Errore durante l'eliminazione");
     }
+    setIsDeleting(false);
   };
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
+    // Optimistic Update
+    const oldJobs = [...jobs];
+    setTogglingId(id);
+    
+    // Immediate visual feedback
+    setJobs(prev => prev.map(j => j.id === id ? { ...j, isActive: !currentStatus } : j));
+    
     const res = await toggleJobStatus(id, !currentStatus);
+    
     if (res.success) {
-      setJobs(jobs.map(j => j.id === id ? { ...j, isActive: !currentStatus } : j));
-      toast.success(currentStatus ? "Ricerca disattivata" : "Ricerca attivata");
+      toast.success(currentStatus ? "Ricerca in pausa" : "Ricerca attiva", {
+        description: currentStatus 
+          ? "I professionisti non vedranno più questo annuncio." 
+          : "L'annuncio è di nuovo visibile nel feed.",
+        icon: currentStatus ? <Power size={14} className="text-amber-500" /> : <Zap size={14} className="text-emerald-500" />,
+      });
     } else {
+      // Revert on error
+      setJobs(oldJobs);
       toast.error(res.error || "Errore durante l'aggiornamento");
     }
+    setTogglingId(null);
   };
 
   return (
@@ -81,19 +111,29 @@ export default function JobsPage() {
         </div>
 
         <div className="grid gap-6">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={false}>
             {jobs.map((job) => (
               <motion.div 
                 key={job.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className={`p-6 rounded-3xl border transition-all ${
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  y: 0,
+                  filter: isDeleting && deleteId === job.id ? "blur(4px)" : "blur(0px)"
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  scale: 0.8, 
+                  transition: { duration: 0.2, ease: "easeInOut" } 
+                }}
+                className={cn(
+                  "p-6 rounded-3xl border transition-all duration-500",
                   job.isActive 
                     ? "bg-white border-border-subtle hover:shadow-xl hover:shadow-primary/5" 
                     : "bg-surface-warm/50 border-dashed border-border-strong grayscale opacity-70"
-                }`}
+                )}
               >
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                   <div className="flex items-center gap-5">
@@ -150,11 +190,19 @@ export default function JobsPage() {
                     <Button 
                       variant="outline" 
                       size="icon"
+                      disabled={togglingId === job.id}
                       onClick={() => handleToggle(job.id, job.isActive)}
-                      className="rounded-full border-border-strong hover:bg-surface transition-colors"
+                      className={cn(
+                        "rounded-full border-border-strong hover:bg-surface transition-all",
+                        togglingId === job.id && "animate-pulse opacity-50"
+                      )}
                       title={job.isActive ? "Disabilita" : "Abilita"}
                     >
-                      <Power size={18} className={job.isActive ? "text-emerald-600" : "text-text-muted"} />
+                      {togglingId === job.id ? (
+                        <div className="w-4 h-4 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
+                      ) : (
+                        <Power size={18} className={job.isActive ? "text-emerald-600" : "text-text-muted"} />
+                      )}
                     </Button>
                     <Link href={`/jobs/${job.id}/edit`}>
                       <Button 
@@ -165,14 +213,14 @@ export default function JobsPage() {
                         <Pencil size={18} />
                       </Button>
                     </Link>
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => handleDelete(job.id)}
-                      className="rounded-full border-border-strong hover:bg-red-50 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setDeleteId(job.id)}
+                        className="rounded-full border-border-strong hover:bg-red-50 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
                     <Link href="/dashboard" className="flex-1 md:flex-none">
                       <Button className="rounded-full gap-2 w-full">
                         <Zap size={16} /> Trova Candidati
@@ -199,6 +247,7 @@ export default function JobsPage() {
             </div>
           )}
 
+
           {loading && (
             <div className="space-y-4">
               {[1, 2].map(i => (
@@ -208,6 +257,17 @@ export default function JobsPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        variant="danger"
+        title="Elimina Ricerca"
+        description="Sei sicuro di voler eliminare questa ricerca? L'azione è irreversibile e tutti i match associati verranno archiviati."
+        confirmText="Elimina Definitivamente"
+      />
     </div>
   );
 }

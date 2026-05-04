@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Zap, Eye, Calendar, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const containerFade = {

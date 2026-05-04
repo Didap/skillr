@@ -6,6 +6,7 @@ export const rateTypeEnum = pgEnum('rate_type', ['ral_annual', 'daily', 'hourly'
 export const matchStatusEnum = pgEnum('match_status', ['pending', 'liked', 'passed']);
 export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesign']);
 export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
+export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['booked', 'cancelled', 'completed']);
 
 export const users = pgTable("user", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -86,6 +87,8 @@ export const professionalProfiles = pgTable("professional_profiles", {
   secondarySkills: text("secondary_skills").array(),
   clusters: text("clusters").array(),
   isActive: boolean("is_active").default(true),
+  averageRating: text("average_rating").default("0"),
+  reviewCount: integer("review_count").default(0),
 });
 
 export const companyProfiles = pgTable("company_profiles", {
@@ -99,6 +102,8 @@ export const companyProfiles = pgTable("company_profiles", {
   industry: text("industry"),
   description: text("description"),
   websiteUrl: text("website_url"),
+  averageRating: text("average_rating").default("0"),
+  reviewCount: integer("review_count").default(0),
 });
 
 export const jobs = pgTable("jobs", {
@@ -192,6 +197,37 @@ export const paLeads = pgTable("pa_leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const interviewEvents = pgTable("interview_events", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  companyId: text("company_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  date: timestamp("date").notNull(),
+  maxSlots: integer("max_slots").notNull(),
+  format: text("format"), // e.g., "5min-5+2"
+  meetingLink: text("meeting_link"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const interviewBookings = pgTable("interview_bookings", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  eventId: text("event_id").notNull().references(() => interviewEvents.id, { onDelete: "cascade" }),
+  professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: interviewBookingStatusEnum("status").default("booked"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const reviews = pgTable("reviews", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  matchId: text("match_id").references(() => matches.id, { onDelete: "set null" }),
+  interviewBookingId: text("interview_booking_id").references(() => interviewBookings.id, { onDelete: "set null" }),
+  authorId: text("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  targetId: text("target_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  stars: integer("stars").notNull(),
+  text: text("text"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // RELATIONS
 export const usersRelations = relations(users, ({ one, many }) => ({
   professionalProfile: one(professionalProfiles, {
@@ -207,6 +243,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   companyMatches: many(matches, { relationName: "companyMatches" }),
   availabilities: many(availability, { relationName: "professionalAvailabilities" }),
   bookings: many(availability, { relationName: "companyBookings" }),
+  interviewEvents: many(interviewEvents),
+  interviewBookings: many(interviewBookings),
+  sentReviews: many(reviews, { relationName: "sentReviews" }),
+  receivedReviews: many(reviews, { relationName: "receivedReviews" }),
 }));
 
 export const professionalProfilesRelations = relations(professionalProfiles, ({ one }) => ({
@@ -247,6 +287,7 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
     references: [jobs.id],
   }),
   proposedSlots: many(proposedSlots),
+  reviews: many(reviews),
 }));
 
 export const proposedSlotsRelations = relations(proposedSlots, ({ one }) => ({
@@ -288,5 +329,46 @@ export const jobTitlesRelations = relations(jobTitles, ({ one }) => ({
   category: one(jobCategories, {
     fields: [jobTitles.categoryId],
     references: [jobCategories.id],
+  }),
+}));
+
+export const interviewEventsRelations = relations(interviewEvents, ({ one, many }) => ({
+  company: one(users, {
+    fields: [interviewEvents.companyId],
+    references: [users.id],
+  }),
+  bookings: many(interviewBookings),
+}));
+
+export const interviewBookingsRelations = relations(interviewBookings, ({ one, many }) => ({
+  event: one(interviewEvents, {
+    fields: [interviewBookings.eventId],
+    references: [interviewEvents.id],
+  }),
+  professional: one(users, {
+    fields: [interviewBookings.professionalId],
+    references: [users.id],
+  }),
+  reviews: many(reviews),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  author: one(users, {
+    fields: [reviews.authorId],
+    references: [users.id],
+    relationName: "sentReviews",
+  }),
+  target: one(users, {
+    fields: [reviews.targetId],
+    references: [users.id],
+    relationName: "receivedReviews",
+  }),
+  match: one(matches, {
+    fields: [reviews.matchId],
+    references: [matches.id],
+  }),
+  interviewBooking: one(interviewBookings, {
+    fields: [reviews.interviewBookingId],
+    references: [interviewBookings.id],
   }),
 }));

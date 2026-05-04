@@ -2,7 +2,6 @@
 
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, BarChart3, CheckCircle2, FileText, Target, Users, TrendingUp, Search } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function HeroPa() {

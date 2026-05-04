@@ -29,11 +29,15 @@ async function verifyTurnstile(token: string) {
   }
 }
 
-export async function registerUserAction(formData: { email?: string; password?: string; turnstileToken?: string }) {
-  const { email, password, turnstileToken } = formData;
+export async function registerUserAction(formData: { email?: string; password?: string; turnstileToken?: string; legalConsent?: boolean }) {
+  const { email, password, turnstileToken, legalConsent } = formData;
 
   if (!email || !password) {
     return { error: "Email e password sono obbligatori." };
+  }
+
+  if (!legalConsent && !formData.email?.includes("@skillr.it")) { // Permettiamo skip per admin/test se necessario, ma di base obbligatorio
+    return { error: "È necessario accettare i Termini e la Privacy per continuare." };
   }
 
   // 1. Verify Turnstile

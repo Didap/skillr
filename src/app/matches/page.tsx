@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, User, Calendar, Mail, Zap, ChevronRight, Star } from "lucide-react";
+import { ArrowLeft, Search, Calendar, Mail, Zap, ChevronRight, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getMatches } from "@/app/actions/matches";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface MatchSummary {
   id: string;
@@ -17,11 +18,13 @@ interface MatchSummary {
   targetName: string;
   targetTitle: string | null;
   targetImage: string | null;
+  targetRating: string;
+  targetReviewCount: number;
   status: string;
 }
 
 export default function MatchesPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export default function MatchesPage() {
       if (status === "authenticated") {
         const res = await getMatches();
         if (res.success) {
-          setMatches(res.data || []);
+           setMatches(res.data as MatchSummary[] || []);
         }
         setLoading(false);
       }
@@ -119,7 +122,7 @@ export default function MatchesPage() {
                     
                     <div className="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden shrink-0 group-hover:scale-105 transition-transform ring-4 ring-slate-50">
                       {match.targetImage ? (
-                        <img src={match.targetImage} alt={match.targetName} className="w-full h-full object-cover" />
+                        <Image src={match.targetImage} alt={match.targetName} width={80} height={80} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300 font-display text-3xl italic font-bold">
                           {match.targetName[0]}
@@ -129,9 +132,17 @@ export default function MatchesPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-xl font-bold text-slate-950 truncate group-hover:text-emerald-700 transition-colors">
-                          {match.targetName}
-                        </h3>
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-xl font-bold text-slate-950 truncate group-hover:text-emerald-700 transition-colors">
+                            {match.targetName}
+                          </h3>
+                          {parseFloat(match.targetRating) > 0 && (
+                            <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg border border-amber-100">
+                               <Star size={10} fill="currentColor" />
+                               <span className="text-[10px] font-black">{match.targetRating}</span>
+                            </div>
+                          )}
+                        </div>
                         <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-1">
                           Nuovo Match
                         </Badge>
@@ -145,6 +156,12 @@ export default function MatchesPage() {
                         </div>
                         <div className="w-1 h-1 bg-slate-200 rounded-full" />
                         <span>{match.matchedAt ? new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : 'Da definire'}</span>
+                        {match.targetReviewCount > 0 && (
+                          <>
+                            <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                            <span>{match.targetReviewCount} recensioni</span>
+                          </>
+                        )}
                       </div>
                     </div>
 

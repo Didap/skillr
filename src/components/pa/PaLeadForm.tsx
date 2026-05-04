@@ -6,14 +6,9 @@ import {
   Building2, 
   User, 
   Mail, 
-  Phone, 
   FileText, 
-  Calendar, 
-  Info, 
   Loader2, 
   ArrowRight,
-  ShieldCheck,
-  Briefcase,
   CheckCircle2,
   Lock
 } from "lucide-react";
@@ -31,7 +26,6 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { savePaLeadAction, PaLead } from "@/app/actions/pa";
-import { cn } from "@/lib/utils";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 const entityTypes = [
@@ -111,7 +105,7 @@ export default function PaLeadForm() {
       } else {
         toast.error(res.error || "Si è verificato un errore.");
       }
-    } catch (err) {
+    } catch {
       toast.error("Errore durante l'invio.");
     } finally {
       setLoading(false);

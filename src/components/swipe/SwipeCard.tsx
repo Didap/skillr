@@ -1,11 +1,11 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence, PanInfo } from "framer-motion";
+import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence, type PanInfo } from "framer-motion";
 import { useState } from "react";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Zap, X, Heart, Info, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MapPin, Zap, X, Heart } from "lucide-react";
 
 import { Profile } from "@/types/profile";
 
@@ -95,7 +95,13 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
         {/* Header - Image or Initials */}
         <div className="relative h-3/5 bg-slate-900 overflow-hidden">
           {profile.image ? (
-            <img src={profile.image} alt={profile.name} className="w-full h-full object-cover pointer-events-none" />
+            <Image 
+              src={profile.image} 
+              alt={profile.name} 
+              fill 
+              className="object-cover pointer-events-none" 
+              unoptimized 
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-emerald-600 via-emerald-800 to-slate-900">
                <span className="text-white/10 font-display text-[12rem] italic font-black absolute -bottom-10 -right-10 pointer-events-none uppercase">

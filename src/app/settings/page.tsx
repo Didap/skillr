@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { User, Shield, Bell, Trash2, ArrowLeft, Save, Globe, Eye } from "lucide-react";
+import { User, Shield, Bell, Trash2, ArrowLeft, Save, Eye } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch"; // I'll add this next or use a placeholder
+import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 
 export default function SettingsPage() {

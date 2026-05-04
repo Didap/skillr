@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Mail, MapPin, ExternalLink, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMatchDetail } from "@/app/actions/matches";
@@ -15,6 +16,7 @@ interface ProposedSlot {
 
 interface MatchDetail {
   id: string;
+  targetId: string;
   targetName: string;
   targetTitle: string | null;
   targetImage: string | null;
@@ -24,6 +26,7 @@ interface MatchDetail {
   proposedSlots: ProposedSlot[];
   scheduledAt: Date | null;
   meetingLink: string | null;
+  hasReviewed: boolean;
 }
 
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,7 +73,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                   <div className="relative shrink-0">
                     <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-surface-warm border border-border-subtle shadow-sm overflow-hidden flex items-center justify-center">
                       {match.targetImage ? (
-                        <img src={match.targetImage} alt={match.targetName} className="w-full h-full object-cover" />
+                        <Image src={match.targetImage} alt={match.targetName} width={160} height={160} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-primary font-display text-6xl font-bold italic">
                           {match.targetName.charAt(0)}
@@ -126,9 +129,11 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     </div>
 
                   <div className="flex flex-col gap-3 w-full md:w-auto">
-                    <Button variant="outline" className="rounded-2xl h-12 border-border-strong bg-white hover:bg-surface-warm transition-all font-bold gap-2 shadow-sm">
-                       Vedi Profilo <ExternalLink size={16} />
-                    </Button>
+                    <Link href={`/profile/${match.targetId}`}>
+                      <Button variant="outline" className="rounded-2xl h-12 w-full border-border-strong bg-white hover:bg-surface-warm transition-all font-bold gap-2 shadow-sm">
+                         Vedi Profilo <ExternalLink size={16} />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -142,7 +147,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
               <div className="relative flex justify-center">
                 <div className="bg-white px-6">
                   <div className="px-4 py-1.5 rounded-full bg-slate-950 text-white text-[10px] font-black uppercase tracking-[0.2em]">
-                    Scheduling
+                    Scheduling & Feedback
                   </div>
                 </div>
               </div>
@@ -161,6 +166,9 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                 }))}
                 scheduledAt={match.scheduledAt}
                 meetingLink={match.meetingLink}
+                hasReviewed={match.hasReviewed}
+                targetId={match.targetId}
+                targetName={match.targetName}
               />
             </div>
           </section>

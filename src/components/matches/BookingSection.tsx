@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange } from "lucide-react";
+import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange, Sparkles } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { proposeSlots, confirmSlot } from "@/app/actions/booking";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ReviewDialog } from "@/components/reviews/ReviewDialog";
 
 interface Slot {
   id?: string;
@@ -26,6 +26,9 @@ interface BookingSectionProps {
   proposedSlots: Slot[];
   scheduledAt: Date | null;
   meetingLink: string | null;
+  hasReviewed: boolean;
+  targetId: string;
+  targetName: string;
 }
 
 export function BookingSection({ 
@@ -33,7 +36,10 @@ export function BookingSection({
   role, 
   proposedSlots: initialSlots, 
   scheduledAt, 
-  meetingLink 
+  meetingLink,
+  hasReviewed,
+  targetId,
+  targetName
 }: BookingSectionProps) {
   const [formStep, setFormStep] = useState(0); // Start at 0 (button view)
   const [newSlots, setNewSlots] = useState<{ date: Date | undefined; time: string }[]>([
@@ -43,6 +49,7 @@ export function BookingSection({
   const [meetingMethod, setMeetingMethod] = useState<"meet" | "custom">("meet");
   const [customMeetingLink, setCustomMeetingLink] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const router = useRouter();
 
   const handleProposeSlots = async () => {
@@ -148,64 +155,113 @@ END:VCALENDAR`;
   // 1. CONFIRMED STATE
   if (scheduledAt) {
     const startTime = new Date(scheduledAt);
+    const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 min duration
     const activationTime = new Date(startTime.getTime() - 5 * 60000); // 5 min before
-    const isActive = now >= activationTime;
+    const isActive = now >= activationTime && now < endTime;
+    const isCompleted = now >= endTime;
 
     return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-8 md:p-12 md:pb-16"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center gap-10 md:gap-16">
-          <div className="flex-1 space-y-6 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
-               <Check size={12} strokeWidth={3} /> Appuntamento Fissato
+      <>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 md:p-12 md:pb-16"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-center gap-10 md:gap-16">
+            <div className="flex-1 space-y-6 text-center md:text-left">
+              <div className={cn(
+                "inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em]",
+                isCompleted ? "bg-slate-100 text-slate-500" : "bg-emerald-500/10 text-emerald-600"
+              )}>
+                 {isCompleted ? <Check size={12} strokeWidth={3} /> : <Clock size={12} />} 
+                 {isCompleted ? 'Incontro Concluso' : 'Appuntamento Fissato'}
+              </div>
+              <div className="space-y-4">
+                <h3 className={cn(
+                    "text-4xl md:text-5xl font-display italic font-bold tracking-tight",
+                    isCompleted ? "text-slate-950" : "text-emerald-950"
+                )}>
+                  {isCompleted ? 'Com\'è andato l\'incontro?' : 'Ci vediamo presto!'}
+                </h3>
+                <p className={cn(
+                    "text-lg md:text-xl max-w-xl leading-relaxed",
+                    isCompleted ? "text-slate-500" : "text-emerald-900/60"
+                )}>
+                  {isCompleted 
+                    ? `L'incontro con ${targetName} si è concluso. Lascia un feedback per completare il match.`
+                    : `Il tuo incontro è programmato per ${startTime.toLocaleString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} alle ${startTime.toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit' })}.`}
+                </p>
+              </div>
             </div>
-            <div className="space-y-4">
-              <h3 className="text-4xl md:text-5xl font-display italic font-bold text-emerald-950 tracking-tight">
-                Ci vediamo presto!
-              </h3>
-              <p className="text-emerald-900/60 text-lg md:text-xl max-w-xl leading-relaxed">
-                Il tuo incontro è programmato per <span className="font-bold text-emerald-900 border-b-2 border-emerald-200/50 pb-0.5">{startTime.toLocaleString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</span> alle <span className="font-bold text-emerald-900">{startTime.toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>.
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col gap-4 w-full md:w-auto text-center md:text-right">
-             {meetingLink && (
-               <div className="space-y-3">
-                 <a 
-                   href={isActive ? meetingLink : undefined} 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   className={cn(
-                     buttonVariants({ variant: "default" }),
-                     "rounded-2xl h-16 px-10 text-lg font-bold shadow-xl shadow-primary/20 gap-3 flex items-center justify-center transition-all",
-                     isActive 
-                      ? "bg-primary hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.98]" 
-                      : "bg-surface-warm text-text-muted cursor-not-allowed opacity-60 shadow-none border border-border-subtle"
-                   )}
+            
+            <div className="flex flex-col gap-4 w-full md:w-auto text-center md:text-right">
+               {isCompleted ? (
+                 hasReviewed ? (
+                   <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[2rem] text-center space-y-2">
+                      <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Check size={20} strokeWidth={3} />
+                      </div>
+                      <p className="font-bold text-emerald-900">Recensione Inviata</p>
+                      <p className="text-xs text-emerald-700/70 font-medium">Grazie per il tuo contributo!</p>
+                   </div>
+                 ) : (
+                   <Button 
+                     onClick={() => setIsReviewOpen(true)}
+                     className="rounded-2xl h-20 px-12 text-2xl font-display italic font-bold shadow-premium bg-slate-950 hover:bg-emerald-800 transition-all gap-4 active:scale-95"
+                   >
+                     <Sparkles size={28} className="text-amber-400" />
+                     Lascia Feedback
+                   </Button>
+                 )
+               ) : (
+                 meetingLink && (
+                   <div className="space-y-3">
+                     <a 
+                       href={isActive ? meetingLink : undefined} 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       className={cn(
+                         buttonVariants({ variant: "default" }),
+                         "rounded-2xl h-16 px-10 text-lg font-bold shadow-xl shadow-primary/20 gap-3 flex items-center justify-center transition-all",
+                         isActive 
+                          ? "bg-primary hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.98]" 
+                          : "bg-surface-warm text-text-muted cursor-not-allowed opacity-60 shadow-none border border-border-subtle"
+                       )}
+                     >
+                       <Video size={24} /> {isActive ? 'Entra in Meet' : 'Chiamata non attiva'}
+                     </a>
+                     {!isActive && (
+                       <p className="text-xs font-bold text-text-muted uppercase tracking-widest animate-pulse">
+                         {now > endTime ? 'Incontro scaduto' : 'Il link si attiverà 5 min prima'}
+                       </p>
+                     )}
+                   </div>
+                 )
+               )}
+               {!isCompleted && (
+                 <Button 
+                   variant="outline" 
+                   onClick={downloadICS} 
+                   className="rounded-2xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-16 px-10 text-lg font-bold gap-3 bg-white transition-all"
                  >
-                   <Video size={24} /> {isActive ? 'Entra in Meet' : 'Chiamata non attiva'}
-                 </a>
-                 {!isActive && (
-                   <p className="text-xs font-bold text-text-muted uppercase tracking-widest animate-pulse">
-                     Il link si attiverà 5 min prima
-                   </p>
-                 )}
-               </div>
-             )}
-             <Button 
-               variant="outline" 
-               onClick={downloadICS} 
-               className="rounded-2xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-16 px-10 text-lg font-bold gap-3 bg-white transition-all"
-             >
-               <Download size={24} /> Aggiungi al Calendario
-             </Button>
+                   <Download size={24} /> Aggiungi al Calendario
+                 </Button>
+               )}
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+
+        <ReviewDialog
+          isOpen={isReviewOpen}
+          onClose={() => {
+              setIsReviewOpen(false);
+              router.refresh();
+          }}
+          matchId={matchId}
+          targetId={targetId}
+          targetName={targetName}
+        />
+      </>
     );
   }
 
@@ -493,11 +549,11 @@ END:VCALENDAR`;
            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
               {initialSlots.map((s, idx) => (
                 <motion.div 
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="p-8 bg-white border border-border-subtle rounded-[2.5rem] shadow-md flex flex-col items-center gap-2 group hover:bg-white hover:shadow-premium transition-all duration-300"
+                   key={idx}
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: idx * 0.1 }}
+                   className="p-8 bg-white border border-border-subtle rounded-[2.5rem] shadow-md flex flex-col items-center gap-2 group hover:bg-white hover:shadow-premium transition-all duration-300"
                 >
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted mb-2">
                     {new Date(s.startTime).toLocaleString('it-IT', { weekday: 'long' })}
@@ -549,15 +605,15 @@ END:VCALENDAR`;
               const isSelected = selectedSlotId === s.id;
               return (
                 <motion.button 
-                  key={s.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={isPending}
-                  onClick={() => s.id && setSelectedSlotId(s.id)}
-                  className={`
+                   key={s.id}
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: idx * 0.1 }}
+                   whileHover={{ y: -6, scale: 1.02 }}
+                   whileTap={{ scale: 0.98 }}
+                   disabled={isPending}
+                   onClick={() => s.id && setSelectedSlotId(s.id)}
+                   className={`
                     p-10 rounded-[3rem] text-left transition-all relative overflow-hidden group
                     ${isSelected 
                       ? 'bg-primary text-white shadow-premium ring-8 ring-primary/10' 
@@ -605,9 +661,9 @@ END:VCALENDAR`;
                    }
                 </div>
                 <Button 
-                  onClick={handleConfirmSlot} 
-                  disabled={isPending}
-                  className="rounded-[2rem] h-20 px-16 text-2xl font-display italic font-bold shadow-premium gap-4 group transition-all hover:scale-105 active:scale-95"
+                   onClick={handleConfirmSlot} 
+                   disabled={isPending}
+                   className="rounded-[2rem] h-20 px-16 text-2xl font-display italic font-bold shadow-premium gap-4 group transition-all hover:scale-105 active:scale-95"
                 >
                   {isPending ? (
                     <>
@@ -649,5 +705,4 @@ END:VCALENDAR`;
   }
 
   return null;
-
 }

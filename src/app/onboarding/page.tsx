@@ -1,26 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
-import { User, Building2, ChevronRight, ChevronLeft, Check, Sparkles, Zap, ShieldCheck } from "lucide-react";
+import { User, Building2, ChevronRight, Check, Zap, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { registerUserAction } from "@/app/actions/auth";
 import { verifyEmailCodeAction, generateVerificationCode } from "@/app/actions/verification";
 import { PhotoUpload } from "@/components/ui/photo-upload";
-import { Turnstile } from "@marsidev/react-turnstile";
 import { getMetadataCatalog } from "@/app/actions/metadata";
-import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
 import { validateItalianVAT } from "@/lib/vat";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -47,7 +45,7 @@ export default function OnboardingPage() {
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [legalConsent, setLegalConsent] = useState(false);
 
    const [formData, setFormData] = useState({
     firstName: "",
@@ -68,7 +66,6 @@ export default function OnboardingPage() {
   });
 
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [isCatalogLoading, setIsCatalogLoading] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.role) {
@@ -78,12 +75,10 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     async function fetchCatalog() {
-      setIsCatalogLoading(true);
       const res = await getMetadataCatalog();
       if (res.success) {
         setCatalog(res.data);
       }
-      setIsCatalogLoading(false);
     }
     fetchCatalog();
   }, []);
@@ -302,7 +297,8 @@ export default function OnboardingPage() {
                             } else {
                               toast.error(res.error || "Codice non valido.");
                             }
-                          } catch (err) {
+                                                    } catch {
+
                             toast.error("Errore durante la verifica.");
                           } finally {
                             setIsSubmitting(false);
@@ -357,17 +353,22 @@ export default function OnboardingPage() {
                       </div>
                       
                       {!isLoginMode && (
-                        <div className="py-2 flex justify-center">
-                          <Turnstile 
-                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
-                            options={{ theme: "light" }}
-                            onSuccess={(token) => setTurnstileToken(token)}
+                        <div className="flex items-start gap-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 mb-2">
+                          <input 
+                            type="checkbox" 
+                            id="legalConsent" 
+                            checked={legalConsent} 
+                            onChange={(e) => setLegalConsent(e.target.checked)}
+                            className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                           />
+                          <Label htmlFor="legalConsent" className="text-[11px] font-medium text-slate-500 leading-relaxed cursor-pointer select-none">
+                            Accetto i <Link href="/terms" target="_blank" className="text-emerald-600 font-bold underline decoration-emerald-200">Termini di Servizio</Link> e la <Link href="/privacy" target="_blank" className="text-emerald-600 font-bold underline decoration-emerald-200">Privacy Policy</Link> di Skillr.
+                          </Label>
                         </div>
                       )}
 
                       <Button 
-                        disabled={isSubmitting || !formData.email || formData.password.length < 8 || (!isLoginMode && !turnstileToken)}
+                        disabled={isSubmitting || !formData.email || formData.password.length < 8 || (!isLoginMode && !legalConsent)}
                         onClick={async () => {
                           setIsSubmitting(true);
                           try {
@@ -390,7 +391,8 @@ export default function OnboardingPage() {
                                const res = await registerUserAction({ 
                                  email: formData.email, 
                                  password: formData.password,
-                                 turnstileToken: turnstileToken || undefined
+                                 turnstileToken: undefined,
+                                 legalConsent: legalConsent
                                });
 
                               if (res.success) {
