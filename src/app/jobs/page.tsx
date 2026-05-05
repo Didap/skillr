@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop } from "lucide-react";
+import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop, Search, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useEffect, useState, useMemo } from "react";
 import { getCompanyJobs, deleteJob, toggleJobStatus } from "@/app/actions/jobs";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -27,6 +30,10 @@ export default function JobsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // State for Search & Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showOnlyActive, setShowOnlyActive] = useState(false);
 
   async function loadJobs() {
     const res = await getCompanyJobs();
@@ -84,6 +91,18 @@ export default function JobsPage() {
     setTogglingId(null);
   };
 
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      const matchesSearch = 
+        job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (job.location || "").toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = showOnlyActive ? job.isActive : true;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [jobs, searchQuery, showOnlyActive]);
+
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       <header className="h-20 border-b border-border-subtle bg-white/50 backdrop-blur-md flex items-center px-6 sticky top-0 z-40">
@@ -110,9 +129,37 @@ export default function JobsPage() {
            </Link>
         </div>
 
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1 group">
+            <Search 
+              size={18} 
+              className={cn(
+                "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300",
+                searchQuery ? "text-primary" : "text-text-muted group-focus-within:text-primary"
+              )} 
+            />
+            <Input 
+              placeholder="Cerca per titolo o sede..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11 h-12 rounded-2xl bg-white border-border-subtle focus-visible:ring-primary/20 transition-all duration-300 shadow-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3 px-4 h-12 bg-white rounded-2xl border border-border-subtle shadow-sm">
+            <Switch 
+              id="active-toggle" 
+              checked={showOnlyActive} 
+              onCheckedChange={setShowOnlyActive}
+            />
+            <Label htmlFor="active-toggle" className="text-sm font-medium text-text-secondary whitespace-nowrap cursor-pointer">
+              Solo attive
+            </Label>
+          </div>
+        </div>
+
         <div className="grid gap-6">
           <AnimatePresence mode="popLayout" initial={false}>
-            {jobs.map((job) => (
+            {filteredJobs.map((job) => (
               <motion.div 
                 key={job.id}
                 layout
@@ -245,6 +292,30 @@ export default function JobsPage() {
                  </Button>
                </Link>
             </div>
+          )}
+
+          {!loading && jobs.length > 0 && filteredJobs.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20 bg-white rounded-3xl border border-dashed border-border-strong"
+            >
+               <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6 text-primary/40">
+                  <XCircle size={40} />
+               </div>
+               <h3 className="text-xl font-bold text-text-primary mb-2">Nessun risultato</h3>
+               <p className="text-text-secondary mb-6">Non abbiamo trovato ricerche che corrispondano ai tuoi filtri.</p>
+               <Button 
+                variant="outline" 
+                className="rounded-full h-10 px-6"
+                onClick={() => {
+                  setSearchQuery("");
+                  setShowOnlyActive(false);
+                }}
+              >
+                  Reset filtri
+               </Button>
+            </motion.div>
           )}
 
 

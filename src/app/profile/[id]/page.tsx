@@ -4,8 +4,10 @@ import { professionalProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, ArrowLeft, Zap, ExternalLink, Globe } from "lucide-react";
+import { MapPin, DollarSign, ArrowLeft, Zap, ExternalLink, Globe, Star } from "lucide-react";
 import Link from "next/link";
+import { ReviewCard } from "@/components/reviews/ReviewCard";
+import { cn } from "@/lib/utils";
 
 // Mock data for development if DB is empty or ID is mock
 const MOCK_PROFILE = {
@@ -31,7 +33,16 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
   const profile = await db.query.professionalProfiles.findFirst({
     where: eq(professionalProfiles.userId, id),
     with: {
-      user: true
+      user: {
+        with: {
+          receivedReviews: {
+            with: {
+              author: true
+            },
+            orderBy: (reviews, { desc }) => [desc(reviews.createdAt)]
+          }
+        }
+      }
     }
   });
 
@@ -45,8 +56,16 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
     bio: profile.bioShort || "Nessuna bio fornita.",
     topSkills: profile.topSkills || [],
     secondarySkills: profile.secondarySkills || [],
-    experience: [] // To be implemented with a separate table
-  } : MOCK_PROFILE;
+    experience: [], // To be implemented with a separate table
+    averageRating: profile.averageRating || "0",
+    reviewCount: profile.reviewCount || 0,
+    reviews: profile.user.receivedReviews || []
+  } : {
+    ...MOCK_PROFILE,
+    averageRating: "4.8",
+    reviewCount: 12,
+    reviews: []
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -82,6 +101,13 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
                 <p className="text-2xl text-primary font-medium mt-2 italic">
                   {displayProfile.title}
                 </p>
+                <div className="flex items-center gap-3 mt-4">
+                  <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                    <Star size={16} className="fill-amber-400 text-amber-400" />
+                    <span className="font-bold text-amber-900">{displayProfile.averageRating}</span>
+                  </div>
+                  <span className="text-sm font-medium text-text-muted">({displayProfile.reviewCount} recensioni)</span>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-6 text-text-secondary font-medium">
@@ -109,7 +135,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
             </div>
           </section>
 
-          {/* Bio Section */}
+          {/* Bio & Skills Section */}
           <section className="grid md:grid-cols-3 gap-12 border-t border-border-subtle pt-12">
             <div className="md:col-span-2 space-y-8">
               <div>
@@ -122,7 +148,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
               <div>
                 <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold mb-6">Esperienza</h3>
                 <div className="space-y-6">
-                  {displayProfile.experience.length > 0 ? displayProfile.experience.map((exp, i) => (
+                  {displayProfile.experience.length > 0 ? displayProfile.experience.map((exp: { role: string; company: string; period: string }, i: number) => (
                     <div key={i} className="flex gap-4 items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
                       <div>
@@ -137,14 +163,13 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
 
-            {/* Sidebar Skills */}
             <div className="space-y-12">
               <div>
                 <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold mb-6 flex items-center gap-2">
                   <Zap size={14} className="text-primary" /> Top Skills
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {displayProfile.topSkills.map((skill) => (
+                  {displayProfile.topSkills.map((skill: string) => (
                     <div key={skill} className="flex items-center justify-between p-3 rounded-xl bg-surface-warm border border-border-subtle">
                       <span className="font-medium text-text-primary">{skill}</span>
                       <div className="w-2 h-2 rounded-full bg-primary" />
@@ -156,7 +181,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
               <div>
                 <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold mb-6">Secondary</h3>
                 <div className="flex flex-wrap gap-2">
-                  {displayProfile.secondarySkills.map((skill) => (
+                  {displayProfile.secondarySkills.map((skill: string) => (
                     <Badge key={skill} variant="outline" className="rounded-lg px-3 py-1 border-border-strong text-text-secondary font-medium">
                       {skill}
                     </Badge>
@@ -164,6 +189,60 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Reviews Section */}
+          <section className="mt-24 border-t border-border-subtle pt-16 pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+               <div className="space-y-2 text-center md:text-left">
+                  <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold">Feedback</h3>
+                  <h2 className="text-4xl font-display italic font-bold text-text-primary">Recensioni della Community</h2>
+               </div>
+               <div className="flex flex-col items-center md:items-end gap-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                       {[1, 2, 3, 4, 5].map((s) => (
+                         <Star 
+                            key={s} 
+                            size={20} 
+                            className={cn(
+                               "transition-colors",
+                               s <= Math.round(Number(displayProfile.averageRating)) 
+                                ? "fill-amber-400 text-amber-400" 
+                                : "text-slate-200 fill-slate-50"
+                            )}
+                         />
+                       ))}
+                    </div>
+                    <span className="text-2xl font-bold text-text-primary">{displayProfile.averageRating}</span>
+                  </div>
+                  <p className="text-sm font-medium text-text-muted">Media su {displayProfile.reviewCount} incontri</p>
+               </div>
+            </div>
+
+            {displayProfile.reviews.length > 0 ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {displayProfile.reviews.map((review: { id: string; author: { name: string | null } | null; stars: number; text: string | null; createdAt: Date | null }) => (
+                    <ReviewCard 
+                      key={review.id}
+                      authorName={review.author?.name ?? null}
+                      stars={review.stars}
+                      text={review.text}
+                      createdAt={review.createdAt}
+                    />
+                  ))}
+               </div>
+            ) : (
+               <div className="py-20 bg-surface-warm/50 rounded-[3rem] border border-dashed border-border-strong text-center px-6">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-text-muted shadow-sm">
+                    <Star size={32} />
+                  </div>
+                  <h4 className="text-xl font-bold text-text-primary mb-2">Ancora nessuna recensione</h4>
+                  <p className="text-text-secondary max-w-sm mx-auto">
+                    Questo professionista non ha ancora ricevuto feedback. Le recensioni appariranno qui dopo i primi incontri conclusi.
+                  </p>
+               </div>
+            )}
           </section>
         </div>
       </main>

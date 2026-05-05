@@ -23,8 +23,8 @@ export function KpiSection() {
           
           <div className="lg:col-span-4 space-y-8">
             <div className="space-y-4">
-              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue/40">Rendicontazione</h2>
-              <p className="text-4xl font-display italic font-bold text-pa-blue leading-tight tracking-tight">
+              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Rendicontazione</h2>
+              <p className="text-4xl font-serif font-bold text-slate-900 leading-tight tracking-tight">
                 I KPI che vincono i bandi.
               </p>
             </div>
@@ -57,8 +57,8 @@ export function KpiSection() {
                     <TableRow key={i} className="group hover:bg-pa-blue/2 transition-colors border-slate-50">
                       <TableCell className="py-6 px-8">
                         <div className="flex items-center gap-4">
-                          <div className="w-2 h-2 rounded-full bg-pa-blue-light opacity-40" />
-                          <span className="font-bold text-pa-blue text-lg italic">{item.kpi}</span>
+                          <div className="w-2 h-2 rounded-full bg-pa-blue opacity-40" />
+                          <span className="font-bold text-slate-900 text-lg">{item.kpi}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-6 px-8">

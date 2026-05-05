@@ -37,8 +37,8 @@ export function UseCasesPuglia() {
       <div className="max-w-7xl w-full mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
           <div className="max-w-2xl space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue/40">Scenari di Applicazione</h2>
-            <p className="text-5xl font-display italic font-bold text-pa-blue leading-tight tracking-tight">
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Scenari di Applicazione</h2>
+            <p className="text-5xl font-serif font-bold text-slate-900 leading-tight tracking-tight">
               Come Skillr trasforma il placement in Puglia.
             </p>
           </div>
@@ -66,7 +66,7 @@ export function UseCasesPuglia() {
               <div className="space-y-6">
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{useCase.type}</span>
-                  <h3 className="text-3xl font-display italic font-bold text-pa-blue mt-1">{useCase.title}</h3>
+                  <h3 className="text-2xl font-serif font-bold text-slate-900 mt-1">{useCase.title}</h3>
                 </div>
                 
                 <div className="space-y-4">
@@ -86,7 +86,7 @@ export function UseCasesPuglia() {
               </div>
 
               {/* Decorative background number */}
-              <div className="absolute -bottom-6 -right-6 text-9xl font-display font-black text-slate-50 select-none pointer-events-none group-hover:text-pa-blue/5 transition-colors">
+              <div className="absolute -bottom-6 -right-6 text-9xl font-serif font-black text-slate-50 select-none pointer-events-none group-hover:text-pa-blue/5 transition-colors">
                 {i + 1}
               </div>
             </motion.div>

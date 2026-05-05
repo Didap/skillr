@@ -1,11 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { paLeads } from "@/db/schema";
+import { paLeads, paSubscribers } from "@/db/schema";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { sendEmail } from "@/lib/mail";
 import { PaLeadNotificationEmail } from "@/emails/PaLeadNotificationEmail";
 import { PaLeadConfirmationEmail } from "@/emails/PaLeadConfirmationEmail";
+import { PaNewsletterVerificationEmail } from "@/emails/PaNewsletterVerificationEmail";
+
 
 const paLeadSchema = z.object({
   fullName: z.string().min(2, "Il nome è troppo breve"),
@@ -94,3 +97,78 @@ export async function savePaLeadAction(data: PaLead) {
     return { success: false, error: "Si è verificato un errore durante il salvataggio. Riprova più tardi." };
   }
 }
+
+export async function subscribeToNewsletterAction(email: string) {
+  try {
+    const validatedEmail = z.string().email("Indirizzo email non valido").parse(email);
+    const token = crypto.randomUUID();
+
+    // Verifichiamo se esiste già
+    const existing = await db.query.paSubscribers.findFirst({
+      where: eq(paSubscribers.email, validatedEmail)
+    });
+
+    if (existing && existing.status === 'active') {
+      return { success: false, error: "Questo indirizzo email è già iscritto alla newsletter." };
+    }
+
+    if (existing) {
+      // Update token per ripetere la verifica se era pending
+      await db.update(paSubscribers)
+        .set({ 
+          verificationToken: token, 
+          createdAt: new Date() 
+        })
+        .where(eq(paSubscribers.email, validatedEmail));
+    } else {
+      await db.insert(paSubscribers).values({
+        email: validatedEmail,
+        verificationToken: token,
+      });
+    }
+
+    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/pa/newsletter/confirm?token=${token}`;
+
+    await sendEmail({
+      to: validatedEmail,
+      subject: "Conferma iscrizione Newsletter Skillr PA",
+      react: PaNewsletterVerificationEmail({ verificationLink })
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Newsletter subscription error:", error);
+    if (error instanceof z.ZodError) {
+      return { success: false, error: "Indirizzo email non valido." };
+    }
+    return { success: false, error: "Errore durante l'iscrizione. Riprova più tardi." };
+  }
+}
+
+export async function confirmNewsletterSubscriptionAction(token: string) {
+  try {
+    if (!token) return { success: false, error: "Token mancante." };
+
+    const subscriber = await db.query.paSubscribers.findFirst({
+      where: eq(paSubscribers.verificationToken, token)
+    });
+
+    if (!subscriber) {
+      return { success: false, error: "Token non valido o già utilizzato." };
+    }
+
+    await db.update(paSubscribers)
+      .set({ 
+        status: 'active', 
+        verificationToken: null,
+        verifiedAt: new Date() 
+      })
+      .where(eq(paSubscribers.id, subscriber.id));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Newsletter confirmation error:", error);
+    return { success: false, error: "Errore durante la conferma. Riprova più tardi." };
+  }
+}
+

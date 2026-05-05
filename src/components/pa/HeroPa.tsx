@@ -4,7 +4,11 @@ import { motion, Variants } from "framer-motion";
 import { ArrowRight, BarChart3, CheckCircle2, FileText, Target, Users, TrendingUp, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function HeroPa() {
+interface HeroPaProps {
+  onServiceClick?: (service: string) => void;
+}
+
+export function HeroPa({ onServiceClick }: HeroPaProps) {
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -61,10 +65,10 @@ export function HeroPa() {
             <div className="space-y-6">
               <motion.h1 
                 variants={itemVariants}
-                className="text-5xl md:text-7xl font-display italic font-bold text-pa-blue leading-[1.1] tracking-tight"
+                className="text-5xl md:text-7xl font-serif font-bold text-slate-900 leading-[1.1] tracking-tight"
               >
                 Skillr per la PA in Puglia: <br />
-                <span className="text-pa-blue/40">Portiamo i NEET al lavoro.</span>
+                <span className="text-slate-400">Portiamo i NEET al lavoro.</span>
               </motion.h1>
               <motion.p 
                 variants={itemVariants}
@@ -79,8 +83,11 @@ export function HeroPa() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <button 
-                onClick={() => document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' })}
-                className="h-14 px-8 rounded-full bg-pa-blue text-white font-bold text-lg shadow-xl shadow-pa-blue/20 hover:bg-pa-blue-dark transition-all flex items-center justify-center gap-3 active:scale-95"
+                onClick={() => {
+                  if (onServiceClick) onServiceClick('demo');
+                  document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="h-14 px-8 rounded-full bg-pa-blue text-white font-black uppercase tracking-widest text-sm shadow-xl shadow-pa-blue/20 hover:bg-pa-blue-dark transition-all flex items-center justify-center gap-3 active:scale-95"
               >
                 Richiedi Demo Operativa <ArrowRight size={20} />
               </button>
@@ -136,14 +143,14 @@ export function HeroPa() {
                   <div className="p-6 bg-pa-blue/5 rounded-3xl space-y-1 group hover:bg-pa-blue/10 transition-colors">
                     <p className="text-[10px] font-black uppercase tracking-widest text-pa-blue/50">Presi in Carico</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-display italic font-bold text-pa-blue leading-none">1.284</p>
+                      <p className="text-4xl font-serif font-bold text-pa-blue leading-none">1.284</p>
                       <TrendingUp size={16} className="text-pa-blue/40 mb-1" />
                     </div>
                   </div>
                   <div className="p-6 bg-emerald-50 rounded-3xl space-y-1 group hover:bg-emerald-100/50 transition-colors">
                     <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">Tirocini</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-display italic font-bold text-emerald-600 leading-none">342</p>
+                      <p className="text-4xl font-serif font-bold text-emerald-600 leading-none">342</p>
                       <CheckCircle2 size={16} className="text-emerald-600/40 mb-1" />
                     </div>
                   </div>

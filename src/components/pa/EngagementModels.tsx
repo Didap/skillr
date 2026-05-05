@@ -36,8 +36,8 @@ export function EngagementModels() {
       <div className="max-w-7xl w-full mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
           <div className="max-w-2xl space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue/40">Flessibilità Contrattuale</h2>
-            <p className="text-5xl font-display italic font-bold text-pa-blue leading-tight tracking-tight">
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Flessibilità Contrattuale</h2>
+            <p className="text-5xl font-serif font-bold text-slate-900 leading-tight tracking-tight">
               Come collaborare con noi.
             </p>
           </div>
@@ -60,7 +60,7 @@ export function EngagementModels() {
                 <div className="inline-block px-3 py-1 rounded-full bg-pa-blue/5 text-[9px] font-black uppercase tracking-widest text-pa-blue">
                   {model.tag}
                 </div>
-                <h3 className="text-2xl font-display italic font-bold text-pa-blue leading-tight">{model.title}</h3>
+                <h3 className="text-2xl font-serif font-bold text-slate-900 leading-tight">{model.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">
                   {model.desc}
                 </p>

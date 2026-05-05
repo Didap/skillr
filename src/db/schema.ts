@@ -7,6 +7,8 @@ export const matchStatusEnum = pgEnum('match_status', ['pending', 'liked', 'pass
 export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesign']);
 export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
 export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['booked', 'cancelled', 'completed']);
+export const paSubscriberStatusEnum = pgEnum('pa_subscriber_status', ['pending', 'active', 'unsubscribed']);
+
 
 export const users = pgTable("user", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -196,6 +198,16 @@ export const paLeads = pgTable("pa_leads", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const paSubscribers = pgTable("pa_subscribers", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text("email").notNull().unique(),
+  status: paSubscriberStatusEnum("status").default("pending"),
+  verificationToken: text("verification_token"),
+  createdAt: timestamp("created_at").defaultNow(),
+  verifiedAt: timestamp("verified_at"),
+});
+
 
 export const interviewEvents = pgTable("interview_events", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

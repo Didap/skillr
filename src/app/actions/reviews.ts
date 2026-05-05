@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { reviews, professionalProfiles, companyProfiles, users } from "@/db/schema";
+import { reviews, professionalProfiles, companyProfiles, users, matches } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -24,8 +24,24 @@ export async function saveReviewAction(data: {
   try {
     const conditions = [eq(reviews.authorId, authorId)];
     if (matchId) {
+      const match = await db.query.matches.findFirst({
+        where: eq(matches.id, matchId),
+      });
+
+      if (!match) return { error: "Match non trovato" };
+
+      // Validation: Match must be scheduled and time must have passed
+      if (!match.scheduledAt) return { error: "L'incontro non è ancora stato programmato" };
+      if (new Date() < new Date(match.scheduledAt)) return { error: "Non puoi lasciare una recensione prima dell'incontro" };
+
+      // Validation: User must be part of the match
+      if (match.professionalId !== authorId && match.companyId !== authorId) {
+        return { error: "Non sei autorizzato a recensire questo incontro" };
+      }
+
       conditions.push(eq(reviews.matchId, matchId));
     } else if (interviewBookingId) {
+      // Logic for interview bookings if needed
       conditions.push(eq(reviews.interviewBookingId, interviewBookingId));
     } else {
       // If no context is provided, we only check for a direct review of the target

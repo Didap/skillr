@@ -31,8 +31,8 @@ export function HowItWorksPa() {
     <section className="py-32 bg-pa-gray-cold">
       <div className="max-w-7xl w-full mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto space-y-6 mb-24">
-          <h2 className="text-sm font-black uppercase tracking-[0.3em] text-pa-blue/40">Il Metodo Skillr</h2>
-          <p className="text-5xl font-display italic font-bold text-pa-blue leading-tight tracking-tight">
+          <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Il Metodo Skillr</h2>
+          <p className="text-5xl font-serif font-bold text-slate-900 leading-tight tracking-tight">
             Dalla presa in carico alla rendicontazione.
           </p>
           <p className="text-lg text-text-secondary">
@@ -62,7 +62,7 @@ export function HowItWorksPa() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-display italic font-bold text-pa-blue">{step.title}</h3>
+                  <h3 className="text-2xl font-serif font-bold text-slate-900">{step.title}</h3>
                   <p className="text-sm text-text-secondary leading-relaxed px-4">
                     {step.desc}
                   </p>
