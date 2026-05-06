@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
@@ -384,3 +384,18 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
     references: [interviewBookings.id],
   }),
 }));
+
+// --- PA News System ---
+
+export const paPosts = pgTable("pa_posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  category: text("category", { enum: ["bandi", "tecnico", "case-study"] }).notNull().default("bandi"),
+  imageUrl: text("image_url"),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
