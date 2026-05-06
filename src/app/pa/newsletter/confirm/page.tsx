@@ -31,7 +31,7 @@ function ConfirmNewsletterContent() {
           setStatus("error");
           setErrorMessage(result.error || "Impossibile verificare l'iscrizione.");
         }
-      } catch (_err) {
+      } catch {
         setStatus("error");
         setErrorMessage("Si è verificato un errore di rete.");
       }

@@ -3,7 +3,6 @@
 import { db } from "@/db";
 import { users, matches, interviewBookings } from "@/db/schema";
 import { count, eq } from "drizzle-orm";
-import { auth } from "@/auth";
 
 export async function getPaDashboardStatsAction() {
   // const session = await auth();

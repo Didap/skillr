@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { paPosts } from "@/db/schema";
-import { eq, desc, and, isNotNull } from "drizzle-orm";
+import { eq, desc, isNotNull } from "drizzle-orm";
 
 export async function getPaNewsAction(category?: "bandi" | "tecnico" | "case-study") {
   try {

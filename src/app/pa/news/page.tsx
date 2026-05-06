@@ -4,13 +4,13 @@ import { getPaNewsAction } from "@/app/actions/news";
 import { 
   ArrowLeft, 
   BookOpen, 
-  Tag, 
   Calendar, 
   ChevronRight,
   Sparkles,
   Search
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { it } from "date-fns/locale";
 
 export default async function PaNewsPage() {
   const result = await getPaNewsAction();
-  const posts = result.success ? result.posts : [];
+  const posts = (result.success && result.posts) ? result.posts : [];
 
   return (
     <div className="min-h-screen bg-pa-gray-cold py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -72,9 +72,11 @@ export default async function PaNewsPage() {
                 <Card className="h-full border-none shadow-premium hover:shadow-hover bg-white overflow-hidden transition-all duration-500 rounded-3xl flex flex-col">
                   <div className="aspect-video bg-slate-100 relative overflow-hidden">
                     {post.imageUrl ? (
-                      <img 
+                      <Image 
                         src={post.imageUrl} 
                         alt={post.title} 
+                        width={600}
+                        height={400}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     ) : (

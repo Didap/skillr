@@ -598,7 +598,12 @@ export default function OnboardingPage() {
                         onValueChange={(val) => setFormData({ ...formData, rateType: val as "daily" | "hourly" | "ral_annual" })}
                       >
                         <SelectTrigger className="h-12 rounded-xl border-slate-100">
-                          <SelectValue />
+                          <SelectValue>
+                            {formData.rateType === "daily" ? "Giorno" : 
+                             formData.rateType === "hourly" ? "Ora" : 
+                             formData.rateType === "ral_annual" ? "RAL" : 
+                             "Seleziona tipo"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="daily">Giorno</SelectItem>

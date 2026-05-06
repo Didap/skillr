@@ -48,7 +48,7 @@ export function PaNewsletterForm() {
       } else {
         toast.error(result.error || "Si è verificato un errore.");
       }
-    } catch (_error) {
+    } catch {
       toast.error("Si è verificato un errore imprevisto.");
     } finally {
       setIsSubmitting(false);
