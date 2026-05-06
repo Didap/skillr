@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { paLeads, paSubscribers } from "@/db/schema";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { sendEmail } from "@/lib/mail";
+import { sendEmail, resend } from "@/lib/mail";
 import { PaLeadNotificationEmail } from "@/emails/PaLeadNotificationEmail";
 import { PaLeadConfirmationEmail } from "@/emails/PaLeadConfirmationEmail";
 import { PaNewsletterVerificationEmail } from "@/emails/PaNewsletterVerificationEmail";
@@ -164,6 +164,21 @@ export async function confirmNewsletterSubscriptionAction(token: string) {
         verifiedAt: new Date() 
       })
       .where(eq(paSubscribers.id, subscriber.id));
+
+    // 2. Add to Resend Audience (Optional but recommended in task)
+    const audienceId = process.env.RESEND_AUDIENCE_ID;
+    if (audienceId) {
+      try {
+        await resend.contacts.create({
+          email: subscriber.email,
+          unsubscribed: false,
+          audienceId: audienceId,
+        });
+      } catch (resendError) {
+        console.error("Failed to add contact to Resend audience:", resendError);
+        // We don't fail the action if Resend fails, as the DB is already updated
+      }
+    }
 
     return { success: true };
   } catch (error) {

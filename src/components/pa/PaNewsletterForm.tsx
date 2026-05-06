@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -77,42 +78,47 @@ export function PaNewsletterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-pa-blue font-semibold">Indirizzo Email Istituzionale</FormLabel>
+              <FormLabel className="text-pa-blue font-bold text-xs uppercase tracking-widest ml-1">Email Istituzionale</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="mario.rossi@comune.bari.it" 
-                  className="bg-white border-pa-blue/30 focus-visible:ring-pa-blue"
-                  {...field} 
-                />
+                <div className="relative group">
+                  <Input 
+                    placeholder="nome.cognome@comune.puglia.it" 
+                    className="bg-white border-pa-gray-cold h-12 px-4 shadow-sm transition-all duration-300 focus-visible:ring-pa-blue focus-visible:border-pa-blue group-hover:border-pa-blue/50"
+                    {...field} 
+                  />
+                  <div className="absolute inset-0 rounded-md bg-pa-blue/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs font-medium" />
             </FormItem>
           )}
         />
         
         <Button 
           type="submit" 
-          className="w-full bg-pa-blue text-white hover:bg-pa-blue/90 font-bold h-11"
+          className="w-full bg-pa-blue text-white hover:bg-pa-blue-dark shadow-lg shadow-pa-blue/20 transition-all duration-300 font-bold h-12 rounded-xl group"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Iscrizione in corso...
+              Verifica in corso...
             </>
           ) : (
-            "Iscriviti alla Newsletter"
+            <span className="flex items-center">
+              Attiva Aggiornamenti
+              <MailCheck className="ml-2 h-4 w-4 group-hover:scale-125 transition-transform" />
+            </span>
           )}
         </Button>
-        <p className="text-xs text-text-tertiary text-center mt-4">
-          Iscrivendoti, accetti di ricevere comunicazioni relative ai servizi Skillr per la PA.
-          Potrai disiscriverti in qualsiasi momento.
+        <p className="text-[10px] text-text-muted text-center leading-relaxed">
+          Proteggiamo i tuoi dati. Iscrivendoti accetti la nostra <Link href="/privacy" className="underline hover:text-pa-blue">Privacy Policy</Link> per l&apos;invio di comunicazioni istituzionali.
         </p>
       </form>
     </Form>
