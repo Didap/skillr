@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, boolean, integer, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const roleEnum = pgEnum('role', ['professional', 'company']);
+export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
 export const rateTypeEnum = pgEnum('rate_type', ['ral_annual', 'daily', 'hourly']);
 export const matchStatusEnum = pgEnum('match_status', ['pending', 'liked', 'passed']);
 export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesign']);
