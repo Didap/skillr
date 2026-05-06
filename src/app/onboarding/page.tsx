@@ -22,6 +22,7 @@ import { getMetadataCatalog } from "@/app/actions/metadata";
 import { validateItalianVAT } from "@/lib/vat";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { FileCardUpload } from "@/components/ui/file-card-upload";
 
 interface Skill {
   id: string;
@@ -58,6 +59,9 @@ export default function OnboardingPage() {
     rateAmount: "",
     rateType: "daily" as "daily" | "hourly" | "ral_annual",
     bio: "",
+    bioLong: "",
+    cvUrl: "",
+    portfolioUrls: [] as string[],
     companyName: "",
     vatNumber: "",
     vatDisclaimerAccepted: false,
@@ -162,7 +166,7 @@ export default function OnboardingPage() {
         {/* Progress Header */}
         <div className="mb-8 text-center">
            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-[0.15em] mb-4">
-              <Zap size={10} fill="currentColor" /> Step {step + 1} di {role === 'professional' ? 7 : 3}
+              <Zap size={10} fill="currentColor" /> Step {step + 1} di {role === 'professional' ? 8 : 3}
            </div>
            <h1 className="font-display text-4xl italic font-bold text-slate-950 tracking-tight">
               Configura Profilo
@@ -175,9 +179,9 @@ export default function OnboardingPage() {
           <motion.div 
             className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded-full"
             initial={{ width: "0%" }}
-            animate={{ width: `${(step / (role === 'professional' ? 6 : 3)) * 100}%` }}
+            animate={{ width: `${(step / (role === 'professional' ? 7 : 3)) * 100}%` }}
           />
-          {[0, 1, 2, 3, 4, 5, 6].filter(i => i <= (role === 'professional' ? 6 : 3)).map((i) => (
+          {[0, 1, 2, 3, 4, 5, 6, 7].filter(i => i <= (role === 'professional' ? 7 : 3)).map((i) => (
             <div 
               key={i}
               className={cn(
@@ -609,6 +613,39 @@ export default function OnboardingPage() {
 
               {step === 6 && role === "professional" && (
                 <StepLayout 
+                  title="Identità & Documenti" 
+                  description="Carica il tuo CV e Portfolio per completare il profilo."
+                  onBack={prevStep}
+                  onNext={nextStep}
+                >
+                  <div className="space-y-6">
+                    <FileCardUpload 
+                      label="Curriculum Vitae (PDF)" 
+                      description="Il tuo CV professionale"
+                      accept=".pdf"
+                      value={formData.cvUrl}
+                      onChange={(url) => setFormData({ ...formData, cvUrl: url })}
+                    />
+                    
+                    <FileCardUpload 
+                      label="Portfolio / Case Studies" 
+                      description="Mostra i tuoi lavori migliori"
+                      accept=".pdf,image/*"
+                      value={formData.portfolioUrls[0] || ""} // Per ora ne gestiamo uno solo semplice
+                      onChange={(url) => setFormData({ ...formData, portfolioUrls: url ? [url] : [] })}
+                    />
+
+                    <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                       <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                        <span className="font-bold text-pa-blue">Nota:</span> I documenti caricati verranno mostrati alle aziende durante la fase di matching per validare le tue competenze.
+                       </p>
+                    </div>
+                  </div>
+                </StepLayout>
+              )}
+
+              {step === 7 && role === "professional" && (
+                <StepLayout 
                   title="Bio & Conclusione" 
                   description="Raccontaci la tua marcia in più."
                   onBack={prevStep}
@@ -617,10 +654,10 @@ export default function OnboardingPage() {
                   loading={isSubmitting}
                 >
                   <div className="space-y-3">
-                    <Label htmlFor="bio" className="font-bold text-slate-700 ml-1">Bio Breve</Label>
+                    <Label htmlFor="bioLong" className="font-bold text-slate-700 ml-1">Bio Professionale</Label>
                     <Textarea 
-                      id="bio" 
-                      value={formData.bio}
+                      id="bioLong" 
+                      value={formData.bioLong}
                       onChange={handleChange}
                       placeholder="Raccontaci chi sei in due righe..." 
                       className="min-h-[140px] rounded-[1.5rem] border-slate-100 p-4 focus:ring-2 focus:ring-emerald-500 outline-none resize-none"

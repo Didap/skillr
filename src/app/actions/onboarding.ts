@@ -18,6 +18,9 @@ export interface OnboardingData {
   rateAmount?: string;
   rateType?: "ral_annual" | "daily" | "hourly";
   bio?: string;
+  bioLong?: string;
+  cvUrl?: string;
+  portfolioUrls?: string[];
   companyName?: string;
   vatNumber?: string;
   vatDisclaimerAccepted?: boolean;
@@ -61,7 +64,10 @@ export async function completeOnboardingAction(data: OnboardingData) {
         clusters: data.selectedClusters || [],
         rateAmountEur: data.rateAmount ? parseInt(data.rateAmount) : 0,
         rateType: data.rateType || "daily",
-        bioShort: data.bio || "",
+        bioShort: data.bio || data.bioLong?.substring(0, 200) || "",
+        bioLong: data.bioLong || data.bio || "",
+        cvUrl: data.cvUrl || "",
+        portfolioUrls: data.portfolioUrls || [],
       }).onConflictDoUpdate({
         target: professionalProfiles.userId,
         set: {
@@ -73,7 +79,10 @@ export async function completeOnboardingAction(data: OnboardingData) {
           clusters: data.selectedClusters || [],
           rateAmountEur: data.rateAmount ? parseInt(data.rateAmount) : 0,
           rateType: data.rateType || "daily",
-          bioShort: data.bio || "",
+          bioShort: data.bio || data.bioLong?.substring(0, 200) || "",
+          bioLong: data.bioLong || data.bio || "",
+          cvUrl: data.cvUrl || "",
+          portfolioUrls: data.portfolioUrls || [],
         }
       });
     } else if (role === "company") {

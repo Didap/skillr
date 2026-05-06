@@ -85,6 +85,8 @@ export const professionalProfiles = pgTable("professional_profiles", {
   rateAmountEur: integer("rate_amount_eur"),
   bioShort: text("bio_short"),
   bioLong: text("bio_long"),
+  cvUrl: text("cv_url"),
+  portfolioUrls: text("portfolio_urls").array(),
   topSkills: text("top_skills").array(),
   secondarySkills: text("secondary_skills").array(),
   clusters: text("clusters").array(),
