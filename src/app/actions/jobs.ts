@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { jobs } from "@/db/schema";
+import { jobs, matches, jobApplications } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -31,29 +31,38 @@ export async function getCompanyJobs() {
   if (!session?.user?.id) return { error: "Non autorizzato" };
 
   try {
-    const results = await db.query.jobs.findMany({
+    const userJobs = await db.query.jobs.findMany({
       where: (jobs, { eq }) => eq(jobs.companyId, session.user.id),
-      with: {
-        matches: {
-          where: (matches, { and, eq }) => and(
-            eq(matches.professionalStatus, 'liked'),
-            eq(matches.companyStatus, 'liked')
-          )
-        }
-      },
       orderBy: (jobs, { desc }) => [desc(jobs.createdAt)],
     });
 
-    // Map results to include the match count
-    const dataWithStats = results.map(job => ({
-      ...job,
-      matchCount: job.matches.length
+    const dataWithStats = await Promise.all(userJobs.map(async (job) => {
+      const matchResults = await db.select()
+        .from(matches)
+        .where(and(
+          eq(matches.jobId, job.id),
+          eq(matches.professionalStatus, 'liked'),
+          eq(matches.companyStatus, 'liked')
+        ));
+      
+      const applicationResults = await db.select()
+        .from(jobApplications)
+        .where(and(
+          eq(jobApplications.jobId, job.id),
+          eq(jobApplications.status, 'pending')
+        ));
+
+      return {
+        ...job,
+        matchCount: matchResults.length,
+        applicationCount: applicationResults.length
+      };
     }));
 
     return { success: true, data: dataWithStats };
   } catch (error) {
     console.error("Error fetching jobs:", error);
-    return { error: "Errore durante il recupero delle ricerche" };
+    return { error: "Errore durante il recupero delle ricerche: " + (error instanceof Error ? error.message : String(error)) };
   }
 }
 

@@ -2,8 +2,8 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, companyProfiles, matches } from "@/db/schema";
-import { eq, ne, and, notInArray, desc } from "drizzle-orm";
+import { users, professionalProfiles, matches, jobs, jobApplications } from "@/db/schema";
+import { eq, and, notInArray, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
@@ -79,63 +79,63 @@ export async function getPotentialMatches() {
 
   try {
     if (role === "company") {
-      const swiped = await db.query.matches.findMany({
-        where: and(
-          eq(matches.companyId, userId),
-          ne(matches.companyStatus, 'pending')
-        ),
-        columns: { professionalId: true }
-      });
-      const swipedIds = swiped.map(m => m.professionalId);
-
-      const professionals = await db.query.professionalProfiles.findMany({
-        where: swipedIds.length > 0 ? notInArray(professionalProfiles.userId, swipedIds) : undefined,
-        with: { user: true },
-        limit: 20,
-      });
-
-      return { 
-        success: true, 
-        data: professionals.map(p => ({
-          id: p.userId,
-          name: p.firstName && p.lastName ? `${p.firstName} ${p.lastName}` : p.user.name || "Utente",
-          title: p.title || "Professionista",
-          rate: `€${p.rateAmountEur}/${p.rateType === 'daily' ? 'giorno' : p.rateType === 'hourly' ? 'ora' : 'anno'}`,
-          location: p.city || "Remote",
-          skills: p.topSkills || [],
-          image: p.photoUrl || p.user.image,
-          bioShort: p.bioShort || "",
-          type: "professional" as const
-        }))
-      };
+      // Companies no longer swipe generically. 
+      // They will see candidates in the job detail page.
+      return { success: true, data: [] };
 
     } else if (role === "professional") {
-      const swiped = await db.query.matches.findMany({
-        where: and(
-          eq(matches.professionalId, userId),
-          ne(matches.professionalStatus, 'pending')
-        ),
-        columns: { companyId: true }
+      // Get professional profile to filter by skills
+      const profile = await db.query.professionalProfiles.findFirst({
+        where: eq(professionalProfiles.userId, userId),
       });
-      const swipedIds = swiped.map(m => m.companyId);
 
-      const companies = await db.query.companyProfiles.findMany({
-        where: swipedIds.length > 0 ? notInArray(companyProfiles.userId, swipedIds) : undefined,
-        with: { user: true },
+      if (!profile) return { error: "Profilo non trovato" };
+
+      const userSkills = [
+        ...(profile.topSkills || []),
+        ...(profile.secondarySkills || [])
+      ];
+
+      // Get IDs of jobs already applied to or skipped (skipped logic not fully implemented yet, but excluding applied)
+      const applied = await db.query.jobApplications.findMany({
+        where: eq(jobApplications.professionalId, userId),
+        columns: { jobId: true }
+      });
+      const excludedJobIds = applied.map(a => a.jobId);
+
+      // Fetch jobs matching skills
+      const potentialJobs = await db.query.jobs.findMany({
+        where: and(
+          eq(jobs.isActive, true),
+          excludedJobIds.length > 0 ? notInArray(jobs.id, excludedJobIds) : undefined,
+          userSkills.length > 0 
+            ? sql`${jobs.skills} && ARRAY[${sql.join(userSkills.map(s => sql`${s}`), sql`, `)}]::text[]` 
+            : undefined
+        ),
+        with: {
+          company: {
+            with: { companyProfile: true }
+          }
+        },
         limit: 20,
       });
 
       return {
         success: true,
-        data: companies.map(c => ({
-          id: c.userId,
-          name: c.companyName || c.user.name || "Azienda",
-          title: "Azienda IT",
-          rate: "Trasparente",
-          location: c.city || "Remote",
-          skills: ["Software Development"],
-          image: c.logoUrl || c.user.image,
-          type: "company" as const
+        data: potentialJobs.map(j => ({
+          id: j.id,
+          name: j.title,
+          title: j.company?.companyProfile?.companyName || "Azienda IT",
+          rate: j.rateType === 'ral_annual' 
+            ? `€${j.budgetMinEur}-${j.budgetMaxEur} RAL` 
+            : `€${j.budgetMinEur}-${j.budgetMaxEur}/${j.rateType === 'daily' ? 'gg' : 'ora'}`,
+          location: j.location || "Remote",
+          skills: j.skills || [],
+          image: j.company?.companyProfile?.logoUrl || j.company?.image,
+          bioShort: j.description || "",
+          type: "job" as const,
+          jobId: j.id,
+          remoteOk: j.remoteOk || false,
         }))
       };
     }
@@ -289,6 +289,13 @@ export async function getMatchDetail(matchId: string) {
           ? (match.professional?.professionalProfile?.bioShort || "")
           : (match.company?.companyProfile?.description || ""),
         targetSkills: isCompanyView ? (match.professional?.professionalProfile?.topSkills || []) : [],
+        targetRate: isCompanyView 
+          ? (match.professional?.professionalProfile?.rateAmountEur 
+              ? `€${match.professional.professionalProfile.rateAmountEur}/${match.professional.professionalProfile.rateType === 'ral_annual' ? 'RAL' : match.professional.professionalProfile.rateType === 'daily' ? 'gg' : 'ora'}`
+              : null)
+          : (match.job?.budgetMinEur 
+              ? `€${match.job.budgetMinEur}-${match.job.budgetMaxEur} ${match.job.rateType === 'ral_annual' ? 'RAL' : match.job.rateType === 'daily' ? '/gg' : '/ora'}`
+              : null),
         hasReviewed,
       }
     };

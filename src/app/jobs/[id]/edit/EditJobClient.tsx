@@ -10,6 +10,8 @@ import { toast } from "sonner";
 
 import { JobData } from "@/types/job";
 
+import { Button } from "@/components/ui/button";
+
 export default function EditJobClient({ initialData }: { initialData: JobData & { id: string } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -28,23 +30,33 @@ export default function EditJobClient({ initialData }: { initialData: JobData & 
   }
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <header className="h-20 border-b border-border-subtle bg-white flex items-center px-6 sticky top-0 z-40">
-        <Link href="/jobs" className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-medium">
-          <ArrowLeft size={20} /> Ricerche
-        </Link>
-        <div className="mx-auto font-bold font-display italic text-xl">Modifica Ricerca</div>
-        <div className="w-20" />
+    <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 sticky top-0 z-40 shrink-0">
+        <div>
+          <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">Modifica Ricerca</h1>
+          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">Aggiorna i dettagli dell&apos;annuncio</p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/jobs">
+            <Button variant="outline" className="rounded-xl h-12 px-6 border-slate-200 hover:bg-slate-50 gap-2 transition-all">
+              <ArrowLeft size={18} />
+              <span className="font-bold text-sm">Torna alle ricerche</span>
+            </Button>
+          </Link>
+        </div>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-12">
-        <div className="bg-white rounded-[2.5rem] border border-border-subtle shadow-premium p-8 md:p-16">
-          <JobForm 
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            submitLabel="Salva Modifiche"
-            loading={loading}
-          />
+      <main className="flex-1 overflow-y-auto p-8 md:p-12 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-premium p-8 md:p-12">
+            <JobForm 
+              initialData={initialData}
+              onSubmit={handleSubmit}
+              submitLabel="Salva Modifiche"
+              loading={loading}
+            />
+          </div>
         </div>
       </main>
     </div>

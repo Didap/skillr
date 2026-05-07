@@ -23,6 +23,7 @@ interface MatchDetail {
   targetEmail: string | null;
   targetBio: string | null;
   targetSkills: string[] | null;
+  targetRate: string | null;
   proposedSlots: ProposedSlot[];
   scheduledAt: Date | null;
   meetingLink: string | null;
@@ -118,6 +119,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                           <MapPin size={16} className="text-primary" /> 
                           {role === 'company' ? 'Remote / Disponibile' : 'Remote OK'}
                         </div>
+                        {match.targetRate && (
+                          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl text-sm font-bold border border-emerald-100 shadow-sm">
+                             <Zap size={16} fill="currentColor" className="text-emerald-500" /> 
+                             {match.targetRate}
+                          </div>
+                        )}
                         {match.targetEmail && (
                           <div className="flex items-center gap-2 bg-primary/5 text-primary px-4 py-2 rounded-2xl text-sm font-bold italic border border-primary/10">
                              <Mail size={16} /> 

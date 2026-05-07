@@ -76,6 +76,9 @@ export async function getUserSettingsAction() {
         companyName: user.role === "company" 
           ? user.companyProfile?.companyName || "" 
           : "",
+        skills: user.role === "professional"
+          ? [...(user.professionalProfile?.topSkills || []), ...(user.professionalProfile?.secondarySkills || [])]
+          : [],
       }
     };
   } catch (error) {
@@ -89,6 +92,7 @@ export async function updateUserSettingsAction(data: {
   bio?: string;
   title?: string;
   companyName?: string;
+  skills?: string[];
 }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -108,12 +112,17 @@ export async function updateUserSettingsAction(data: {
 
     // 2. Update role-specific profile
     if (role === "professional") {
+      const topSkills = data.skills?.slice(0, 3) || [];
+      const secondarySkills = data.skills?.slice(3) || [];
+
       await db.update(professionalProfiles)
         .set({ 
           bioLong: data.bio,
           title: data.title,
           firstName: data.name?.split(' ')[0] || "",
           lastName: data.name?.split(' ').slice(1).join(' ') || "",
+          topSkills: topSkills,
+          secondarySkills: secondarySkills,
         })
         .where(eq(professionalProfiles.userId, userId));
     } else if (role === "company") {

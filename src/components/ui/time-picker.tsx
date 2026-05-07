@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Clock } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -38,31 +37,36 @@ export function TimePicker({
   }
 
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
-      <div className="relative flex-1">
+    <div className={cn(
+      "flex items-center h-14 rounded-2xl bg-slate-50 border-2 border-transparent focus-within:border-emerald-500 focus-within:bg-white transition-all px-4 gap-0 shadow-sm",
+      disabled && "opacity-50 cursor-not-allowed",
+      className
+    )}>
+      <div className="flex-1">
         <Select value={hours} onValueChange={handleHourChange} disabled={disabled}>
-          <SelectTrigger className="h-12 rounded-xl border-border-subtle bg-white shadow-sm font-bold text-lg pl-11 hover:bg-surface-warm/20 transition-all">
+          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent side="top">
+          <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">
             {HOURS.map((h) => (
-              <SelectItem key={h} value={h} className="font-bold text-base">
+              <SelectItem key={h} value={h} className="font-bold text-lg rounded-xl focus:bg-emerald-50 focus:text-emerald-600">
                 {h}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-primary pointer-events-none opacity-40" />
       </div>
-      <span className="text-lg font-bold text-text-muted/30 select-none pb-0.5">:</span>
-      <div className="flex-1">
+      
+      <span className="text-2xl font-display font-black text-slate-300 pb-1">:</span>
+      
+      <div className="flex-1 pl-4">
         <Select value={minutes} onValueChange={handleMinuteChange} disabled={disabled}>
-          <SelectTrigger className="h-12 rounded-xl border-border-subtle bg-white shadow-sm font-bold text-lg hover:bg-surface-warm/20 transition-all">
+          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent side="top">
+          <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">
             {MINUTES.map((m) => (
-              <SelectItem key={m} value={m} className="font-bold text-base">
+              <SelectItem key={m} value={m} className="font-bold text-lg rounded-xl focus:bg-emerald-50 focus:text-emerald-600">
                 {m}
               </SelectItem>
             ))}

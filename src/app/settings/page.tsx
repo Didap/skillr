@@ -12,7 +12,9 @@ import {
   Mail,
   Camera,
   Globe,
-  CheckCircle2
+  CheckCircle2,
+  Plus,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -28,6 +32,7 @@ import Image from "next/image";
 import ImageCropperModal from "@/components/ImageCropperModal";
 import { uploadImageAction } from "@/app/actions/upload";
 import { updateUserImageAction, getUserSettingsAction, updateUserSettingsAction } from "@/app/actions/settings";
+import { getMetadataCatalog } from "@/app/actions/metadata";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -42,6 +47,10 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
   const [title, setTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [filteredSkills, setFilteredSkills] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -54,10 +63,32 @@ export default function SettingsPage() {
         setTitle(result.data.title || "");
         setCompanyName(result.data.companyName || "");
         setProfileImage(result.data.image);
+        setSkills(result.data.skills || []);
       }
     }
     fetchSettings();
+
+    async function fetchCatalog() {
+      const res = await getMetadataCatalog();
+      if (res.success) {
+        setCatalog(res.data);
+      }
+    }
+    fetchCatalog();
   }, []);
+
+  useEffect(() => {
+    if (newSkill.length >= 1) {
+      const allSkills = catalog.flatMap(c => c.skills || []);
+      const filtered = allSkills.filter(s => 
+        s.label.toLowerCase().includes(newSkill.toLowerCase()) && 
+        !skills.includes(s.label)
+      );
+      setFilteredSkills(filtered.slice(0, 8));
+    } else {
+      setFilteredSkills([]);
+    }
+  }, [newSkill, catalog, skills]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -69,6 +100,7 @@ export default function SettingsPage() {
         bio,
         title,
         companyName,
+        skills,
       });
       if (settingsResult.error) throw new Error(settingsResult.error);
 
@@ -129,6 +161,24 @@ export default function SettingsPage() {
   const removeImage = () => {
     setProfileImage(null);
     setHasImageChanged(true);
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      setSkills([...skills, newSkill.trim()]);
+      setNewSkill("");
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setSkills(skills.filter(s => s !== skillToRemove));
+  };
+
+  const selectSkill = (skillLabel: string) => {
+    if (!skills.includes(skillLabel)) {
+      setSkills([...skills, skillLabel]);
+      setNewSkill("");
+    }
   };
 
   return (
@@ -312,6 +362,78 @@ export default function SettingsPage() {
                         className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all font-medium p-6 resize-none text-base leading-relaxed"
                       />
                     </div>
+
+                    {session?.user?.role === 'professional' && (
+                      <div className="mt-10 space-y-4">
+                        <div className="flex flex-col gap-1">
+                          <Label htmlFor="skills" className="text-[10px] font-black text-slate-400 ml-2 uppercase tracking-widest">Le tue Skill</Label>
+                          <p className="text-[10px] text-slate-400 ml-2 font-medium">Aggiungi le tue competenze principali (es. React, Marketing, Design)</p>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4 min-h-12 p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
+                          <AnimatePresence mode="popLayout">
+                            {skills.length > 0 ? (
+                              skills.map((skill) => (
+                                <motion.div
+                                  key={skill}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.8 }}
+                                  layout
+                                >
+                                  <Badge className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold px-3 py-1.5 rounded-xl gap-2 shadow-sm group">
+                                    {skill}
+                                    <button 
+                                      onClick={() => removeSkill(skill)}
+                                      className="text-slate-300 hover:text-red-500 transition-colors"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </Badge>
+                                </motion.div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-400 italic px-2 py-1">Nessuna skill aggiunta...</p>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <div className="relative">
+                          <div className="relative">
+                            <Input 
+                              id="skills"
+                              value={newSkill}
+                              onChange={(e) => setNewSkill(e.target.value)}
+                              placeholder="Cerca una skill (es. React, Python...)"
+                              className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white transition-all font-bold pl-12 text-base w-full"
+                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                          </div>
+
+                          <AnimatePresence>
+                            {filteredSkills.length > 0 && (
+                              <motion.div 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-premium z-50 overflow-hidden"
+                              >
+                                {filteredSkills.map((s, idx) => (
+                                  <button 
+                                    key={s.id}
+                                    onClick={() => selectSkill(s.label)}
+                                    className="w-full text-left px-5 py-4 hover:bg-emerald-50 font-bold text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group"
+                                  >
+                                    <span>{s.label}</span>
+                                    <Plus size={14} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    )}
                   </Card>
 
                   <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-slate-950 text-white p-8 relative group">

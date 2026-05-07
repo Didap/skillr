@@ -7,5 +7,7 @@ export interface Profile {
   skills: string[];
   image: string | null;
   bioShort?: string;
-  type: "professional" | "company";
+  type: "professional" | "company" | "job";
+  jobId?: string;
+  remoteOk?: boolean;
 }

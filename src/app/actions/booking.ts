@@ -34,6 +34,7 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
 
     // Generate Meet link immediately if no custom link provided
     if (!meetingLink && slots.length > 0) {
+      console.log(`[proposeSlots] Generating Meet link for match ${matchId}...`);
       const calendarResult = await createMeetEvent(
         `Colloquio Skillr (Proposto): ${profName} / ${compName}`,
         `Colloquio conoscitivo proposto tramite Skillr.\nQuesto link è valido per tutti gli slot proposti.`,
@@ -43,8 +44,11 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
       );
       
       if (calendarResult.success) {
+        console.log(`[proposeSlots] Meet link generated: ${calendarResult.meetingLink}`);
         finalMeetingLink = calendarResult.meetingLink || null;
         googleEventId = calendarResult.eventId || null;
+      } else {
+        console.error(`[proposeSlots] Failed to generate Meet link:`, calendarResult.error);
       }
     }
 

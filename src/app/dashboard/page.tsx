@@ -21,6 +21,8 @@ export default function DashboardPage() {
       router.push("/login");
     } else if (status === "authenticated" && !session?.user?.role) {
       router.push("/onboarding");
+    } else if (status === "authenticated" && session?.user?.role === 'company') {
+      router.push("/jobs");
     }
   }, [status, session, router]);
 
@@ -84,7 +86,7 @@ export default function DashboardPage() {
           {/* Background Decorative Elements */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
           
-          <div className="w-full max-w-md relative">
+          <div className="w-full max-w-5xl relative">
             {profiles.length > 0 ? (
               <SwipeStack initialProfiles={profiles} userRole={session.user.role as "professional" | "company"} />
             ) : (

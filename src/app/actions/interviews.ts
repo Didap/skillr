@@ -168,7 +168,11 @@ export async function getAvailableEventsAction() {
     const results = await db.query.interviewEvents.findMany({
       where: (events, { gte }) => gte(events.date, new Date()),
       with: {
-        company: true,
+        company: {
+          with: {
+            companyProfile: true
+          }
+        },
         bookings: true
       },
       orderBy: (events, { asc }) => [asc(events.date)],
@@ -181,8 +185,8 @@ export async function getAvailableEventsAction() {
     const dataWithStatus = results.map(event => ({
       ...event,
       bookingCount: event.bookings.length,
-      companyName: event.company?.name || "Azienda Partner",
-      companyImage: event.company?.image || null,
+      companyName: event.company?.companyProfile?.companyName || event.company?.name || "Azienda Partner",
+      companyImage: event.company?.companyProfile?.logoUrl || event.company?.image || null,
       isBooked: userBookings.some(b => b.eventId === event.id)
     }));
 

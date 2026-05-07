@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop, Search, XCircle } from "lucide-react";
+import { Plus, Briefcase, Zap, Trash2, Power, Pencil, Laptop, Search, XCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ interface JobWithStats extends JobData {
   id: string;
   isActive: boolean;
   matchCount: number;
+  applicationCount: number;
 }
 
 export default function JobsPage() {
@@ -36,7 +37,9 @@ export default function JobsPage() {
   const [showOnlyActive, setShowOnlyActive] = useState(false);
 
   async function loadJobs() {
+    console.log("[JobsPage] Loading jobs...");
     const res = await getCompanyJobs();
+    console.log("[JobsPage] Load jobs result:", res);
     if (res.success) {
       setJobs((res.data || []) as JobWithStats[]);
     }
@@ -104,30 +107,31 @@ export default function JobsPage() {
   }, [jobs, searchQuery, showOnlyActive]);
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <header className="h-20 border-b border-border-subtle bg-white/50 backdrop-blur-md flex items-center px-6 sticky top-0 z-40">
-        <Link 
-          href="/dashboard" 
-          className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-medium mr-auto"
-        >
-          <ArrowLeft size={20} /> Dashboard
-        </Link>
-        <h1 className="text-xl font-bold font-display italic">Gestione Ricerche</h1>
-        <div className="ml-auto w-[100px]" /> {/* Spacer */}
+    <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 sticky top-0 z-40 shrink-0">
+        <div>
+          <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">Ricerche Attive</h1>
+          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">Gestisci le tue posizioni aperte</p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <Link href="/jobs/new">
+            <Button className="rounded-xl h-12 px-6 bg-slate-950 hover:bg-emerald-600 text-white shadow-premium gap-2 transition-all active:scale-95 group">
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+              <span className="font-bold text-sm">Nuova Ricerca</span>
+            </Button>
+          </Link>
+        </div>
       </header>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
-           <div>
-              <h2 className="text-3xl font-bold text-text-primary">I tuoi annunci</h2>
-              <p className="text-text-secondary mt-1">Gestisci le posizioni aperte e monitora i match.</p>
-           </div>
-           <Link href="/jobs/new">
-             <Button className="rounded-full gap-2 shadow-lg shadow-primary/20 h-12 px-6">
-                <Plus size={18} /> Nuova Ricerca
-             </Button>
-           </Link>
-        </div>
+      <main className="flex-1 overflow-y-auto p-8 md:p-12 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
+             <div>
+                <h2 className="text-3xl font-display italic font-bold text-slate-950">I tuoi annunci</h2>
+                <p className="text-slate-500 font-medium mt-1">Monitora i match e gestisci la visibilità.</p>
+             </div>
+          </div>
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1 group">
@@ -199,8 +203,19 @@ export default function JobsPage() {
                             animate={{ scale: 1 }}
                             className="relative"
                           >
-                            <Badge variant="default" className="h-6 px-2 rounded-full flex items-center justify-center shadow-premium border-2 border-white">
+                            <Badge variant="default" className="h-6 px-2 rounded-full flex items-center justify-center shadow-premium border-2 border-white bg-emerald-500">
                               {job.matchCount} match
+                            </Badge>
+                          </motion.div>
+                        )}
+                        {job.applicationCount > 0 && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="relative"
+                          >
+                            <Badge variant="default" className="h-6 px-2 rounded-full flex items-center justify-center shadow-premium border-2 border-white bg-primary text-white">
+                              {job.applicationCount} nuovi candidati
                             </Badge>
                           </motion.div>
                         )}
@@ -268,9 +283,9 @@ export default function JobsPage() {
                       >
                         <Trash2 size={18} />
                       </Button>
-                    <Link href="/dashboard" className="flex-1 md:flex-none">
+                    <Link href={`/jobs/${job.id}`} className="flex-1 md:flex-none">
                       <Button className="rounded-full gap-2 w-full">
-                        <Zap size={16} /> Trova Candidati
+                        <Users size={16} /> Vedi Candidati
                       </Button>
                     </Link>
                   </div>
@@ -322,12 +337,13 @@ export default function JobsPage() {
           {loading && (
             <div className="space-y-4">
               {[1, 2].map(i => (
-                <div key={i} className="h-28 bg-white/50 animate-pulse rounded-3xl border border-border-subtle" />
+                <div key={i} className="h-28 bg-slate-50/50 animate-pulse rounded-3xl border border-slate-100" />
               ))}
             </div>
           )}
         </div>
-      </main>
+      </div>
+    </main>
 
       <ConfirmDialog 
         isOpen={!!deleteId}

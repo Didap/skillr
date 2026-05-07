@@ -8,6 +8,7 @@ export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesig
 export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
 export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['booked', 'cancelled', 'completed']);
 export const paSubscriberStatusEnum = pgEnum('pa_subscriber_status', ['pending', 'active', 'unsubscribed']);
+export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected']);
 
 
 export const users = pgTable("user", {
@@ -124,6 +125,14 @@ export const jobs = pgTable("jobs", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const jobApplications = pgTable("job_applications", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  jobId: text("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+  professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: jobApplicationStatusEnum("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const matches = pgTable("matches", {
@@ -261,6 +270,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   interviewBookings: many(interviewBookings),
   sentReviews: many(reviews, { relationName: "sentReviews" }),
   receivedReviews: many(reviews, { relationName: "receivedReviews" }),
+  jobApplications: many(jobApplications),
 }));
 
 export const professionalProfilesRelations = relations(professionalProfiles, ({ one }) => ({
@@ -283,6 +293,7 @@ export const jobsRelations = relations(jobs, ({ one, many }) => ({
     references: [users.id],
   }),
   matches: many(matches),
+  applications: many(jobApplications),
 }));
 
 export const matchesRelations = relations(matches, ({ one, many }) => ({
@@ -384,6 +395,17 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   interviewBooking: one(interviewBookings, {
     fields: [reviews.interviewBookingId],
     references: [interviewBookings.id],
+  }),
+}));
+
+export const jobApplicationsRelations = relations(jobApplications, ({ one }) => ({
+  job: one(jobs, {
+    fields: [jobApplications.jobId],
+    references: [jobs.id],
+  }),
+  professional: one(users, {
+    fields: [jobApplications.professionalId],
+    references: [users.id],
   }),
 }));
 

@@ -45,18 +45,18 @@ export function CompanyProfileView({ profile, jobs, reviews }: CompanyProfilePro
       {/* Hero Section */}
       <section className="flex flex-col md:flex-row gap-12 items-start mb-16">
         <div className="relative group shrink-0">
-          <div className="w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white border border-slate-100 overflow-hidden shadow-2xl relative z-10 transition-transform duration-500 group-hover:scale-[1.02] flex items-center justify-center p-6">
+          <div className="w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white border border-slate-100 overflow-hidden shadow-2xl relative z-10 transition-transform duration-500 group-hover:scale-[1.02]">
             {profile.logoUrl ? (
-              <div className="relative w-full h-full">
-                <Image 
-                  src={profile.logoUrl} 
-                  alt={companyName} 
-                  fill 
-                  className="object-contain"
-                />
-              </div>
+              <Image 
+                src={profile.logoUrl} 
+                alt={companyName} 
+                fill 
+                className="object-cover"
+              />
             ) : (
-              <Building2 size={64} className="text-slate-200" />
+              <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                <Building2 size={64} className="text-slate-200" />
+              </div>
             )}
           </div>
           <div className="absolute -inset-4 bg-blue-500/5 blur-3xl rounded-full z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

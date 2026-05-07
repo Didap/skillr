@@ -3,7 +3,7 @@
 import * as React from "react"
 import { format, startOfDay } from "date-fns"
 import { it } from "date-fns/locale"
-import { CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ interface DatePickerProps {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Seleziona una data",
+  placeholder = "gg/mm/aaaa",
   className,
   disabled = false,
   disablePast = false,
@@ -38,23 +38,19 @@ export function DatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "w-full justify-start text-left font-semibold h-12 rounded-xl border-border-subtle bg-white shadow-sm hover:bg-surface-warm/20 transition-all px-4",
-              !value && "text-text-muted",
+              "w-full justify-start text-left font-bold h-14 rounded-2xl border-2 border-transparent bg-slate-50 shadow-sm hover:bg-white hover:border-emerald-500 transition-all px-6",
+              !value && "text-slate-400",
+              value && "text-slate-950",
               className
             )}
           >
-            <CalendarIcon className="mr-3 size-4 text-primary" />
-            {value ? (
-              <span className="text-text-primary font-semibold">
-                {format(value, "dd/MM/yyyy", { locale: it })}
-              </span>
-            ) : (
-              <span>{placeholder}</span>
-            )}
+            <span className="text-xl">
+              {value ? format(value, "dd/MM/yyyy", { locale: it }) : placeholder}
+            </span>
           </Button>
         }
       />
-      <PopoverContent className="w-auto p-0" align="start" side="top">
+      <PopoverContent className="w-auto p-0 border-slate-100 shadow-premium rounded-3xl overflow-hidden" align="start" side="top" sideOffset={8}>
         <Calendar
           mode="single"
           selected={value}
@@ -64,7 +60,7 @@ export function DatePicker({
           }}
           locale={it}
           disabled={disablePast ? { before: startOfDay(new Date()) } : undefined}
-          className="rounded-2xl"
+          className="p-4"
         />
       </PopoverContent>
     </Popover>

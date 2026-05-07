@@ -7,8 +7,10 @@ import { MatchOverlay } from "./MatchOverlay";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Zap } from "lucide-react";
 import { recordSwipe } from "@/app/actions/matches";
+import { applyToJob } from "@/app/actions/applications";
 import { useRouter } from "next/navigation";
 import { Profile } from "@/types/profile";
+import { toast } from "sonner";
 
 export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Profile[], userRole: "professional" | "company" }) {
   const [profiles] = useState<Profile[]>(initialProfiles);
@@ -19,6 +21,21 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
   const handleSwipe = async (direction: "left" | "right") => {
     const swipedProfile = profiles[currentIndex];
     setCurrentIndex((prev) => prev + 1);
+
+    if (swipedProfile.type === "job") {
+      if (direction === "right") {
+        const res = await applyToJob(swipedProfile.id);
+        if (res.success) {
+          toast.success("Candidatura inviata!", {
+            description: `Ti sei candidato per: ${swipedProfile.name}`,
+            icon: <Zap size={14} className="text-emerald-500" />,
+          });
+        } else {
+          toast.error(res.error || "Errore durante la candidatura");
+        }
+      }
+      return;
+    }
 
     const targetType = userRole === "company" ? "professional" : "company";
     const res = await recordSwipe(swipedProfile.id, targetType, direction);
@@ -40,10 +57,10 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
 
   return (
     <>
-      <div className="relative w-full h-[600px] flex items-center justify-center">
+      <div className="relative w-full h-[650px] mt-8">
         <AnimatePresence>
           {!isStackEmpty ? (
-            <div className="relative w-full flex justify-center h-full">
+            <div className="relative w-full h-full">
               {/* Background Card (Preview) */}
               {currentIndex + 1 < profiles.length && (
                 <SwipeCard 
@@ -72,8 +89,12 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
                 <Zap size={40} />
               </div>
               <div>
-                <h3 className="font-display text-2xl font-bold italic">Hai finito i talenti!</h3>
-                <p className="text-text-secondary mt-2">Torna più tardi per nuovi match.</p>
+                <h3 className="font-display text-2xl font-bold italic">
+                  {userRole === 'professional' ? 'Hai visto tutti i lavori!' : 'Hai finito i talenti!'}
+                </h3>
+                <p className="text-text-secondary mt-2">
+                  {userRole === 'professional' ? 'Torna più tardi per nuove opportunità.' : 'Torna più tardi per nuovi match.'}
+                </p>
               </div>
               <Button variant="outline" onClick={resetStack} className="rounded-full gap-2 border-border-strong">
                 <RefreshCw size={18} /> Cerca Nuovi
