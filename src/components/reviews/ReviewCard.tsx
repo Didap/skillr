@@ -4,6 +4,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { User } from "lucide-react";
+import Image from "next/image";
 
 interface ReviewCardProps {
   authorName: string | null;
@@ -25,9 +26,14 @@ export function ReviewCard({ authorName, authorImage, stars, text, createdAt }: 
     <div className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-premium transition-all duration-300">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 overflow-hidden shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 overflow-hidden shrink-0 relative">
             {authorImage ? (
-              <img src={authorImage} alt={displayName} className="w-full h-full object-cover" />
+              <Image 
+                src={authorImage} 
+                alt={displayName} 
+                fill
+                className="object-cover" 
+              />
             ) : (
               <User size={24} />
             )}

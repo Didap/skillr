@@ -4,27 +4,34 @@ import { useState } from "react";
 import { 
   Zap, 
   Calendar, 
-  Users, 
   Clock, 
-  Video, 
-  ChevronRight,
   CheckCircle2,
-  ArrowLeft,
   Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import Link from "next/link";
 import { bookInterviewAction } from "@/app/actions/interviews";
 import Image from "next/image";
 
+interface SmartInterviewEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string | Date;
+  maxSlots: number;
+  bookingCount: number;
+  companyName: string;
+  companyImage: string | null;
+  isBooked: boolean;
+}
+
 interface SmartInterviewsClientProps {
-  initialEvents: any[];
+  initialEvents: SmartInterviewEvent[];
 }
 
 export default function SmartInterviewsClient({ initialEvents }: SmartInterviewsClientProps) {

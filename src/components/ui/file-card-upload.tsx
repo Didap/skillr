@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2, X, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, X, Upload, CheckCircle2 } from "lucide-react";
 import { uploadFileAction } from "@/app/actions/upload-file";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";

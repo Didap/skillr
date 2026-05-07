@@ -3,9 +3,16 @@
 import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Check, ZoomIn, ZoomOut } from 'lucide-react';
 import getCroppedImg from '@/lib/cropImage';
+
+interface Area {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
 
 interface ImageCropperModalProps {
   image: string;
@@ -16,7 +23,7 @@ interface ImageCropperModalProps {
 export default function ImageCropperModal({ image, onCropComplete, onCancel }: ImageCropperModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const onCropChange = (crop: { x: number; y: number }) => {
     setCrop(crop);
@@ -26,11 +33,12 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
     setZoom(zoom);
   };
 
-  const onCropAreaChange = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
+  const onCropAreaChange = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
   const handleComplete = async () => {
+    if (!croppedAreaPixels) return;
     try {
       const croppedImage = await getCroppedImg(image, croppedAreaPixels);
       onCropComplete(croppedImage);
@@ -44,7 +52,7 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}

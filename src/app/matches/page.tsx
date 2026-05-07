@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, Calendar, Mail, Zap, ChevronRight, Star } from "lucide-react";
+import { Search, Calendar, Mail, Zap, ChevronRight, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getMatches } from "@/app/actions/matches";
 import { motion } from "framer-motion";

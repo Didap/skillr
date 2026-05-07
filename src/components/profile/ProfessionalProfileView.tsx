@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Zap, ExternalLink, Globe, Star, Calendar, FileText, Layout } from "lucide-react";
+import { MapPin, DollarSign, Zap, Star, FileText, Layout } from "lucide-react";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -78,7 +78,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       } else {
         toast.error(res.error || "Errore durante la richiesta");
       }
-    } catch (error) {
+    } catch {
       toast.error("Errore durante la prenotazione");
     } finally {
       setIsBooking(false);

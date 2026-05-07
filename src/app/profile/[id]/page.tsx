@@ -1,13 +1,11 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, companyProfiles, jobs, matches, reviews } from "@/db/schema";
+import { users, jobs, matches, reviews } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProfessionalProfileView } from "@/components/profile/ProfessionalProfileView";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
-import { Button } from "@/components/ui/button";
 
 export default async function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,7 +34,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
   });
 
   // If it's a company, we also need their active jobs
-  let activeJobs: any[] = [];
+  let activeJobs: (typeof jobs.$inferSelect)[] = [];
   if (user.role === "company") {
     activeJobs = await db.query.jobs.findMany({
       where: eq(jobs.companyId, id),
@@ -77,7 +75,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
               reviews={receivedReviews}
               matchId={matchId}
               professionalId={id}
-              viewerRole={session?.user?.role as any}
+              viewerRole={session?.user?.role as "professional" | "company" | null}
             />
           ) : user.role === "company" && user.companyProfile ? (
             <CompanyProfileView 

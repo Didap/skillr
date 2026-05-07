@@ -7,7 +7,6 @@ import {
   Video, 
   Clock, 
   Zap,
-  ArrowRight,
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -118,7 +117,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                 </div>
 
                 <div className="flex-1 grid grid-cols-7 gap-2 min-h-0">
-                  {calendarDays.map((day, idx) => {
+                  {calendarDays.map((day) => {
                       const dayEvents = events.filter(e => isSameDay(e.start, day));
                       const isSelected = isSameDay(day, selectedDate);
                       const isCurrentMonth = isSameMonth(day, monthStart);
@@ -144,7 +143,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                             </span>
                             
                             <div className="flex gap-0.5 justify-center mt-0.5">
-                              {dayEvents.slice(0, 3).map((e, i) => (
+                              {dayEvents.slice(0, 3).map((e) => (
                                   <div 
                                     key={e.id} 
                                     className={cn(

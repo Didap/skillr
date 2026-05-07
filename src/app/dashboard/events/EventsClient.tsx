@@ -27,6 +27,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import Image from "next/image";
+
+interface Participant {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  title?: string | null;
+  photoUrl?: string | null;
+}
 
 interface EventsClientProps {
   initialEvents: InterviewEvent[];
@@ -39,7 +49,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
   const [editingLink, setEditingLink] = useState<string | null>(null);
   const [newLink, setNewLink] = useState("");
   const [viewingParticipants, setViewingParticipants] = useState<InterviewEvent | null>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
 
   const handleCreate = async (data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) => {
@@ -112,7 +122,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-950/20 backdrop-blur-sm z-100 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-slate-950/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             >
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -339,9 +349,14 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                 ) : participants.length > 0 ? (
                   participants.map((p) => (
                     <div key={p.id} className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-md transition-all group">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-200 overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-200 overflow-hidden shrink-0 border-2 border-white shadow-sm relative">
                         {(p.photoUrl || p.image) ? (
-                          <img src={p.photoUrl || p.image} alt={p.name} className="w-full h-full object-cover" />
+                          <Image 
+                            src={(p.photoUrl || p.image) as string} 
+                            alt={p.name || "Participant"} 
+                            fill
+                            className="object-cover" 
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
                             <Users size={20} />

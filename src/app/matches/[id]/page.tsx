@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Mail, MapPin, ExternalLink, Zap } from "lucide-react";
+import { Mail, MapPin, ExternalLink, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMatchDetail } from "@/app/actions/matches";
 import { auth } from "@/auth";

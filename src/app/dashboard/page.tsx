@@ -6,12 +6,9 @@ import { Profile } from "@/types/profile";
 import { useEffect, useState } from "react";
 import { SwipeStack } from "@/components/swipe/SwipeStack";
 import { getPotentialMatches } from "@/app/actions/matches";
-import Link from "next/link";
-import { Zap, Calendar as CalendarIcon, CalendarRange, User, Settings, LogOut, Briefcase, Star } from "lucide-react";
+import { Zap, User, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { signOut } from "next-auth/react";
-import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();

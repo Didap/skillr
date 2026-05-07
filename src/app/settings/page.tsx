@@ -42,7 +42,6 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
   const [title, setTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,7 +55,6 @@ export default function SettingsPage() {
         setCompanyName(result.data.companyName || "");
         setProfileImage(result.data.image);
       }
-      setIsLoading(false);
     }
     fetchSettings();
   }, []);
@@ -99,8 +97,9 @@ export default function SettingsPage() {
       setShowSuccess(true);
       toast.success("Impostazioni salvate correttamente");
       setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error: any) {
-      toast.error(error.message || "Errore durante il salvataggio");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Errore durante il salvataggio";
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }
