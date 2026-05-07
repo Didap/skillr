@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", instrumentSerif.variable, "font-sans", geist.variable)}
     >
-      <body className="min-h-full flex flex-col font-sans text-slate-900 bg-white">
+      <body className="min-h-full flex flex-col font-sans text-slate-900 bg-[#FDFDFC]">
         <SessionProvider>
           {children}
         </SessionProvider>

@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { bookInterviewAction } from "@/app/actions/interviews";
 import Image from "next/image";
+import Link from "next/link";
 
 interface SmartInterviewEvent {
   id: string;
@@ -115,7 +116,9 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
                     </div>
 
                     <div className="flex-1 space-y-4">
-                      <h3 className="text-xl font-display font-bold text-slate-950 leading-snug">{event.title}</h3>
+                      <Link href={`/dashboard/events/${event.id}`}>
+                        <h3 className="text-xl font-display font-bold text-slate-950 leading-snug hover:text-emerald-500 transition-colors">{event.title}</h3>
+                      </Link>
                       <p className="text-slate-500 text-sm line-clamp-3 leading-relaxed">{event.description}</p>
                       
                       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">

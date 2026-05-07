@@ -12,9 +12,14 @@ import {
   Mail,
   Camera,
   Globe,
+  Zap,
+  BarChart3,
+  BrainCircuit,
+  Search,
   CheckCircle2,
   Plus,
-  X
+  X,
+  Target
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -49,9 +53,17 @@ export default function SettingsPage() {
   const [companyName, setCompanyName] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [catalog, setCatalog] = useState<any[]>([]);
-  const [filteredSkills, setFilteredSkills] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<{ id: string; label: string; skills: { id: string; label: string; value?: string }[] }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Derive filtered skills during render to avoid setState in effect
+  const allSkills = catalog.flatMap(c => c.skills || []);
+  const filteredSkills = newSkill.length >= 1 
+    ? allSkills.filter(s => 
+        s.label.toLowerCase().includes(newSkill.toLowerCase()) && 
+        !skills.includes(s.label)
+      ).slice(0, 8)
+    : [];
 
   useEffect(() => {
     async function fetchSettings() {
@@ -71,24 +83,11 @@ export default function SettingsPage() {
     async function fetchCatalog() {
       const res = await getMetadataCatalog();
       if (res.success) {
-        setCatalog(res.data);
+        setCatalog(res.data as { id: string; label: string; skills: { id: string; label: string; value?: string }[] }[]);
       }
     }
     fetchCatalog();
   }, []);
-
-  useEffect(() => {
-    if (newSkill.length >= 1) {
-      const allSkills = catalog.flatMap(c => c.skills || []);
-      const filtered = allSkills.filter(s => 
-        s.label.toLowerCase().includes(newSkill.toLowerCase()) && 
-        !skills.includes(s.label)
-      );
-      setFilteredSkills(filtered.slice(0, 8));
-    } else {
-      setFilteredSkills([]);
-    }
-  }, [newSkill, catalog, skills]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -234,6 +233,7 @@ export default function SettingsPage() {
               <TabsList className="bg-transparent border-0 p-0 flex flex-col items-stretch h-auto w-full gap-1">
                 {[
                   { value: 'profile', label: 'Profilo', icon: User },
+                  { value: 'skills', label: 'Skill Set', icon: Zap },
                   { value: 'account', label: 'Account', icon: Shield },
                   { value: 'notifications', label: 'Notifiche', icon: Bell },
                 ].map((tab) => (
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-8">
+                  <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white p-8 overflow-visible">
                     <div className="flex items-center gap-4 mb-8">
                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
                           <Globe size={18} />
@@ -362,78 +362,6 @@ export default function SettingsPage() {
                         className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all font-medium p-6 resize-none text-base leading-relaxed"
                       />
                     </div>
-
-                    {session?.user?.role === 'professional' && (
-                      <div className="mt-10 space-y-4">
-                        <div className="flex flex-col gap-1">
-                          <Label htmlFor="skills" className="text-[10px] font-black text-slate-400 ml-2 uppercase tracking-widest">Le tue Skill</Label>
-                          <p className="text-[10px] text-slate-400 ml-2 font-medium">Aggiungi le tue competenze principali (es. React, Marketing, Design)</p>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2 mb-4 min-h-12 p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
-                          <AnimatePresence mode="popLayout">
-                            {skills.length > 0 ? (
-                              skills.map((skill) => (
-                                <motion.div
-                                  key={skill}
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  layout
-                                >
-                                  <Badge className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold px-3 py-1.5 rounded-xl gap-2 shadow-sm group">
-                                    {skill}
-                                    <button 
-                                      onClick={() => removeSkill(skill)}
-                                      className="text-slate-300 hover:text-red-500 transition-colors"
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  </Badge>
-                                </motion.div>
-                              ))
-                            ) : (
-                              <p className="text-sm text-slate-400 italic px-2 py-1">Nessuna skill aggiunta...</p>
-                            )}
-                          </AnimatePresence>
-                        </div>
-
-                        <div className="relative">
-                          <div className="relative">
-                            <Input 
-                              id="skills"
-                              value={newSkill}
-                              onChange={(e) => setNewSkill(e.target.value)}
-                              placeholder="Cerca una skill (es. React, Python...)"
-                              className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white transition-all font-bold pl-12 text-base w-full"
-                            />
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                          </div>
-
-                          <AnimatePresence>
-                            {filteredSkills.length > 0 && (
-                              <motion.div 
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-premium z-50 overflow-hidden"
-                              >
-                                {filteredSkills.map((s, idx) => (
-                                  <button 
-                                    key={s.id}
-                                    onClick={() => selectSkill(s.label)}
-                                    className="w-full text-left px-5 py-4 hover:bg-emerald-50 font-bold text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group"
-                                  >
-                                    <span>{s.label}</span>
-                                    <Plus size={14} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
-                                  </button>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                    )}
                   </Card>
 
                   <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-slate-950 text-white p-8 relative group">
@@ -449,6 +377,179 @@ export default function SettingsPage() {
                           <Eye size={18} /> Anteprima Live
                        </Button>
                      </div>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* Skills Section */}
+              <TabsContent value="skills" className="m-0 space-y-8 outline-none animate-in fade-in-50 duration-500 overflow-visible">
+                <div className="space-y-8">
+                  {/* Skill Management Card */}
+                  <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white p-8 overflow-visible">
+                    <div className="flex items-center gap-4 mb-8">
+                       <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                          <Zap size={18} />
+                       </div>
+                       <div>
+                         <h3 className="text-lg font-display font-bold italic">Gestione Competenze</h3>
+                         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Configura il tuo arsenale tecnico</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="flex flex-col gap-3">
+                        <Label htmlFor="skills-manage" className="text-[10px] font-black text-slate-400 ml-2 uppercase tracking-widest">Le tue Skill Attive</Label>
+                        <div className="flex flex-wrap gap-2 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 min-h-[80px]">
+                          <AnimatePresence mode="popLayout">
+                            {skills.length > 0 ? (
+                              skills.map((skill) => (
+                                <motion.div
+                                  key={skill}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.8 }}
+                                  layout
+                                >
+                                  <Badge className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold px-4 py-2 rounded-xl gap-2 shadow-sm group transition-all">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    {skill}
+                                    <button 
+                                      onClick={() => removeSkill(skill)}
+                                      className="ml-1 text-slate-300 hover:text-red-500 transition-colors p-0.5 hover:bg-red-50 rounded-md"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </Badge>
+                                </motion.div>
+                              ))
+                            ) : (
+                              <div className="flex flex-col items-center justify-center w-full py-4 text-slate-400">
+                                <BrainCircuit size={24} className="mb-2 opacity-20" />
+                                <p className="text-xs italic font-medium">Ancora nessuna competenza aggiunta</p>
+                              </div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+
+                      <div className="relative pt-2">
+                        <Label htmlFor="skills-search" className="text-[10px] font-black text-slate-400 ml-2 uppercase tracking-widest mb-2 block">Aggiungi Nuove Skill</Label>
+                        <div className="relative">
+                          <Input 
+                            id="skills-search"
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addSkill();
+                              }
+                            }}
+                            placeholder="Cerca una tecnologia, framework o soft skill..."
+                            className="rounded-xl h-14 border-slate-100 bg-slate-50/50 focus:bg-white transition-all font-bold pl-12 text-base w-full shadow-inner"
+                          />
+                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        </div>
+
+                        <AnimatePresence>
+                          {filteredSkills.length > 0 && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute top-full left-0 w-full mt-3 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                            >
+                              <div className="p-2 border-b border-slate-50 bg-slate-50/30">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] px-3 py-1">Risultati suggeriti</p>
+                              </div>
+                              {filteredSkills.map((s) => (
+                                <button 
+                                  key={s.value}
+                                  onClick={() => selectSkill(s.label)}
+                                  className="w-full text-left px-5 py-4 hover:bg-emerald-50 font-bold text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 group-hover:border-emerald-100 transition-all shadow-sm">
+                                      <Zap size={14} />
+                                    </div>
+                                    <span>{s.label}</span>
+                                  </div>
+                                  <div className="bg-emerald-100 text-emerald-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100">
+                                    <Plus size={14} />
+                                  </div>
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Monitoring & Insights Card */}
+                  <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-8">
+                    <div className="flex items-center justify-between mb-8">
+                       <div className="flex items-center gap-4">
+                         <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                            <BarChart3 size={18} />
+                         </div>
+                         <div>
+                           <h3 className="text-lg font-display font-bold italic">Monitoraggio & Insights</h3>
+                           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Analisi delle tue performance</p>
+                         </div>
+                       </div>
+                       <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 rounded-lg px-3 py-1 font-black text-[9px] uppercase tracking-widest">Live Sync</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                       {[
+                         { label: 'Match Frequency', value: 'High', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: Target },
+                         { label: 'Skill Rank', value: 'Top 5%', color: 'text-indigo-600', bg: 'bg-indigo-50', icon: BarChart3 },
+                         { label: 'Profile Strength', value: '85%', color: 'text-amber-600', bg: 'bg-amber-50', icon: Zap },
+                       ].map((stat, i) => (
+                         <div key={i} className={`${stat.bg} rounded-2xl p-5 border border-white shadow-sm group hover:scale-[1.02] transition-all`}>
+                            <div className="flex items-center justify-between mb-3">
+                               <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center ${stat.color} shadow-sm`}>
+                                  <stat.icon size={16} />
+                               </div>
+                            </div>
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                            <p className={`text-2xl font-display font-bold italic ${stat.color}`}>{stat.value}</p>
+                         </div>
+                       ))}
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-[10px] font-black text-slate-400 ml-2 uppercase tracking-widest">Dettaglio Competenze</Label>
+                      <div className="space-y-2">
+                        {skills.length > 0 ? skills.slice(0, 3).map((skill, i) => (
+                          <div key={skill} className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 bg-slate-50/30 group hover:bg-white hover:shadow-premium transition-all">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-all font-bold text-xs">
+                                {skill.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-slate-900">{skill}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="w-32 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${80 - (i * 15)}%` }} />
+                                  </div>
+                                  <span className="text-[10px] font-bold text-slate-400">{80 - (i * 15)}% Match</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Popolarità</p>
+                              <p className="text-xs font-bold text-emerald-600">+12% questo mese</p>
+                            </div>
+                          </div>
+                        )) : (
+                          <p className="text-sm text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            Aggiungi delle skill per vedere le analisi dettagliate
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </Card>
                 </div>
               </TabsContent>
@@ -554,4 +655,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

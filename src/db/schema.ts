@@ -225,7 +225,13 @@ export const interviewEvents = pgTable("interview_events", {
   companyId: text("company_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
+  topic: text("topic"),
+  tags: text("tags").array(),
+  imageUrl: text("image_url"),
+  location: text("location"),
   date: timestamp("date").notNull(),
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
   maxSlots: integer("max_slots").notNull(),
   format: text("format"), // e.g., "5min-5+2"
   meetingLink: text("meeting_link"),

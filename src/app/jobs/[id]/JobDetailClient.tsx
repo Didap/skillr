@@ -21,7 +21,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { acceptApplicant, rejectApplicant } from "@/app/actions/applications";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface Applicant {
   id: string;
@@ -61,7 +60,6 @@ interface Job {
 export function JobDetailClient({ job, initialApplicants }: { job: Job, initialApplicants: Applicant[] }) {
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants);
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleAccept = async (appId: string) => {
     setProcessingId(appId);

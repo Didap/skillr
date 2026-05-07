@@ -21,7 +21,7 @@ export function DashboardSidebar() {
   if (!session?.user) return null;
 
   return (
-    <aside className="w-24 md:w-72 border-r border-slate-100 bg-white flex flex-col p-6 z-50 shrink-0">
+    <aside className="w-24 md:w-72 border-r border-slate-100 bg-slate-50/40 backdrop-blur-xl flex flex-col p-6 z-40 shrink-0">
       <div className="flex items-center gap-3 px-3 mb-12">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
@@ -58,7 +58,7 @@ export function DashboardSidebar() {
             href="/dashboard/smart-interviews" 
             icon={<Zap size={20} />} 
             label="Smart Interviews" 
-            active={pathname === "/dashboard/smart-interviews"}
+            active={pathname.startsWith("/dashboard/smart-interviews")}
           />
         )}
         
@@ -74,7 +74,7 @@ export function DashboardSidebar() {
               href="/dashboard/events" 
               icon={<Zap size={20} />} 
               label="Smart Interviews" 
-              active={pathname === "/dashboard/events"}
+              active={pathname.startsWith("/dashboard/events")}
             />
           </>
         )}
@@ -87,7 +87,7 @@ export function DashboardSidebar() {
         />
       </nav>
 
-      <div className="pt-6 border-t border-slate-50 flex flex-col gap-2">
+      <div className="pt-6 border-t border-slate-100 flex flex-col gap-2">
         <SidebarLink 
           href="/settings" 
           icon={<Settings size={20} />} 
@@ -96,14 +96,14 @@ export function DashboardSidebar() {
         />
         <button 
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all font-bold text-sm group"
+          className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all font-bold text-sm group"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
           <span className="hidden md:block">Esci</span>
         </button>
       </div>
 
-      <div className="mt-auto pt-8 px-4 hidden md:flex flex-wrap gap-x-4 gap-y-2 opacity-40 hover:opacity-100 transition-opacity">
+      <div className="mt-auto pt-8 px-4 hidden md:flex flex-wrap gap-x-4 gap-y-2 opacity-30 hover:opacity-100 transition-opacity">
         <Link href="/privacy" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy</Link>
         <Link href="/terms" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Termini</Link>
         <Link href="/cookies" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Cookies</Link>

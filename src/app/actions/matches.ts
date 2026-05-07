@@ -79,9 +79,37 @@ export async function getPotentialMatches() {
 
   try {
     if (role === "company") {
-      // Companies no longer swipe generically. 
-      // They will see candidates in the job detail page.
-      return { success: true, data: [] };
+      // Get IDs of professionals already interacted with
+      const interacted = await db.query.matches.findMany({
+        where: eq(matches.companyId, userId),
+        columns: { professionalId: true }
+      });
+      const excludedIds = interacted.map(i => i.professionalId);
+
+      // Fetch random professionals
+      const potentialProfessionals = await db.query.professionalProfiles.findMany({
+        where: excludedIds.length > 0 ? notInArray(professionalProfiles.userId, excludedIds) : undefined,
+        with: {
+          user: true
+        },
+        limit: 20,
+      });
+
+      return {
+        success: true,
+        data: potentialProfessionals.map(p => ({
+          id: p.userId,
+          name: p.firstName ? `${p.firstName} ${p.lastName}` : p.user?.name || "Professionista",
+          title: p.title || "Esperto IT",
+          rate: p.rateAmountEur ? `€${p.rateAmountEur}/${p.rateType === 'ral_annual' ? 'anno' : p.rateType === 'daily' ? 'gg' : 'ora'}` : "Tariffa non indicata",
+          location: p.city || "Remote",
+          skills: p.topSkills || [],
+          image: p.photoUrl || p.user?.image,
+          bioShort: p.bioShort || "",
+          type: "professional" as const,
+          rating: p.averageRating || "0.0",
+        }))
+      };
 
     } else if (role === "professional") {
       // Get professional profile to filter by skills

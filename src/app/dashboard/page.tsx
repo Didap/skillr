@@ -21,8 +21,6 @@ export default function DashboardPage() {
       router.push("/login");
     } else if (status === "authenticated" && !session?.user?.role) {
       router.push("/onboarding");
-    } else if (status === "authenticated" && session?.user?.role === 'company') {
-      router.push("/jobs");
     }
   }, [status, session, router]);
 

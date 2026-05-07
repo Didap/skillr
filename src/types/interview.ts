@@ -3,7 +3,13 @@ export interface InterviewEvent {
   companyId: string;
   title: string;
   description: string | null;
+  topic?: string | null;
+  tags?: string[] | null;
+  imageUrl?: string | null;
+  location?: string | null;
   date: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
   maxSlots: number;
   format: string | null;
   meetingLink: string | null;
