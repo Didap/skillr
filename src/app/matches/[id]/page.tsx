@@ -47,20 +47,19 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const role = session.user.role as "professional" | "company";
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col selection:bg-primary/10 selection:text-primary">
-      <header className="h-20 border-b border-border-subtle bg-white/80 backdrop-blur-md flex items-center px-6 shrink-0 sticky top-0 z-50">
-        <div className="max-w-5xl w-full mx-auto flex items-center">
-          <Link 
-            href="/matches" 
-            className="w-10 h-10 rounded-full flex items-center justify-center text-text-secondary hover:text-primary hover:bg-primary/5 transition-all mr-4"
-          >
-            <ArrowLeft size={20} />
-          </Link>
-          <h1 className="font-display italic font-bold text-2xl text-text-primary tracking-tight">Dettaglio Match</h1>
+    <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <header className="h-24 border-b border-border-subtle bg-white/80 backdrop-blur-md flex items-center justify-between px-10 shrink-0 sticky top-0 z-50">
+        <div>
+           <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">Dettaglio Match</h1>
+           <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">Gestisci la tua intervista</p>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Sidebar handles navigation now */}
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-8 lg:p-12">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <main className="max-w-5xl w-full mx-auto p-6 md:p-8 lg:p-12">
         <div className="space-y-8">
           {/* Profile Section */}
           <section className="bg-white rounded-[2.5rem] border border-border-subtle shadow-premium overflow-hidden">
@@ -180,6 +179,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
           </footer>
         </div>
       </main>
+      </div>
     </div>
   );
 }

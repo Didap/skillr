@@ -213,3 +213,89 @@ export async function confirmSlot(slotId: string) {
     return { error: "Errore durante la conferma" };
   }
 }
+
+export async function getCalendarEventsAction() {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Non autorizzato" };
+
+  const userId = session.user.id;
+  const role = session.user.role;
+
+  try {
+    // 1. Fetch Matches (1-to-1 interviews)
+    const userMatches = await db.query.matches.findMany({
+      where: role === 'company' 
+        ? and(eq(matches.companyId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked'))
+        : and(eq(matches.professionalId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked')),
+      with: {
+        professional: { with: { professionalProfile: true } },
+        company: { with: { companyProfile: true } }
+      }
+    });
+
+    const scheduledMatches = userMatches
+      .filter(m => m.scheduledAt)
+      .map(m => {
+        const targetName = role === 'company' 
+          ? `${m.professional.professionalProfile?.firstName || ''} ${m.professional.professionalProfile?.lastName || ''}`.trim() || m.professional.name
+          : m.company.companyProfile?.companyName || m.company.name;
+        
+        return {
+          id: m.id,
+          title: `Intervista con ${targetName}`,
+          start: m.scheduledAt!,
+          end: new Date(new Date(m.scheduledAt!).getTime() + 30 * 60000),
+          type: 'match' as const,
+          link: m.meetingLink,
+          description: `Colloquio 1-to-1 con ${targetName}`,
+          image: role === 'company' ? m.professional.professionalProfile?.photoUrl : m.company.companyProfile?.logoUrl
+        };
+      });
+
+    // 2. Fetch Smart Interviews
+    let smartEvents = [];
+    if (role === 'company') {
+      const companyEvents = await db.query.interviewEvents.findMany({
+        where: (events, { eq }) => eq(events.companyId, userId),
+      });
+      smartEvents = companyEvents.map(e => ({
+        id: e.id,
+        title: e.title,
+        start: e.date,
+        end: new Date(new Date(e.date).getTime() + 60 * 60000), // Assuming 1 hour for smart interviews
+        type: 'smart' as const,
+        link: e.meetingLink,
+        description: e.description || "Sessione Smart Interview",
+        image: null
+      }));
+    } else {
+      const professionalBookings = await db.query.interviewBookings.findMany({
+        where: (bookings, { eq }) => eq(bookings.professionalId, userId),
+        with: {
+          event: {
+            with: {
+              company: { with: { companyProfile: true } }
+            }
+          }
+        }
+      });
+      smartEvents = professionalBookings.map(b => ({
+        id: b.event.id,
+        title: b.event.title,
+        start: b.event.date,
+        end: new Date(new Date(b.event.date).getTime() + 60 * 60000),
+        type: 'smart' as const,
+        link: b.event.meetingLink,
+        description: b.event.description || `Ospitato da ${b.event.company.companyProfile?.companyName || b.event.company.name}`,
+        image: b.event.company.companyProfile?.logoUrl
+      }));
+    }
+
+    const allEvents = [...scheduledMatches, ...smartEvents].sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    return { success: true, data: allEvents };
+  } catch (error) {
+    console.error("Error fetching calendar events:", error);
+    return { error: "Errore durante il recupero del calendario" };
+  }
+}

@@ -1,9 +1,17 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, DollarSign, Zap, ExternalLink, Globe, Star, Calendar, FileText, Layout } from "lucide-react";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { recordSwipe } from "@/app/actions/matches";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface Review {
   id: string;
@@ -15,6 +23,7 @@ interface Review {
 
 interface ProfessionalProfileProps {
   profile: {
+    userId: string;
     firstName: string | null;
     lastName: string | null;
     title: string | null;
@@ -32,11 +41,49 @@ interface ProfessionalProfileProps {
     reviewCount: number | null;
   };
   reviews: Review[];
+  matchId?: string | null;
+  professionalId?: string;
+  viewerRole?: "professional" | "company" | null;
 }
 
-export function ProfessionalProfileView({ profile, reviews }: ProfessionalProfileProps) {
+export function ProfessionalProfileView({ profile, reviews, matchId, professionalId, viewerRole }: ProfessionalProfileProps) {
+  const [isBooking, setIsBooking] = useState(false);
+  const router = useRouter();
   const fullName = `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() || "Professionista Anonimo";
   const displayRateType = profile.rateType === "daily" ? "Giorno" : profile.rateType === "hourly" ? "Ora" : "Anno";
+
+  const handleBooking = async () => {
+    if (viewerRole !== "company") {
+      toast.error("Solo le aziende possono prenotare un'intervista");
+      return;
+    }
+
+    if (matchId) {
+      router.push(`/matches/${matchId}`);
+      return;
+    }
+
+    if (!professionalId) return;
+
+    setIsBooking(true);
+    try {
+      const res = await recordSwipe(professionalId, "professional", "right");
+      if (res.success) {
+        if (res.isMatch) {
+          toast.success("È un Match! Ora puoi prenotare il colloquio.");
+          router.push(`/matches/${res.matchId}`);
+        } else {
+          toast.success("Richiesta di colloquio inviata! Riceverai una notifica se il professionista accetta.");
+        }
+      } else {
+        toast.error(res.error || "Errore durante la richiesta");
+      }
+    } catch (error) {
+      toast.error("Errore durante la prenotazione");
+    } finally {
+      setIsBooking(false);
+    }
+  };
   
   return (
     <div className="max-w-4xl mx-auto">
@@ -92,8 +139,12 @@ export function ProfessionalProfileView({ profile, reviews }: ProfessionalProfil
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button className="rounded-2xl px-10 h-14 text-lg font-black bg-slate-950 hover:bg-emerald-800 text-white transition-all shadow-xl shadow-slate-200">
-              Prenota Interview
+            <Button 
+              onClick={handleBooking}
+              disabled={isBooking}
+              className="rounded-2xl px-10 h-14 text-lg font-black bg-slate-950 hover:bg-emerald-800 text-white transition-all shadow-xl shadow-slate-200"
+            >
+              {isBooking ? <Loader2 className="animate-spin" size={24} /> : "Prenota Interview"}
             </Button>
             {profile.cvUrl && (
               <a 

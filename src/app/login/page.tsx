@@ -34,6 +34,19 @@ function LoginPageInner() {
     }
   }, [status, router, callbackUrl]);
 
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      if (error === "CredentialsSignin") {
+        toast.error("Email o password non corretti.");
+      } else {
+        toast.error("Si è verificato un errore durante l'accesso.");
+      }
+      // Puliamo l'URL dall'errore
+      router.replace("/login");
+    }
+  }, [searchParams, router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -59,15 +72,21 @@ function LoginPageInner() {
     if (!email || !password) return;
     setIsLoading(true);
     try {
-      await signIn("credentials", { 
+      const result = await signIn("credentials", { 
         email, 
         password, 
-        callbackUrl,
-        redirect: true 
+        redirect: false 
       });
+
+      if (result?.error) {
+        toast.error("Email o password non corretti.");
+      } else if (result?.ok) {
+        router.push(callbackUrl);
+        router.refresh();
+      }
     } catch (error) {
       console.error(error);
-      toast.error("Credenziali non valide.");
+      toast.error("Si è verificato un errore imprevisto.");
     } finally {
       setIsLoading(false);
     }

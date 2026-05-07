@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 import { it } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 
@@ -42,18 +42,18 @@ export function DatePicker({
               !value && "text-text-muted",
               className
             )}
-          />
+          >
+            <CalendarIcon className="mr-3 size-4 text-primary" />
+            {value ? (
+              <span className="text-text-primary font-semibold">
+                {format(value, "dd/MM/yyyy", { locale: it })}
+              </span>
+            ) : (
+              <span>{placeholder}</span>
+            )}
+          </Button>
         }
-      >
-        <CalendarIcon className="mr-3 size-4 text-primary" />
-        {value ? (
-          <span className="text-text-primary font-semibold">
-            {format(value, "dd/MM/yyyy", { locale: it })}
-          </span>
-        ) : (
-          <span>{placeholder}</span>
-        )}
-      </PopoverTrigger>
+      />
       <PopoverContent className="w-auto p-0" align="start" side="top">
         <Calendar
           mode="single"
@@ -63,7 +63,7 @@ export function DatePicker({
             setOpen(false)
           }}
           locale={it}
-          disabled={disablePast ? { before: new Date() } : undefined}
+          disabled={disablePast ? { before: startOfDay(new Date()) } : undefined}
           className="rounded-2xl"
         />
       </PopoverContent>

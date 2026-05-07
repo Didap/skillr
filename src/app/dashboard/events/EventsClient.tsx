@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { InterviewEvent } from "@/types/interview";
-import { createInterviewEventAction, updateMeetingLinkAction } from "@/app/actions/interviews";
+import { createInterviewEventAction, updateMeetingLinkAction, getEventParticipantsAction } from "@/app/actions/interviews";
 import { InterviewForm } from "@/components/interviews/InterviewForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
@@ -38,6 +38,9 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
   const [loading, setLoading] = useState(false);
   const [editingLink, setEditingLink] = useState<string | null>(null);
   const [newLink, setNewLink] = useState("");
+  const [viewingParticipants, setViewingParticipants] = useState<InterviewEvent | null>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
 
   const handleCreate = async (data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) => {
     setLoading(true);
@@ -65,6 +68,18 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
       toast.error(res.error || "Errore durante l'aggiornamento");
     }
     setLoading(false);
+  };
+
+  const handleViewParticipants = async (event: InterviewEvent) => {
+    setViewingParticipants(event);
+    setLoadingParticipants(true);
+    const res = await getEventParticipantsAction(event.id);
+    if (res.success) {
+      setParticipants(res.data || []);
+    } else {
+      toast.error(res.error || "Errore nel caricamento dei partecipanti");
+    }
+    setLoadingParticipants(false);
   };
 
   return (
@@ -256,7 +271,10 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                           >
                             <LinkIcon size={16} /> {event.meetingLink ? "Modifica Link" : "Aggiungi Link"}
                           </Button>
-                          <Button className="rounded-full gap-2 shadow-card">
+                          <Button 
+                            className="rounded-full gap-2 shadow-card"
+                            onClick={() => handleViewParticipants(event)}
+                          >
                             <Users size={16} /> Vedi Partecipanti
                           </Button>
                         </>
@@ -280,6 +298,91 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
           </div>
         </div>
       </main>
+
+      <AnimatePresence>
+        {viewingParticipants && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950/20 backdrop-blur-sm z-150 flex items-center justify-center p-4"
+            onClick={() => setViewingParticipants(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-display italic font-bold text-slate-950">Partecipanti</h2>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                    {viewingParticipants.title} • {viewingParticipants.bookingCount}/{viewingParticipants.maxSlots} posti
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setViewingParticipants(null)}
+                  className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                {loadingParticipants ? (
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="animate-spin text-primary size-8" />
+                    <p className="text-sm text-slate-400 font-medium">Caricamento in corso...</p>
+                  </div>
+                ) : participants.length > 0 ? (
+                  participants.map((p) => (
+                    <div key={p.id} className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-md transition-all group">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-200 overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                        {(p.photoUrl || p.image) ? (
+                          <img src={p.photoUrl || p.image} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
+                            <Users size={20} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-950 truncate">{p.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{p.title || "Professionista"}</p>
+                      </div>
+                      <Link 
+                        href={`/profile/${p.id}`}
+                        className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-primary hover:shadow-sm transition-all border border-slate-100"
+                      >
+                        <ExternalLink size={16} />
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-16 text-center">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4">
+                      <Users size={32} />
+                    </div>
+                    <p className="text-slate-400 text-sm font-medium">Nessun partecipante ancora iscritto.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-slate-50">
+                <Button 
+                  variant="outline" 
+                  className="w-full rounded-2xl h-12 border-slate-200 font-bold"
+                  onClick={() => setViewingParticipants(null)}
+                >
+                  Chiudi
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

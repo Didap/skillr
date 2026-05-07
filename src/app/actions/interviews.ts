@@ -125,3 +125,115 @@ export async function updateMeetingLinkAction(eventId: string, meetingLink: stri
     return { error: "Errore durante l'aggiornamento del link" };
   }
 }
+
+export async function getEventParticipantsAction(eventId: string) {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== 'company') {
+    return { error: "Non autorizzato" };
+  }
+
+  try {
+    const bookings = await db.query.interviewBookings.findMany({
+      where: eq(interviewBookings.eventId, eventId),
+      with: {
+        professional: {
+          with: {
+            professionalProfile: true
+          }
+        }
+      }
+    });
+
+    const participants = bookings.map(b => ({
+      id: b.professional.id,
+      name: b.professional.name,
+      email: b.professional.email,
+      image: b.professional.image,
+      title: b.professional.professionalProfile?.title,
+      photoUrl: b.professional.professionalProfile?.photoUrl,
+    }));
+
+    return { success: true, data: participants };
+  } catch (error) {
+    console.error("Error fetching event participants:", error);
+    return { error: "Errore durante il recupero dei partecipanti" };
+  }
+}
+
+export async function getAvailableEventsAction() {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Non autorizzato" };
+
+  try {
+    const results = await db.query.interviewEvents.findMany({
+      where: (events, { gte }) => gte(events.date, new Date()),
+      with: {
+        company: true,
+        bookings: true
+      },
+      orderBy: (events, { asc }) => [asc(events.date)],
+    });
+
+    const userBookings = await db.query.interviewBookings.findMany({
+      where: (bookings, { eq }) => eq(bookings.professionalId, session.user.id!)
+    });
+
+    const dataWithStatus = results.map(event => ({
+      ...event,
+      bookingCount: event.bookings.length,
+      companyName: event.company?.name || "Azienda Partner",
+      companyImage: event.company?.image || null,
+      isBooked: userBookings.some(b => b.eventId === event.id)
+    }));
+
+    return { success: true, data: dataWithStatus };
+  } catch (error) {
+    console.error("Error fetching available events:", error);
+    return { error: "Errore durante il recupero degli eventi" };
+  }
+}
+
+export async function bookInterviewAction(eventId: string) {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== 'professional') {
+    return { error: "Solo i professionisti possono prenotare" };
+  }
+
+  try {
+    // 1. Check if event exists and has space
+    const event = await db.query.interviewEvents.findFirst({
+      where: eq(interviewEvents.id, eventId),
+      with: {
+        bookings: true
+      }
+    });
+
+    if (!event) return { error: "Evento non trovato" };
+    if (event.bookings.length >= event.maxSlots) {
+      return { error: "Posti esauriti per questo evento" };
+    }
+
+    // 2. Check if already booked
+    const existing = await db.query.interviewBookings.findFirst({
+      where: and(
+        eq(interviewBookings.eventId, eventId),
+        eq(interviewBookings.professionalId, session.user.id)
+      )
+    });
+
+    if (existing) return { error: "Sei già iscritto a questo evento" };
+
+    // 3. Create booking
+    await db.insert(interviewBookings).values({
+      eventId,
+      professionalId: session.user.id,
+      status: 'booked'
+    });
+
+    revalidatePath("/dashboard/smart-interviews");
+    return { success: true };
+  } catch (error) {
+    console.error("Error booking interview:", error);
+    return { error: "Errore durante la prenotazione" };
+  }
+}

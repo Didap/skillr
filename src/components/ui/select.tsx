@@ -28,16 +28,15 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   )
 }
 
-function SelectTrigger({
-  className,
-  size = "default",
-  children,
-  ...props
-}: SelectPrimitive.Trigger.Props & {
-  size?: "sm" | "default"
-}) {
+const SelectTrigger = React.forwardRef<
+  HTMLButtonElement,
+  SelectPrimitive.Trigger.Props & {
+    size?: "sm" | "default"
+  }
+>(({ className, size = "default", children, ...props }, ref) => {
   return (
     <SelectPrimitive.Trigger
+      ref={ref}
       data-slot="select-trigger"
       data-size={size}
       className={cn(
@@ -54,49 +53,62 @@ function SelectTrigger({
       />
     </SelectPrimitive.Trigger>
   )
-}
+})
+SelectTrigger.displayName = "SelectTrigger"
 
-function SelectContent({
-  className,
-  children,
-  side = "bottom",
-  sideOffset = 4,
-  align = "center",
-  alignOffset = 0,
-  alignItemWithTrigger = true,
-  ...props
-}: SelectPrimitive.Popup.Props &
-  Pick<
-    SelectPrimitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
-  >) {
-  return (
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner
-        side={side}
-        sideOffset={sideOffset}
-        align={align}
-        alignOffset={alignOffset}
-        alignItemWithTrigger={alignItemWithTrigger}
-        className="isolate z-50"
-      >
-        <SelectPrimitive.Popup
-          data-slot="select-content"
-          data-align-trigger={alignItemWithTrigger}
-          className={cn(
-            "relative isolate z-50 max-h-[300px] min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-2xl bg-white p-1.5 text-popover-foreground shadow-premium border border-border-subtle duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-            className
-          )}
-          {...props}
+const SelectContent = React.forwardRef<
+  HTMLDivElement,
+  SelectPrimitive.Popup.Props &
+    Pick<
+      SelectPrimitive.Positioner.Props,
+      "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
+    >
+>(
+  (
+    {
+      className,
+      children,
+      side = "bottom",
+      sideOffset = 4,
+      align = "center",
+      alignOffset = 0,
+      alignItemWithTrigger = true,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Positioner
+          side={side}
+          sideOffset={sideOffset}
+          align={align}
+          alignOffset={alignOffset}
+          alignItemWithTrigger={alignItemWithTrigger}
+          className="isolate z-150"
         >
-          <SelectScrollUpButton />
-          <SelectPrimitive.List className="space-y-0.5">{children}</SelectPrimitive.List>
-          <SelectScrollDownButton />
-        </SelectPrimitive.Popup>
-      </SelectPrimitive.Positioner>
-    </SelectPrimitive.Portal>
-  )
-}
+          <SelectPrimitive.Popup
+            ref={ref}
+            data-slot="select-content"
+            data-align-trigger={alignItemWithTrigger}
+            className={cn(
+              "relative isolate z-150 max-h-[300px] min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-2xl bg-white p-1.5 text-popover-foreground shadow-premium border border-border-subtle duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+              className
+            )}
+            {...props}
+          >
+            <SelectScrollUpButton />
+            <SelectPrimitive.List className="space-y-0.5">
+              {children}
+            </SelectPrimitive.List>
+            <SelectScrollDownButton />
+          </SelectPrimitive.Popup>
+        </SelectPrimitive.Positioner>
+      </SelectPrimitive.Portal>
+    )
+  }
+)
+SelectContent.displayName = "SelectContent"
 
 function SelectLabel({
   className,
@@ -111,33 +123,33 @@ function SelectLabel({
   )
 }
 
-function SelectItem({
-  className,
-  children,
-  ...props
-}: SelectPrimitive.Item.Props) {
-  return (
-    <SelectPrimitive.Item
-      data-slot="select-item"
-      className={cn(
-        "relative flex w-full cursor-default items-center gap-2 rounded-xl py-2 px-3 text-sm font-semibold outline-hidden select-none transition-colors focus:bg-primary/5 focus:text-primary data-selected:bg-primary/10 data-selected:text-primary data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
-      {...props}
-    >
-      <SelectPrimitive.ItemText className="flex flex-1 shrink-0 gap-2 whitespace-nowrap">
-        {children}
-      </SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator
-        render={
-          <span className="pointer-events-none absolute right-3 flex size-4 items-center justify-center" />
-        }
+const SelectItem = React.forwardRef<HTMLDivElement, SelectPrimitive.Item.Props>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <SelectPrimitive.Item
+        ref={ref}
+        data-slot="select-item"
+        className={cn(
+          "relative flex w-full cursor-default items-center gap-2 rounded-xl py-2 px-3 text-sm font-semibold outline-hidden select-none transition-colors focus:bg-primary/5 focus:text-primary data-selected:bg-primary/10 data-selected:text-primary data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          className
+        )}
+        {...props}
       >
-        <CheckIcon className="pointer-events-none size-3.5 stroke-3" />
-      </SelectPrimitive.ItemIndicator>
-    </SelectPrimitive.Item>
-  )
-}
+        <SelectPrimitive.ItemText className="flex flex-1 shrink-0 gap-2 whitespace-nowrap">
+          {children}
+        </SelectPrimitive.ItemText>
+        <SelectPrimitive.ItemIndicator
+          render={
+            <span className="pointer-events-none absolute right-3 flex size-4 items-center justify-center" />
+          }
+        >
+          <CheckIcon className="pointer-events-none size-3.5 stroke-3" />
+        </SelectPrimitive.ItemIndicator>
+      </SelectPrimitive.Item>
+    )
+  }
+)
+SelectItem.displayName = "SelectItem"
 
 function SelectSeparator({
   className,

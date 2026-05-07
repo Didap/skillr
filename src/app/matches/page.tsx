@@ -63,21 +63,21 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFC] flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center px-10 sticky top-0 z-40">
-        <Link 
-          href="/dashboard" 
-          className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all group"
-        >
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        </Link>
-        <div className="ml-6">
+    <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 sticky top-0 z-40">
+        <div>
            <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">I Tuoi Match</h1>
            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">L&apos;inizio di qualcosa di grande</p>
         </div>
+        <div className="flex items-center gap-4">
+          <Badge variant="outline" className="rounded-full border-slate-200 text-slate-400 font-bold px-4 py-1">
+             {matches.length} Match Attivi
+          </Badge>
+        </div>
       </header>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-12">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <main className="max-w-4xl w-full mx-auto p-6 md:p-12">
         {/* Info Banner */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -188,6 +188,7 @@ export default function MatchesPage() {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 }
