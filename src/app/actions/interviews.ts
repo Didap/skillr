@@ -206,6 +206,36 @@ export async function getEventByIdAction(eventId: string) {
   }
 }
 
+export async function getPublicEventsAction() {
+  try {
+    const results = await db.query.interviewEvents.findMany({
+      where: (events, { gte }) => gte(events.date, new Date()),
+      with: {
+        company: {
+          with: {
+            companyProfile: true
+          }
+        },
+        bookings: true
+      },
+      orderBy: (events, { asc }) => [asc(events.date)],
+    });
+
+    const data = results.map(event => ({
+      ...event,
+      bookingCount: event.bookings.length,
+      companyName: event.company?.companyProfile?.companyName || event.company?.name || "Azienda Partner",
+      companyImage: event.company?.companyProfile?.logoUrl || event.company?.image || null,
+      companyDescription: event.company?.companyProfile?.description || null,
+    }));
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching public events:", error);
+    return { error: "Errore durante il recupero degli eventi" };
+  }
+}
+
 export async function getEventParticipantsAction(eventId: string) {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== 'company') {

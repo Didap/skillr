@@ -1,15 +1,16 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = new Set(["/", "/login", "/signup", "/privacy", "/terms", "/onboarding"]);
+const PUBLIC_ROUTES = new Set(["/", "/login", "/signup", "/privacy", "/terms", "/onboarding", "/events", "/events/"]);
 
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const pathname = nextUrl.pathname;
 
-  // 1. Early Exit for Onboarding and PA (Public)
-  if (pathname === "/onboarding" || pathname.startsWith("/pa")) {
+  // 1. Early Exit for Onboarding, PA, and Events (Public)
+  const isEvents = pathname.startsWith("/events");
+  if (pathname === "/onboarding" || isEvents || pathname.startsWith("/pa")) {
     return null;
   }
 

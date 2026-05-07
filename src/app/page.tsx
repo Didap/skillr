@@ -5,6 +5,7 @@ import { ArrowRight, Zap, Eye, Calendar, ShieldCheck, Star } from "lucide-react"
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LandingEvents } from "@/components/landing/LandingEvents";
 
 const containerFade = {
   initial: { opacity: 0 },
@@ -33,6 +34,9 @@ export default function LandingPage() {
             </Link>
             <Link href="#trust" className="text-sm font-semibold text-slate-500 hover:text-emerald-600 transition-colors">
               Trasparenza
+            </Link>
+            <Link href="/events" className="text-sm font-semibold text-slate-500 hover:text-emerald-600 transition-colors">
+              Eventi
             </Link>
             <Link href="/login" className="text-sm font-semibold text-slate-900 hover:opacity-70 transition-opacity">
               Accedi
@@ -201,6 +205,11 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Events Section */}
+        <div id="events">
+          <LandingEvents />
+        </div>
 
         {/* CTA Section */}
         <section className="py-40 bg-[#FDFDFC]">
