@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { after } from 'next/server';
 import { render } from '@react-email/components';
 import { ReactElement } from 'react';
 
@@ -53,5 +54,24 @@ export async function sendEmail({ to, subject, react, html, text, attachments }:
   } catch (error) {
     console.error('Unexpected error sending email:', error);
     return { success: false, error };
+  }
+}
+
+/**
+ * Sends emails after the response has gone out, so rendering and Resend calls don't add
+ * latency to the action. Failures are logged and never fail the caller.
+ */
+export function sendInBackground(label: string, sends: (() => Promise<{ success: boolean }>)[]) {
+  if (sends.length === 0) return;
+  const run = async () => {
+    const results = await Promise.allSettled(sends.map((send) => send()));
+    const failures = results.filter((r) => r.status === "rejected" || !r.value.success).length;
+    if (failures > 0) console.error(`${failures}/${sends.length} emails failed to send (${label})`);
+  };
+  try {
+    after(run);
+  } catch {
+    // after() is only available inside a request scope
+    void run();
   }
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ReviewForm } from "./ReviewForm";
 
@@ -20,23 +19,13 @@ export function ReviewDialog({
   interviewBookingId,
   targetName
 }: ReviewDialogProps) {
-  // BottomSheet re-runs its open effect (focus + scroll lock) when onClose changes identity.
-  // Parents pass inline arrows and re-render on a timer, which would pull focus out of the
-  // textarea mid-sentence: hand the sheet a stable callback instead.
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  });
-  const handleClose = useCallback(() => onCloseRef.current(), []);
-
   return (
-    <BottomSheet open={isOpen} onClose={handleClose} title="Com'è andata?">
+    <BottomSheet open={isOpen} onClose={onClose} title="Com'è andata?">
       <ReviewForm
         matchId={matchId}
         interviewBookingId={interviewBookingId}
         targetName={targetName}
-        onSuccess={handleClose}
-        showHeading={false}
+        onSuccess={onClose}
       />
     </BottomSheet>
   );

@@ -71,3 +71,14 @@ export function primaryNav(role: Role): NavItem[] {
   if (role === "company") return [discover, matches, jobs, companyEvents, calendar];
   return [discover, matches, professionalEvents, calendar];
 }
+
+export const LEGAL_LINKS = [
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Termini" },
+  { href: "/cookies", label: "Cookies" },
+] as const;
+
+/** Your own profile (not other people's /profile/[id] pages). */
+export function isOwnProfile(pathname: string, userId: string | undefined) {
+  return pathname === "/profile" || (!!userId && pathname === `/profile/${userId}`);
+}

@@ -27,9 +27,9 @@ import { FileCardUpload } from "@/components/ui/file-card-upload";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { credentialsErrorMessage } from "@/components/auth/login-errors";
 import { duration, ease } from "@/lib/motion";
+import { ONBOARDING_DRAFT_KEY as DRAFT_KEY } from "@/lib/onboarding-draft";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-const DRAFT_KEY = "onboarding_draft";
 
 // Phones: each step portals its Indietro/Continua buttons into one fixed bottom bar that lives
 // outside the animated step, so the bar stays put while the step content slides.

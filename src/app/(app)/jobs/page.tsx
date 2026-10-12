@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { JobData } from "@/types/job";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
-import { ConfirmSheet } from "@/components/interviews/ConfirmSheet";
+import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { duration, ease, haptic, spring } from "@/lib/motion";
 import { cn, formatEur } from "@/lib/utils";
 

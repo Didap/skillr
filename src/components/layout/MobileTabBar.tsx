@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CalendarRange, CircleUser, LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { spring } from "@/lib/motion";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
-import { primaryNav } from "./nav-items";
+import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
+import { signOutAndClearDraft } from "@/lib/sign-out";
 
 /** Thumb-reach navigation for phones; the sidebar takes over from md up. */
 export function MobileTabBar() {
@@ -24,9 +25,7 @@ export function MobileTabBar() {
   const calendarInSheet = session.user.role === "company";
   const accountActive =
     pathname.startsWith("/settings") ||
-    // Own profile only: other people's /profile/[id] pages are not "you"
-    pathname === "/profile" ||
-    pathname === `/profile/${session.user.id}` ||
+    isOwnProfile(pathname, session.user.id) ||
     (calendarInSheet && pathname.startsWith("/dashboard/calendar"));
 
   return (
@@ -35,7 +34,7 @@ export function MobileTabBar() {
         aria-label="Navigazione principale"
         className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-100 bg-white/85 backdrop-blur-xl pb-safe"
       >
-        <ul className="grid grid-cols-5 h-16 px-2">
+        <ul className="grid grid-cols-5 h-(--tabbar-h) px-2">
           {items.map((item) => {
             const active = item.isActive(pathname);
             const Icon = item.icon;
@@ -105,10 +104,7 @@ export function MobileTabBar() {
           <SheetLink href="/settings" icon={<Settings size={20} />} label="Impostazioni" onNavigate={() => setAccountOpen(false)} />
           <li>
             <button
-              onClick={() => {
-                try { localStorage.removeItem("onboarding_draft"); } catch {}
-                signOut({ callbackUrl: "/" });
-              }}
+              onClick={() => signOutAndClearDraft()}
               className="pressable w-full flex items-center gap-4 h-14 px-4 rounded-2xl text-red-600 font-bold hover:bg-red-50"
             >
               <LogOut size={20} />
@@ -117,9 +113,9 @@ export function MobileTabBar() {
           </li>
         </ul>
         <div className="mt-6 pt-4 border-t border-slate-100 flex gap-6 text-xs font-bold text-slate-500">
-          <Link href="/privacy" onClick={() => setAccountOpen(false)}>Privacy</Link>
-          <Link href="/terms" onClick={() => setAccountOpen(false)}>Termini</Link>
-          <Link href="/cookies" onClick={() => setAccountOpen(false)}>Cookies</Link>
+          {LEGAL_LINKS.map(({ href, label }) => (
+            <Link key={href} href={href} onClick={() => setAccountOpen(false)}>{label}</Link>
+          ))}
         </div>
       </BottomSheet>
     </>

@@ -44,59 +44,31 @@ export function generateIcsString(options: {
 export const CALL_DURATION_MINUTES = 30;
 export const CALL_DURATION_MS = CALL_DURATION_MINUTES * 60_000;
 
-// Skillr runs on Italian time: slots are entered and displayed in this zone whatever
-// the browser or the server (often UTC) is set to.
-export const MEETING_TIME_ZONE = "Europe/Rome";
+// Smart Interview events without an explicit end are treated as one hour long.
+export const SMART_EVENT_DEFAULT_DURATION_MS = 60 * 60_000;
 
-function timeZoneOffsetMs(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).formatToParts(date);
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
-  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
-  return asUtc - Math.floor(date.getTime() / 1000) * 1000;
+/** End of a Smart Interview: its saved end time, or start + one hour. */
+export function smartEventEnd(event: { date: Date | string; startTime?: Date | string | null; endTime?: Date | string | null }) {
+  if (event.endTime) return new Date(event.endTime);
+  return new Date(new Date(event.startTime ?? event.date).getTime() + SMART_EVENT_DEFAULT_DURATION_MS);
 }
 
-/**
- * Turns the calendar day picked in the UI plus an "HH:MM" string into the instant
- * that wall-clock time represents in Italy (handles the DST switch).
- */
-export function romeDateTimeToDate(day: Date, time: string) {
-  const [h, m] = time.split(":").map(Number);
-  const guess = Date.UTC(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
-  const firstOffset = timeZoneOffsetMs(new Date(guess), MEETING_TIME_ZONE);
-  let result = guess - firstOffset;
-  const secondOffset = timeZoneOffsetMs(new Date(result), MEETING_TIME_ZONE);
-  if (secondOffset !== firstOffset) result = guess - secondOffset;
-  return new Date(result);
+// The meeting button opens 5 minutes early and stays available for an hour after the
+// start (or until the end, if later), in case the call runs long.
+export const JOIN_OPENS_BEFORE_MS = 5 * 60_000;
+export const JOIN_AVAILABLE_FOR_MS = 60 * 60_000;
+
+export function joinWindow(start: Date | string, end?: Date | string | null) {
+  const startMs = new Date(start).getTime();
+  const opensAt = startMs - JOIN_OPENS_BEFORE_MS;
+  const closesAt = Math.max(end ? new Date(end).getTime() : 0, startMs + JOIN_AVAILABLE_FOR_MS);
+  return { opensAt, closesAt };
 }
 
-export function formatRomeDate(date: Date | string, options: Intl.DateTimeFormatOptions) {
-  return new Date(date).toLocaleString("it-IT", { ...options, timeZone: MEETING_TIME_ZONE });
-}
-
-/**
- * Normalizes a meeting link typed by a company: adds https:// when the scheme is
- * missing (otherwise the browser treats it as a relative path) and only accepts
- * absolute http(s) URLs. Returns null when the input is not a usable link.
- */
-export function normalizeMeetingUrl(input: string) {
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-  const withScheme = /^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  try {
-    const url = new URL(withScheme);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
-    if (!url.hostname.includes(".")) return null;
-    return url.toString();
-  } catch {
-    return null;
-  }
+/** "upcoming" before the window opens, "open" while joinable, "over" afterwards. */
+export function joinState(start: Date | string, end?: Date | string | null, now = Date.now()) {
+  const { opensAt, closesAt } = joinWindow(start, end);
+  if (now < opensAt) return "upcoming" as const;
+  if (now <= closesAt) return "open" as const;
+  return "over" as const;
 }

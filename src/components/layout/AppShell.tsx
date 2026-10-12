@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileTabBar } from "./MobileTabBar";
 import { pageEnter } from "@/lib/motion";
-
-// The first page of a visit is server-rendered: animating it from opacity 0 would keep the
-// content invisible until hydration. Only client-side navigations after that ease in.
-let hasHydrated = false;
 
 /**
  * Logged-in app frame. Desktop: sidebar + scrolling content column. Phone: full-width
@@ -18,9 +14,12 @@ let hasHydrated = false;
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
+  // The first page of a visit is server-rendered: fading it in from 0 would keep it invisible
+  // until hydration. Only client-side navigations after that ease in. The shell stays mounted
+  // across sections (single (app) layout), so a ref is enough.
+  const hydrated = useRef(false);
   useEffect(() => {
-    hasHydrated = true;
+    hydrated.current = true;
   }, []);
 
   return (
@@ -29,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
       <motion.div
         key={pathname}
-        initial={hasHydrated ? pageEnter.initial : false}
+        initial={hydrated.current ? pageEnter.initial : false}
         animate={pageEnter.animate}
         className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
       >

@@ -79,6 +79,11 @@
     @apply italic;
   }
 
+  :root {
+    /* Mobile bottom tab bar height (MobileTabBar, pb-tabbar, bottom-tabbar) */
+    --tabbar-h: 4rem;
+  }
+
   /* Touch: no grey flash on tap, no double-tap zoom delay on controls */
   html {
     -webkit-tap-highlight-color: transparent;
@@ -130,23 +135,22 @@
     scrollbar-width: none;
   }
 
-  /* Press feedback for anything tappable: a quick, shallow scale on touch */
-  .pressable {
-    transition: transform 120ms var(--ease-out-expo), opacity 120ms var(--ease-out-expo);
-  }
-  .pressable:active {
-    transform: scale(0.97);
-  }
-
   /* Exactly the mobile tab bar plus the home-indicator inset. Sticky bars inside a
      container with this padding use bottom-0: sticky offsets start at the padding edge,
      so they then sit right on top of the tab bar. */
   .pb-tabbar {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  /* Fixed bars that must sit right above the tab bar */
+  .bottom-tabbar {
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   }
   @media (min-width: 768px) {
     .pb-tabbar {
       padding-bottom: 0;
+    }
+    .bottom-tabbar {
+      bottom: 0;
     }
   }
 
@@ -159,9 +163,20 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pressable:active {
-    transform: none;
-    opacity: 0.7;
+/* Press feedback for anything tappable. Uses the `scale` property (not transform) and a
+   transition list that still includes colors, so it composes with transition-colors /
+   transition-all on the same element instead of silently overriding them. */
+@utility pressable {
+  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, scale;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-expo);
+  &:active {
+    scale: 0.97;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      scale: none;
+      opacity: 0.7;
+    }
   }
 }

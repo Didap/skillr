@@ -26,9 +26,11 @@ export const spring = {
   sheet: { type: "spring", stiffness: 420, damping: 40 } satisfies Transition,
 };
 
+// Opacity only: a transform on the page wrapper would make every `position: fixed`
+// action bar inside it resolve against the wrapper instead of the viewport mid-animation.
 export const pageEnter = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: duration.state, ease: ease.out } },
 };
 
 /** Light haptic tick where supported (Android Chrome). iOS Safari has no vibration API. */

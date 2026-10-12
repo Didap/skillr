@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 
@@ -26,10 +25,10 @@ export function ConfirmSheet({
   cancelText = "Indietro",
   loading = false,
 }: ConfirmSheetProps) {
-  // Stable handler: the sheet re-runs its focus effect whenever onClose changes identity
-  const close = useCallback(() => {
+  // No dismissing (Escape, backdrop, drag) while the action is running
+  const close = () => {
     if (!loading) onClose();
-  }, [loading, onClose]);
+  };
 
   return (
     <BottomSheet open={open} onClose={close} title={title}>

@@ -13,7 +13,7 @@ import { InterviewEvent } from "@/types/interview";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { eventWallTimeToDate, getEventWallTime } from "./event-time";
+import { romeWallTimeToDate, getRomeWallTime } from "@/lib/rome-time";
 
 interface InterviewFormProps {
   onSubmit: (data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) => Promise<void>;
@@ -40,7 +40,7 @@ const fieldClass =
 // The date picker works with local-midnight Dates, so only its calendar day is used.
 function initialDateTime(value: Date | string | undefined) {
   if (!value) return { date: new Date(), time: "09:00" };
-  const w = getEventWallTime(value);
+  const w = getRomeWallTime(value);
   const pad = (n: number) => String(n).padStart(2, "0");
   return { date: new Date(w.year, w.month - 1, w.day), time: `${pad(w.hour)}:${pad(w.minute)}` };
 }
@@ -175,7 +175,7 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
 
     // Combine the picked day and time as Italian time
     const [hours, minutes] = time.split(":").map(Number);
-    const eventDate = eventWallTimeToDate(date.getFullYear(), date.getMonth() + 1, date.getDate(), hours, minutes);
+    const eventDate = romeWallTimeToDate(date.getFullYear(), date.getMonth() + 1, date.getDate(), hours, minutes);
     const endTime = duration > 0 ? new Date(eventDate.getTime() + duration * 60000) : null;
 
     const data = {

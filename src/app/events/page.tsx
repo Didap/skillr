@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { InterviewEvent } from "@/types/interview";
 import { useSession } from "next-auth/react";
-import { formatEventMonth, formatEventDayOfMonth } from "@/components/interviews/event-time";
+import { formatEventMonth, formatEventDayOfMonth } from "@/lib/rome-time";
 import { duration, ease } from "@/lib/motion";
 
 type PublicEvent = InterviewEvent & {

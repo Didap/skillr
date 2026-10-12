@@ -31,7 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CustomTooltip } from "@/components/ui/tooltip";
-import { formatRomeDate } from "@/lib/calendar-utils";
+import { formatRomeDate } from "@/lib/rome-time";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { duration, ease, haptic } from "@/lib/motion";
 

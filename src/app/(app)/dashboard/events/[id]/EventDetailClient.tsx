@@ -33,9 +33,9 @@ import {
   getEventParticipantsAction,
   updateMeetingLinkAction,
 } from "@/app/actions/interviews";
-import { formatEventDay, formatEventTime, isSafeHttpUrl } from "@/components/interviews/event-time";
+import { formatEventDay, formatEventTime, isSafeHttpUrl } from "@/lib/rome-time";
 import { SeatCount } from "@/components/interviews/SeatCount";
-import { ConfirmSheet } from "@/components/interviews/ConfirmSheet";
+import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { ParticipantList, type Participant } from "@/components/interviews/ParticipantList";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";

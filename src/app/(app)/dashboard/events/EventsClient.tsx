@@ -24,7 +24,7 @@ import { updateMeetingLinkAction, getEventParticipantsAction } from "@/app/actio
 import { motion } from "framer-motion";
 import { duration, ease } from "@/lib/motion";
 import { ParticipantList, type Participant } from "@/components/interviews/ParticipantList";
-import { formatEventMonth, formatEventDayOfMonth, formatEventTime } from "@/components/interviews/event-time";
+import { formatEventMonth, formatEventDayOfMonth, formatEventTime } from "@/lib/rome-time";
 import Link from "next/link";
 import Image from "next/image";
 

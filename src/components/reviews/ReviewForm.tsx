@@ -1,22 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Star, MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { saveReviewAction } from "@/app/actions/reviews";
-import { cn } from "@/lib/utils";
-import { haptic, spring } from "@/lib/motion";
+import { StarRating } from "@/components/ui/star-rating";
 
 interface ReviewFormProps {
   matchId?: string;
   interviewBookingId?: string;
   targetName: string;
   onSuccess?: () => void;
-  /** Hide the "Com'è andata?" title when the container (e.g. the sheet) already shows it */
-  showHeading?: boolean;
 }
 
 const RATING_LABELS = ["Seleziona le stelle", "Scarso", "Sufficiente", "Buono", "Ottimo", "Eccellente"];
@@ -26,10 +22,8 @@ export function ReviewForm({
   interviewBookingId,
   targetName,
   onSuccess,
-  showHeading = true
 }: ReviewFormProps) {
   const [stars, setStars] = useState(0);
-  const [hover, setHover] = useState(0);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -58,51 +52,14 @@ export function ReviewForm({
     setLoading(false);
   };
 
-  const shown = hover || stars;
-
   return (
     <div className="space-y-5 md:space-y-8">
-      <div className="text-center space-y-2">
-        {showHeading && (
-          <h3 className="text-2xl font-display italic text-slate-950 tracking-tight">Com&apos;è andata?</h3>
-        )}
-        <p className={cn("text-slate-500 text-[15px] md:text-sm font-medium", !showHeading && "text-left md:text-center")}>
-          Lascia una recensione per aiutare la community di Skillr.
-        </p>
-      </div>
+      <p className="text-slate-500 text-[15px] md:text-sm font-medium md:text-center">
+        Lascia una recensione per aiutare la community di Skillr.
+      </p>
 
       <div className="flex flex-col items-center gap-3 md:gap-4 py-5 px-3 md:p-8 bg-slate-50/50 rounded-3xl md:rounded-[2.5rem] border border-slate-100">
-        <div role="radiogroup" aria-label="Valutazione" className="flex gap-1" onPointerLeave={() => setHover(0)}>
-          {[1, 2, 3, 4, 5].map((value) => {
-            const active = value <= shown;
-            return (
-              <motion.button
-                key={value}
-                type="button"
-                role="radio"
-                aria-checked={stars === value}
-                aria-label={`${value} ${value === 1 ? "stella" : "stelle"}: ${RATING_LABELS[value]}`}
-                onClick={() => {
-                  setStars(value);
-                  haptic();
-                }}
-                // Hover preview for mouse only: on touch it would stick after the tap
-                onPointerEnter={(e) => e.pointerType === "mouse" && setHover(value)}
-                whileTap={{ scale: 0.85 }}
-                animate={{ scale: value <= stars ? 1 : 0.92 }}
-                transition={spring.snappy}
-                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-              >
-                <Star
-                  className={cn(
-                    "w-9 h-9 md:w-11 md:h-11 transition-colors duration-150",
-                    active ? "fill-amber-400 text-amber-400" : "text-slate-200 fill-slate-50"
-                  )}
-                />
-              </motion.button>
-            );
-          })}
-        </div>
+        <StarRating value={stars} onChange={setStars} labels={RATING_LABELS} className="[&_svg]:size-9 md:[&_svg]:size-11" />
         <div className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]" aria-live="polite">
           {RATING_LABELS[stars]}
         </div>

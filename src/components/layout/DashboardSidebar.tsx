@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Zap, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { primaryNav } from "./nav-items";
+import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
+import { signOutAndClearDraft } from "@/lib/sign-out";
 
 export function DashboardSidebar() {
   const { data: session } = useSession();
@@ -40,7 +41,7 @@ export function DashboardSidebar() {
           href="/profile" 
           icon={<User size={20} />} 
           label="Profilo" 
-          active={pathname === "/profile" || pathname === `/profile/${session.user.id}`}
+          active={isOwnProfile(pathname, session.user.id)}
         />
       </nav>
 
@@ -52,11 +53,7 @@ export function DashboardSidebar() {
           active={pathname.startsWith("/settings")}
         />
         <button 
-          onClick={() => {
-            // Don't leave a half-finished onboarding draft for the next person on this browser
-            try { localStorage.removeItem("onboarding_draft"); } catch {}
-            signOut({ callbackUrl: "/" });
-          }}
+          onClick={() => signOutAndClearDraft()}
           className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all font-bold text-sm group"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -65,9 +62,9 @@ export function DashboardSidebar() {
       </div>
 
       <div className="mt-auto pt-8 px-4 hidden lg:flex flex-wrap gap-x-4 gap-y-2 opacity-30 hover:opacity-100 transition-opacity">
-        <Link href="/privacy" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy</Link>
-        <Link href="/terms" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Termini</Link>
-        <Link href="/cookies" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Cookies</Link>
+        {LEGAL_LINKS.map(({ href, label }) => (
+          <Link key={href} href={href} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">{label}</Link>
+        ))}
       </div>
     </aside>
   );

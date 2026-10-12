@@ -10,7 +10,7 @@ import { InterviewEvent } from "@/types/interview";
 import { sendEmail } from "@/lib/mail";
 import { InterviewLinkEmail } from "@/emails/InterviewLinkEmail";
 import { InterviewEventChangeEmail } from "@/emails/InterviewEventChangeEmail";
-import { formatEventDateTime, isSafeHttpUrl } from "@/components/interviews/event-time";
+import { formatEventDateTime, isSafeHttpUrl } from "@/lib/rome-time";
 import React from "react";
 import crypto from "crypto";
 import { publicUserColumns } from "@/db/safe-columns";

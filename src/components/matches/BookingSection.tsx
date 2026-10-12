@@ -13,7 +13,8 @@ import { proposeSlots, confirmSlot } from "@/app/actions/booking";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
-import { romeDateTimeToDate, formatRomeDate, normalizeMeetingUrl, CALL_DURATION_MS } from "@/lib/calendar-utils";
+import { CALL_DURATION_MS } from "@/lib/calendar-utils";
+import { romeDateTimeToDate, formatRomeDate, normalizeMeetingUrl } from "@/lib/rome-time";
 
 // On phones each state is its own card under the profile; from md it sits inside the page's card.
 const PHONE_CARD =

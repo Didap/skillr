@@ -9,13 +9,8 @@ import { sendEmail } from "@/lib/mail";
 import { BookingEmail } from "@/emails/BookingEmail";
 import { ConfirmationEmail } from "@/emails/ConfirmationEmail";
 import { createMeetEvent, deleteMeetEvent, isGoogleCalendarConfigured } from "@/lib/google-calendar";
-import {
-  generateIcsString,
-  formatRomeDate,
-  normalizeMeetingUrl,
-  CALL_DURATION_MINUTES,
-  CALL_DURATION_MS,
-} from "@/lib/calendar-utils";
+import { generateIcsString, CALL_DURATION_MINUTES, CALL_DURATION_MS } from "@/lib/calendar-utils";
+import { formatRomeDate, normalizeMeetingUrl } from "@/lib/rome-time";
 import { publicUserColumns } from "@/db/safe-columns";
 
 // Clock skew tolerated between the browser that built the slot and the server.
