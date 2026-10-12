@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ReviewForm } from "./ReviewForm";
 
 interface ReviewDialogProps {
@@ -12,6 +12,7 @@ interface ReviewDialogProps {
   targetName: string;
 }
 
+// Bottom sheet on phones (drag to dismiss), centred dialog from md: BottomSheet handles both.
 export function ReviewDialog({
   isOpen,
   onClose,
@@ -19,41 +20,24 @@ export function ReviewDialog({
   interviewBookingId,
   targetName
 }: ReviewDialogProps) {
+  // BottomSheet re-runs its open effect (focus + scroll lock) when onClose changes identity.
+  // Parents pass inline arrows and re-render on a timer, which would pull focus out of the
+  // textarea mid-sentence: hand the sheet a stable callback instead.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+  const handleClose = useCallback(() => onCloseRef.current(), []);
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl border border-slate-100 overflow-hidden"
-          >
-            <button
-              onClick={onClose}
-              className="absolute top-10 right-10 text-slate-300 hover:text-slate-950 transition-colors p-2 hover:bg-slate-50 rounded-full"
-            >
-              <X size={24} />
-            </button>
-            <div className="p-12">
-              <ReviewForm
-                matchId={matchId}
-                interviewBookingId={interviewBookingId}
-                targetName={targetName}
-                onSuccess={onClose}
-              />
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+    <BottomSheet open={isOpen} onClose={handleClose} title="Com'è andata?">
+      <ReviewForm
+        matchId={matchId}
+        interviewBookingId={interviewBookingId}
+        targetName={targetName}
+        onSuccess={handleClose}
+        showHeading={false}
+      />
+    </BottomSheet>
   );
 }

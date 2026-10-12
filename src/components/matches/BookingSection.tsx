@@ -1,18 +1,78 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange, Sparkles } from "lucide-react";
+import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange, Sparkles, ChevronLeft, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { duration, ease, haptic, spring } from "@/lib/motion";
 import { proposeSlots, confirmSlot } from "@/app/actions/booking";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
 import { romeDateTimeToDate, formatRomeDate, normalizeMeetingUrl, CALL_DURATION_MS } from "@/lib/calendar-utils";
+
+// On phones each state is its own card under the profile; from md it sits inside the page's card.
+const PHONE_CARD =
+  "bg-white rounded-3xl border border-border-subtle shadow-card p-5 md:bg-transparent md:rounded-none md:border-0 md:shadow-none md:p-0";
+
+// Buttons: compact sans on phones (thumb bar), the original display-italic look from md.
+const PRIMARY_BTN =
+  "pressable h-12 md:h-16 rounded-2xl px-6 md:px-12 text-base md:text-xl font-bold md:font-display md:italic gap-2 md:gap-3 bg-slate-950 text-white hover:bg-emerald-600 shadow-premium transition-colors";
+const SECONDARY_BTN =
+  "pressable h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors";
+
+const LABEL = "text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 pl-1";
+
+const stepMotion = {
+  initial: { opacity: 0, x: 16 },
+  animate: { opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } },
+  exit: { opacity: 0, x: -16, transition: { duration: duration.feedback, ease: ease.in } },
+};
+
+/**
+ * Primary actions for the current step. Phones: pinned above the tab bar, thumb reach.
+ * From md: back in the normal flow, wherever the parent places it.
+ * The parent adds bottom padding on phones (pb-24, pb-36 when it may wrap to two rows)
+ * so content never hides behind it. No transformed ancestor may wrap it, or `fixed`
+ * would resolve against that ancestor instead of the viewport.
+ */
+function ActionBar({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 flex flex-wrap items-stretch gap-2 px-4 py-3",
+        "bg-white/90 backdrop-blur-xl border-t border-slate-100 [&>*]:flex-auto",
+        "md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-0 md:flex-nowrap md:[&>*]:flex-none",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Calendar-leaf tile: day number over the short month, in Italian time. */
+function DateTile({ date, active = false, className }: { date: Date; active?: boolean; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "w-14 h-14 shrink-0 rounded-2xl flex flex-col items-center justify-center border transition-colors",
+        active ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-50 border-slate-100 text-slate-950",
+        className
+      )}
+      aria-hidden="true"
+    >
+      <span className="text-xl font-bold leading-none tabular-nums">{formatRomeDate(date, { day: "numeric" })}</span>
+      <span className={cn("mt-1 text-[11px] font-black uppercase tracking-wider leading-none", active ? "text-emerald-50" : "text-slate-500")}>
+        {formatRomeDate(date, { month: "short" }).replace(".", "")}
+      </span>
+    </div>
+  );
+}
 
 // The meeting button opens 5 minutes early and stays available for an hour, in case the call runs long.
 const JOIN_OPENS_BEFORE_MS = 5 * 60_000;
@@ -169,6 +229,7 @@ END:VCALENDAR`;
     document.body.removeChild(link);
   };
 
+
   // 1. CONFIRMED STATE
   if (scheduledAt) {
     const startTime = new Date(scheduledAt);
@@ -178,90 +239,104 @@ END:VCALENDAR`;
     const joinClosesAt = new Date(startTime.getTime() + JOIN_AVAILABLE_FOR_MS);
     const isActive = now >= activationTime && now < joinClosesAt;
     const isCompleted = now >= endTime;
+    const showReview = isCompleted && !hasReviewed;
+    // Calls that run over can still be rejoined until an hour after the start.
+    const showRejoin = isCompleted && !!meetingLink && isActive;
+    const hasActions = !isCompleted || showReview || showRejoin;
 
     return (
-      <div className="p-6 md:p-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm"
+      <div className={cn("md:p-10", hasActions && "pb-36 md:pb-10")}>
+        {/* Opacity-only entrance: a transform here would unpin the phone action bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: duration.view, ease: ease.out } }}
+          className="bg-white rounded-3xl border border-border-subtle md:border-slate-100 shadow-card md:shadow-sm p-5 md:p-8"
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="flex-1 space-y-4 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-5 md:gap-10">
+            <div className="flex-1 min-w-0 space-y-4">
               <div className={cn(
-                "inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em]",
-                isCompleted ? "bg-slate-100 text-slate-500" : "bg-emerald-500/10 text-emerald-600"
+                "hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-[0.2em]",
+                isCompleted ? "bg-slate-100 text-slate-600" : "bg-emerald-500/10 text-emerald-700"
               )}>
-                 {isCompleted ? <Check size={12} strokeWidth={3} /> : <Clock size={12} />} 
+                 {isCompleted ? <Check size={12} strokeWidth={3} /> : <Clock size={12} />}
                  {isCompleted ? 'Incontro Concluso' : 'Appuntamento Fissato'}
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl md:text-4xl font-display italic font-bold text-slate-950 tracking-tight">
+                <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
                   {isCompleted ? 'Com\'è andato l\'incontro?' : 'Ci vediamo presto!'}
                 </h3>
-                <p className="text-slate-500 text-base md:text-lg max-w-xl leading-relaxed">
-                  {isCompleted 
-                    ? `L'incontro con ${targetName} si è concluso. Lascia un feedback per completare il match.`
-                    : `Il tuo incontro è programmato per ${formatRomeDate(startTime, { weekday: 'long', day: 'numeric', month: 'long' })} alle ${formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}.`}
-                </p>
+                {isCompleted && (
+                  <p className="text-[15px] md:text-lg text-slate-500 max-w-xl leading-relaxed">
+                    {`L'incontro con ${targetName} si è concluso. Lascia un feedback per completare il match.`}
+                  </p>
+                )}
+              </div>
+
+              {/* When: the one thing to remember */}
+              <div className="flex items-center gap-4 p-3 md:p-4 rounded-2xl bg-slate-50/70 border border-slate-100 max-w-md">
+                <DateTile date={startTime} active={!isCompleted} />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-500">
+                    {isCompleted ? "Incontro concluso" : "Il tuo incontro è programmato per"}
+                  </p>
+                  <p className="font-bold text-slate-950 first-letter:uppercase truncate">
+                    {formatRomeDate(startTime, { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </p>
+                  <p className="text-sm font-semibold text-slate-600 tabular-nums">
+                    {formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}–{formatRomeDate(endTime, { hour: '2-digit', minute: '2-digit' })}
+                    <span className="text-slate-400 font-medium"> · ora italiana</span>
+                  </p>
+                </div>
               </div>
             </div>
-            
-            <div className="flex flex-col gap-3 w-full md:w-auto">
-               {isCompleted ? (
-                 <>
-                   {!hasReviewed && (
-                      <Button
-                        onClick={() => setIsReviewOpen(true)}
-                        className="rounded-2xl h-16 px-10 text-xl font-display italic font-bold shadow-premium bg-slate-950 hover:bg-emerald-600 transition-all gap-3"
-                      >
-                        <Sparkles size={24} className="text-amber-400" />
+
+            {hasActions && (
+              <ActionBar className="md:flex-col md:gap-3 md:w-auto md:[&>*]:w-full">
+                {isCompleted ? (
+                  <>
+                    {showReview && (
+                      <Button onClick={() => setIsReviewOpen(true)} className={cn(PRIMARY_BTN, "md:px-10")}>
+                        <Sparkles size={20} className="text-amber-400" />
                         Lascia Feedback
                       </Button>
-                   )}
-                   {/* Calls that run over can still be rejoined until an hour after the start. */}
-                   {meetingLink && isActive && (
-                     <a
-                       href={meetingLink}
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className={cn(
-                         buttonVariants({ variant: "outline" }),
-                         "rounded-2xl h-14 px-8 text-base font-bold gap-3 flex items-center justify-center border-slate-200 text-slate-600 bg-white hover:bg-slate-50"
-                       )}
-                     >
-                       <Video size={20} /> Rientra nella call
-                     </a>
-                   )}
-                 </>
-               ) : (
-                 meetingLink && (
-                   <a 
-                     href={isActive ? meetingLink : undefined} 
-                     target="_blank" 
-                     rel="noopener noreferrer"
-                     className={cn(
-                       buttonVariants({ variant: "default" }),
-                       "rounded-2xl h-14 px-8 text-base font-bold gap-3 flex items-center justify-center transition-all",
-                       isActive 
-                        ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20" 
-                        : "bg-slate-50 text-slate-400 cursor-not-allowed opacity-60"
-                     )}
-                   >
-                     <Video size={20} /> {isActive ? 'Entra in Meet' : 'Link non ancora attivo'}
-                   </a>
-                 )
-               )}
-               {!isCompleted && (
-                 <Button 
-                   variant="outline" 
-                   onClick={downloadICS} 
-                   className="rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 h-14 px-8 text-base font-bold gap-3 bg-white"
-                 >
-                   <Download size={20} /> Calendario
-                 </Button>
-               )}
-            </div>
+                    )}
+                    {showRejoin && (
+                      <a
+                        href={meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(buttonVariants({ variant: "outline" }), SECONDARY_BTN)}
+                      >
+                        <Video size={20} /> Rientra nella call
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {meetingLink && (
+                      <a
+                        href={isActive ? meetingLink : undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-disabled={!isActive}
+                        className={cn(
+                          buttonVariants({ variant: "default" }),
+                          "h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
+                          isActive
+                            ? "pressable bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
+                            : "bg-slate-100 text-slate-500 cursor-not-allowed"
+                        )}
+                      >
+                        <Video size={20} /> {isActive ? 'Entra in Meet' : 'Link non ancora attivo'}
+                      </a>
+                    )}
+                    <Button variant="outline" onClick={downloadICS} className={SECONDARY_BTN}>
+                      <Download size={20} /> Calendario
+                    </Button>
+                  </>
+                )}
+              </ActionBar>
+            )}
           </div>
         </motion.div>
 
@@ -281,36 +356,37 @@ END:VCALENDAR`;
   // 2. COMPANY VIEW (PROPOSE SLOTS)
   if (role === "company" && (initialSlots.length === 0 || isReproposing)) {
     return (
-      <div className="p-6 md:p-10">
-        <div className="max-w-5xl mx-auto">
+      <div className="pb-24 md:p-10">
+        <div className={cn(PHONE_CARD, "max-w-5xl mx-auto")}>
           {formStep === 0 ? (
-            <div className="flex flex-col md:flex-row justify-between items-center gap-10">
-              <div className="flex-1 text-center md:text-left space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-10">
+              <div className="flex-1 space-y-4">
+                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em]">
                    Scheduling
                 </div>
-                <div className="space-y-3">
-                  <h3 className="text-3xl md:text-4xl font-display italic font-bold text-slate-950 tracking-tight">
+                <div className="space-y-2 md:space-y-3">
+                  <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
                     Pianifica la tua call conoscitiva
                   </h3>
-                  <p className="text-slate-500 text-base md:text-lg max-w-xl leading-relaxed font-medium">
+                  <p className="text-[15px] md:text-lg text-slate-500 max-w-xl leading-relaxed font-medium">
                     Proponi fino a 3 slot orari. Il match verrà ufficializzato appena lo slot verrà confermato.
                   </p>
                 </div>
               </div>
-              <Button 
-                onClick={() => setFormStep(1)} 
-                className="rounded-2xl px-10 h-16 text-xl font-display italic font-bold shadow-premium gap-3 bg-slate-950 hover:bg-emerald-600 transition-all"
-              >
-                <CalendarRange size={24} />
-                Proponi Slot
-              </Button>
+              <ActionBar>
+                <Button onClick={() => setFormStep(1)} className={PRIMARY_BTN}>
+                  <CalendarRange size={20} />
+                  Proponi Slot
+                </Button>
+              </ActionBar>
             </div>
           ) : (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-6">
-                 <div className="flex items-center gap-4">
-                    <button 
+            <div className="space-y-5 md:space-y-8">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 md:pb-6">
+                 <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <button
+                      type="button"
+                      aria-label={formStep === 2 ? "Indietro" : "Annulla"}
                       onClick={() => {
                         if (formStep === 1 && isReproposing) {
                           setIsReproposing(false);
@@ -319,51 +395,50 @@ END:VCALENDAR`;
                         }
                         setFormStep(formStep - 1);
                       }}
-                      className="w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-950 transition-all"
+                      className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-950 transition-colors"
                     >
-                      <Plus size={18} className="rotate-45" />
+                      {formStep === 2 ? <ChevronLeft size={20} /> : <X size={18} />}
                     </button>
-                    <div>
-                      <h4 className="text-xl font-display italic font-bold text-slate-950">
+                    <div className="min-w-0">
+                      <h4 className="text-lg md:text-xl font-display italic text-slate-950 truncate">
                         {formStep === 1 ? "Selezione Disponibilità" : "Metodo Incontro"}
                       </h4>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Step {formStep} di 2</p>
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Step {formStep} di 2</p>
                     </div>
                  </div>
-                 <div className="hidden sm:flex gap-1.5">
+                 <div className="flex gap-1.5 shrink-0" aria-hidden="true">
                     {[1, 2].map(s => (
-                      <div key={s} className={cn("w-8 h-1.5 rounded-full transition-all duration-500", formStep >= s ? "bg-emerald-500" : "bg-slate-100")} />
+                      <div key={s} className={cn("w-6 md:w-8 h-1.5 rounded-full transition-colors duration-300", formStep >= s ? "bg-emerald-500" : "bg-slate-100")} />
                     ))}
                  </div>
               </div>
 
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {formStep === 1 && (
-                  <motion.div 
-                    key="step1"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-10"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <motion.div key="step1" {...stepMotion} className="space-y-3 md:space-y-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                       {newSlots.map((s, idx) => (
-                        <div key={idx} className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:border-emerald-100 transition-all">
-                          <div className="space-y-6">
-                            <div className="flex justify-between items-center">
+                        <div key={idx} className="bg-white border border-slate-100 rounded-2xl md:rounded-3xl p-4 md:p-6 md:shadow-sm hover:border-emerald-100 transition-colors">
+                          <div className="space-y-4 md:space-y-6">
+                            <div className="flex justify-between items-center min-h-11">
                               <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-black">{idx + 1}</div>
-                                <span className="text-lg font-display italic font-bold text-slate-950">Disponibilità</span>
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-black">{idx + 1}</div>
+                                <span className="text-lg font-display italic text-slate-950">Disponibilità</span>
                               </div>
                               {newSlots.length > 1 && (
-                                <button onClick={() => setNewSlots(newSlots.filter((_, i) => i !== idx))} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
-                                  <Trash2 size={16} />
+                                <button
+                                  type="button"
+                                  aria-label={`Rimuovi disponibilità ${idx + 1}`}
+                                  onClick={() => setNewSlots(newSlots.filter((_, i) => i !== idx))}
+                                  className="pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 size={18} />
                                 </button>
                               )}
                             </div>
                             <div className="space-y-4">
                               <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">Data</Label>
+                                <Label className={LABEL}>Data</Label>
                                 <DatePicker
                                   value={s.date}
                                   onChange={(date) => {
@@ -375,7 +450,7 @@ END:VCALENDAR`;
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">Orario (ora italiana)</Label>
+                                <Label className={LABEL}>Orario (ora italiana)</Label>
                                 <TimePicker
                                   value={s.time}
                                   onChange={(time) => {
@@ -396,71 +471,112 @@ END:VCALENDAR`;
                         </div>
                       ))}
                       {newSlots.length < 3 && (
-                        <button onClick={() => setNewSlots([...newSlots, { date: undefined, time: "09:00" }])} className="h-full min-h-[200px] rounded-3xl border-2 border-dashed border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all flex flex-col items-center justify-center gap-3 group text-slate-400 hover:text-emerald-600 bg-slate-50/50">
-                          <div className="w-12 h-12 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-all">
-                             <Plus size={24} className="opacity-40 group-hover:opacity-100" />
-                          </div>
-                          <span className="font-display italic font-bold text-lg">Aggiungi slot</span>
+                        <button
+                          type="button"
+                          onClick={() => setNewSlots([...newSlots, { date: undefined, time: "09:00" }])}
+                          className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-2xl md:rounded-3xl border-2 border-dashed border-slate-200 md:border-slate-100 bg-white md:bg-slate-50/50 hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 group text-slate-700 md:text-slate-500 hover:text-emerald-700"
+                        >
+                          <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform">
+                             <Plus size={18} className="md:hidden" />
+                             <Plus size={24} className="hidden md:block" />
+                          </span>
+                          <span className="font-bold text-base md:font-display md:italic md:text-lg">Aggiungi slot</span>
                         </button>
                       )}
-                    </div>
-                    <div className="flex justify-center">
-                      <Button onClick={() => { const slotsError = validateNewSlots(Date.now()); if (slotsError) { toast.error(slotsError); return; } setFormStep(2); }} className="rounded-2xl px-16 h-16 text-xl font-display italic font-bold shadow-premium bg-slate-950 hover:bg-emerald-600 transition-all">
-                        Continua
-                      </Button>
                     </div>
                   </motion.div>
                 )}
 
                 {formStep === 2 && (
-                  <motion.div 
-                    key="step2"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-10 max-w-3xl mx-auto"
-                  >
-                    <div className="grid sm:grid-cols-2 gap-6">
-                       <button onClick={() => setMeetingMethod("meet")} className={cn("p-8 rounded-[2.5rem] text-left border-2 transition-all space-y-4 group relative overflow-hidden", meetingMethod === "meet" ? "border-emerald-500 bg-emerald-50/50 shadow-premium" : "border-slate-100 bg-white hover:border-emerald-200")}>
-                         <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-all", meetingMethod === "meet" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600")}>
-                           <Video size={24} />
-                         </div>
-                         <div>
-                           <p className="font-display italic font-bold text-xl text-slate-950">Google Meet</p>
-                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Link generato alla conferma dello slot.</p>
-                         </div>
-                         {meetingMethod === "meet" && <Check className="absolute top-6 right-6 text-emerald-600" size={20} strokeWidth={3} />}
-                       </button>
-
-                       <button onClick={() => setMeetingMethod("custom")} className={cn("p-8 rounded-[2.5rem] text-left border-2 transition-all space-y-4 group relative overflow-hidden", meetingMethod === "custom" ? "border-emerald-500 bg-emerald-50/50 shadow-premium" : "border-slate-100 bg-white hover:border-emerald-200")}>
-                         <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-all", meetingMethod === "custom" ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600")}>
-                           <Calendar size={24} />
-                         </div>
-                         <div>
-                           <p className="font-display italic font-bold text-xl text-slate-950">Link Esterno</p>
-                           <p className="text-xs text-slate-500 leading-relaxed font-medium">Zoom, Teams o altro.</p>
-                         </div>
-                         {meetingMethod === "custom" && <Check className="absolute top-6 right-6 text-emerald-600" size={20} strokeWidth={3} />}
-                       </button>
+                  <motion.div key="step2" {...stepMotion} className="space-y-4 md:space-y-10 max-w-3xl mx-auto">
+                    <div role="radiogroup" aria-label="Metodo incontro" className="grid sm:grid-cols-2 gap-3 md:gap-6">
+                      {([
+                        { value: "meet", Icon: Video, title: "Google Meet", desc: "Link generato alla conferma dello slot." },
+                        { value: "custom", Icon: Calendar, title: "Link Esterno", desc: "Zoom, Teams o altro." },
+                      ] as const).map(({ value, Icon, title, desc }) => {
+                        const selected = meetingMethod === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => setMeetingMethod(value)}
+                            className={cn(
+                              "pressable relative w-full flex sm:flex-col items-center sm:items-start gap-4 p-4 pr-12 sm:pr-8 md:p-8 rounded-3xl md:rounded-[2.5rem] text-left border-2 transition-colors group",
+                              selected ? "border-emerald-500 bg-emerald-50/50 md:shadow-premium" : "border-slate-100 bg-white hover:border-emerald-200"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-colors",
+                              selected ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-50 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-700"
+                            )}>
+                              <Icon size={24} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-display italic text-lg md:text-xl text-slate-950">{title}</p>
+                              <p className="text-sm md:text-xs text-slate-500 leading-relaxed font-medium">{desc}</p>
+                            </div>
+                            <AnimatePresence initial={false}>
+                              {selected && (
+                                <motion.span
+                                  initial={{ scale: 0, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1, transition: spring.snappy }}
+                                  exit={{ scale: 0, opacity: 0, transition: { duration: duration.feedback } }}
+                                  className="absolute top-1/2 -mt-2.5 right-4 sm:top-6 sm:mt-0 sm:right-6 text-emerald-600"
+                                >
+                                  <Check size={20} strokeWidth={3} />
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </button>
+                        );
+                      })}
                     </div>
 
-                    <AnimatePresence>
+                    <AnimatePresence initial={false}>
                       {meetingMethod === "custom" && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 pl-1">URL Chiamata</Label>
-                          <input type="url" placeholder="https://zoom.us/j/..." value={customMeetingLink} onChange={(e) => setCustomMeetingLink(e.target.value)} className="w-full h-14 px-6 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 outline-none transition-all font-bold text-slate-950" />
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
+                          exit={{ opacity: 0, y: 8, transition: { duration: duration.feedback, ease: ease.in } }}
+                          className="space-y-2"
+                        >
+                          <Label htmlFor={`meeting-link-${matchId}`} className={LABEL}>URL Chiamata</Label>
+                          <input
+                            id={`meeting-link-${matchId}`}
+                            type="url"
+                            inputMode="url"
+                            autoComplete="url"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            placeholder="https://zoom.us/j/..."
+                            value={customMeetingLink}
+                            onChange={(e) => setCustomMeetingLink(e.target.value)}
+                            className="w-full h-14 px-4 md:px-6 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 outline-none transition-colors font-bold text-base text-slate-950"
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
-
-                    <div className="flex justify-center pt-4">
-                      <Button onClick={handleProposeSlots} disabled={isPending} className="rounded-2xl px-20 h-16 text-xl font-display italic font-bold shadow-premium bg-slate-950 hover:bg-emerald-600 transition-all">
-                        {isPending ? <Loader2 className="animate-spin" /> : "Invia Proposta"}
-                      </Button>
-                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Kept outside the animated step: a transformed ancestor would unpin it on phones */}
+              <ActionBar className="md:justify-center md:pt-4">
+                {formStep === 1 ? (
+                  <Button
+                    onClick={() => { const slotsError = validateNewSlots(Date.now()); if (slotsError) { toast.error(slotsError); return; } setFormStep(2); }}
+                    className={cn(PRIMARY_BTN, "md:px-16")}
+                  >
+                    Continua
+                  </Button>
+                ) : (
+                  <Button onClick={handleProposeSlots} disabled={isPending} className={cn(PRIMARY_BTN, "md:px-20")}>
+                    {isPending ? <Loader2 className="animate-spin" /> : "Invia Proposta"}
+                  </Button>
+                )}
+              </ActionBar>
             </div>
           )}
         </div>
@@ -473,69 +589,79 @@ END:VCALENDAR`;
     const allExpired = initialSlots.every(slot => new Date(slot.startTime) <= now);
 
     return (
-      <div className="p-8 md:p-16 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-12 relative z-10">
-           <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+      <div className="pb-24 md:p-16">
+        <div className={cn(PHONE_CARD, "max-w-4xl mx-auto md:text-center space-y-5 md:space-y-12")}>
+           <div className="space-y-2 md:space-y-4">
+              <div className="hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em] mb-4">
                  <Check size={12} strokeWidth={3} /> Proposta Inviata
               </div>
-              <h3 className="text-3xl md:text-4xl font-display italic font-bold text-slate-950 tracking-tight">
+              <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
                 {allExpired ? "Gli orari proposti sono passati" : "Proposta inviata!"}
               </h3>
-              <p className="text-slate-500 text-lg max-w-lg mx-auto leading-relaxed font-medium">
+              <p className="text-[15px] md:text-lg text-slate-500 max-w-lg md:mx-auto leading-relaxed font-medium">
                 {allExpired
                   ? "Nessuno slot è stato confermato in tempo. Proponi nuovi orari per fissare la call."
                   : "Le tue disponibilità sono state inviate. Riceverai una notifica appena lo slot verrà confermato."}
               </p>
            </div>
 
-           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
+           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 max-w-3xl mx-auto">
              {initialSlots.map((slot, idx) => {
                const isExpired = new Date(slot.startTime) <= now;
                return (
-                 <div key={idx} className={cn("bg-white border border-slate-100 p-6 rounded-3xl shadow-sm", isExpired && "opacity-50")}>
-                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">
-                     Opzione {idx + 1}{isExpired && " · Scaduto"}
-                   </p>
-                   <p className="text-lg font-bold text-slate-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
-                   <p className="text-sm font-medium text-slate-500">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
-                 </div>
+                 <li
+                   key={idx}
+                   className={cn(
+                     "flex items-center justify-between gap-3 md:block bg-white border border-slate-100 p-4 md:p-6 rounded-2xl md:rounded-3xl md:shadow-sm text-left",
+                     isExpired && "opacity-50"
+                   )}
+                 >
+                   <div className="min-w-0">
+                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 md:mb-2">
+                       Opzione {idx + 1}{isExpired && " · Scaduto"}
+                     </p>
+                     <p className="text-base md:text-lg font-bold text-slate-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
+                   </div>
+                   <p className="text-base md:text-sm font-bold md:font-medium text-slate-600 md:text-slate-500 tabular-nums">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
+                 </li>
                );
              })}
-           </div>
+           </ul>
 
-           <Button
-             variant={allExpired ? "default" : "outline"}
-             onClick={() => {
-               if (meetingLink) {
-                 setMeetingMethod("custom");
-                 setCustomMeetingLink(meetingLink);
-               }
-               setIsReproposing(true);
-               setFormStep(1);
-             }}
-             className={cn(
-               "rounded-2xl h-14 px-8 text-base font-bold gap-3",
-               allExpired ? "bg-slate-950 hover:bg-emerald-600" : "border-slate-200 text-slate-600 bg-white hover:bg-slate-50"
-             )}
-           >
-             <CalendarRange size={20} /> {allExpired ? "Proponi nuovi orari" : "Modifica proposta"}
-           </Button>
+           <ActionBar className="md:justify-center">
+             <Button
+               variant={allExpired ? "default" : "outline"}
+               onClick={() => {
+                 if (meetingLink) {
+                   setMeetingMethod("custom");
+                   setCustomMeetingLink(meetingLink);
+                 }
+                 setIsReproposing(true);
+                 setFormStep(1);
+               }}
+               className={cn(
+                 "pressable h-12 md:h-14 rounded-2xl px-6 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
+                 allExpired ? "bg-slate-950 text-white hover:bg-emerald-600" : "border-slate-200 text-slate-700 bg-white hover:bg-slate-50"
+               )}
+             >
+               <CalendarRange size={20} /> {allExpired ? "Proponi nuovi orari" : "Modifica proposta"}
+             </Button>
+           </ActionBar>
 
            {meetingLink && (
-             <motion.div 
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="max-w-md mx-auto p-6 rounded-3xl bg-slate-50 border border-slate-100 space-y-3"
+             <motion.div
+               initial={{ opacity: 0, y: 8 }}
+               animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
+               className="max-w-md mx-auto p-4 md:p-6 rounded-2xl md:rounded-3xl bg-slate-50 border border-slate-100 space-y-3"
              >
-               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Dettagli Incontro</p>
-               <div className="flex items-center justify-center gap-3">
-                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-500">
+               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Dettagli Incontro</p>
+               <div className="flex items-center md:justify-center gap-3">
+                 <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600">
                     <Video size={20} />
                  </div>
-                 <div className="text-left">
+                 <div className="text-left min-w-0">
                     <p className="font-bold text-slate-950">Link della call</p>
-                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline font-medium break-all">
+                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-sm md:text-xs text-emerald-700 hover:underline font-medium break-all">
                       {meetingLink}
                     </a>
                  </div>
@@ -552,17 +678,17 @@ END:VCALENDAR`;
     const allExpired = initialSlots.every(slot => new Date(slot.startTime) <= now);
 
     return (
-      <div className="p-8 md:p-16">
-        <div className="max-w-5xl mx-auto space-y-16">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
+      <div className="pb-24 md:p-16">
+        <div className={cn(PHONE_CARD, "max-w-5xl mx-auto space-y-5 md:space-y-16")}>
+          <div className="md:text-center space-y-2 md:space-y-4">
+            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em]">
                Scheduling
             </div>
             <div className="space-y-2">
-              <h3 className="text-3xl md:text-5xl font-display italic font-bold text-slate-950 tracking-tight">
+              <h3 className="text-2xl md:text-5xl font-display italic text-slate-950 tracking-tight">
                 Quando sei disponibile?
               </h3>
-              <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-medium">
+              <p className="text-[15px] md:text-xl text-slate-500 max-w-2xl md:mx-auto leading-relaxed font-medium">
                 {allExpired
                   ? "Gli orari proposti sono passati: l'azienda dovrà proporne di nuovi."
                   : `L'azienda ha proposto questi slot ${meetingLink ? "con un link alla call" : "per un incontro su Google Meet"}. Seleziona quello che preferisci per confermare.`}
@@ -570,76 +696,84 @@ END:VCALENDAR`;
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div role="radiogroup" aria-label="Orari proposti" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {initialSlots.map((slot) => {
               const isExpired = new Date(slot.startTime) <= now;
+              const selected = selectedSlotId === slot.id;
+              const start = new Date(slot.startTime);
               return (
               <motion.button
                 key={slot.id}
-                whileHover={isExpired ? undefined : { y: -4 }}
+                type="button"
+                role="radio"
+                aria-checked={selected}
                 whileTap={isExpired ? undefined : { scale: 0.98 }}
                 disabled={isExpired}
-                onClick={() => setSelectedSlotId(slot.id || null)}
+                onClick={() => {
+                  setSelectedSlotId(slot.id || null);
+                  haptic();
+                }}
                 className={cn(
-                  "relative p-10 rounded-[3rem] border-2 text-left transition-all duration-500 group overflow-hidden",
+                  "relative w-full min-h-16 flex items-center gap-4 p-3 pr-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 text-left outline-none",
+                  "transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
                   isExpired
                     ? "border-slate-100 bg-white opacity-50 cursor-not-allowed"
-                    : selectedSlotId === slot.id
-                      ? "border-emerald-500 bg-emerald-50 shadow-premium"
-                      : "border-slate-100 bg-white hover:border-emerald-200 hover:shadow-xl"
+                    : selected
+                      ? "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-500/15 md:shadow-premium"
+                      : "border-slate-100 bg-white hover:border-emerald-200"
                 )}
               >
-                <div className="space-y-6 relative z-10">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                      Data Incontro{isExpired && " · Scaduto"}
-                    </p>
-                    <p className="text-3xl font-display italic font-bold text-slate-950">
-                      {formatRomeDate(slot.startTime, { day: 'numeric', month: 'long' })}
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Orario</p>
-                    <p className="text-2xl font-bold text-slate-600">
-                      {formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
+                <DateTile date={start} active={selected} className="md:w-16 md:h-16" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 truncate">
+                    {formatRomeDate(start, { weekday: 'long' })}{isExpired && " · Scaduto"}
+                  </p>
+                  <p className="text-lg md:text-2xl font-display italic text-slate-950 truncate">
+                    {formatRomeDate(start, { day: 'numeric', month: 'long' })}
+                  </p>
+                  <p className="text-base md:text-lg font-bold text-slate-600 tabular-nums">
+                    {formatRomeDate(start, { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
-
-                {selectedSlotId === slot.id && (
-                  <motion.div 
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="absolute top-8 right-8 w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/20"
-                  >
-                    <Check size={20} strokeWidth={3} />
-                  </motion.div>
-                )}
-
-                <div className={cn(
-                  "absolute -bottom-12 -right-12 w-32 h-32 rounded-full transition-all duration-700",
-                  selectedSlotId === slot.id ? "bg-emerald-100/50 scale-150" : "bg-slate-50 opacity-0 group-hover:opacity-100"
-                )} />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "w-7 h-7 shrink-0 rounded-full border-2 flex items-center justify-center text-white transition-colors duration-200",
+                    selected ? "bg-emerald-500 border-emerald-500" : "bg-white border-slate-200"
+                  )}
+                >
+                  <AnimatePresence initial={false}>
+                    {selected && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1, transition: spring.snappy }}
+                        exit={{ scale: 0, transition: { duration: duration.feedback } }}
+                        className="flex"
+                      >
+                        <Check size={16} strokeWidth={3} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </span>
               </motion.button>
               );
             })}
           </div>
 
-          <div className="flex justify-center pt-8">
+          <ActionBar className="md:justify-center">
             <Button
               onClick={handleConfirmSlot}
               disabled={!selectedSlotId || isPending || initialSlots.some(s => s.id === selectedSlotId && new Date(s.startTime) <= now)}
-              className="rounded-[2rem] px-20 h-20 text-2xl font-display italic font-bold shadow-premium bg-slate-950 hover:bg-emerald-600 transition-all gap-4"
+              className={cn(PRIMARY_BTN, "md:h-20 md:rounded-[2rem] md:px-20 md:text-2xl")}
             >
               {isPending ? <Loader2 className="animate-spin" /> : (
                 <>
-                  <Check size={28} strokeWidth={2.5} />
+                  <Check size={22} strokeWidth={2.5} />
                   Conferma Incontro
                 </>
               )}
             </Button>
-          </div>
+          </ActionBar>
         </div>
       </div>
     );
@@ -648,15 +782,17 @@ END:VCALENDAR`;
   // 5. NO SLOTS STATE (FOR PROFESSIONAL)
   if (role === "professional" && initialSlots.length === 0) {
     return (
-      <div className="p-12 md:p-24 text-center">
-        <div className="max-w-md mx-auto space-y-6">
-           <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-[2rem] flex items-center justify-center mx-auto text-slate-400">
-              <Calendar size={32} strokeWidth={1.5} />
-           </div>
-           <div className="space-y-2">
-             <h3 className="text-2xl font-display italic font-bold text-slate-950">In attesa dell&apos;azienda</h3>
-             <p className="text-slate-500 text-lg leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
-           </div>
+      <div className="md:p-24">
+        <div className={cn(PHONE_CARD, "py-8 text-center")}>
+          <div className="max-w-md mx-auto space-y-4 md:space-y-6">
+             <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-slate-500">
+                <Calendar size={28} strokeWidth={1.5} />
+             </div>
+             <div className="space-y-2">
+               <h3 className="text-2xl font-display italic text-slate-950">In attesa dell&apos;azienda</h3>
+               <p className="text-[15px] md:text-lg text-slate-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
+             </div>
+          </div>
         </div>
       </div>
     );
