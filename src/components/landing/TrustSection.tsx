@@ -4,22 +4,22 @@ const POINTS = [
   {
     icon: Building2,
     title: "Partita IVA",
-    body: "Ogni azienda si registra con la Partita IVA e risponde dei dati che pubblica.",
+    body: "Obbligatoria per ogni azienda, con dichiarazione di veridicità dei dati.",
   },
   {
     icon: BadgeCheck,
     title: "Competenze verificate",
-    body: "Prima di assegnare il badge controlliamo portfolio e profilo GitHub.",
+    body: "Il badge arriva dopo il controllo di portfolio e GitHub.",
   },
   {
     icon: Euro,
     title: "Budget in chiaro",
-    body: "Un'offerta senza fascia di budget non si può pubblicare.",
+    body: "Senza fascia di budget, l'offerta non va online.",
   },
   {
     icon: Star,
     title: "Recensioni dopo la call",
-    body: "Finita la call vi valutate a vicenda, da 1 a 5 stelle. La media resta sul profilo.",
+    body: "Da 1 a 5 stelle, in entrambe le direzioni.",
   },
 ];
 
@@ -40,7 +40,7 @@ export function TrustSection() {
               <span className="italic text-emerald-400">dall&apos;altra parte.</span>
             </h2>
             <p className="text-slate-400 text-lg font-medium leading-relaxed">
-              Prima di dedicare mezz&apos;ora a una call vuoi sapere con chi parli e se ne vale la pena. Questo è quello che trovi su ogni profilo e ogni offerta.
+              Cosa trovi su ogni profilo e ogni offerta.
             </p>
 
             <div className="grid sm:grid-cols-2 gap-8">

@@ -6,17 +6,17 @@ const STEPS = [
   {
     icon: CalendarPlus,
     title: "L'azienda apre una sessione",
-    body: "Sceglie data, formato, skill cercate e quanti posti mettere a disposizione.",
+    body: "Data, formato, skill cercate, posti disponibili.",
   },
   {
     icon: Ticket,
     title: "Prenoti un posto",
-    body: "Se cercano le tue skill, prenoti con un clic. Il link per collegarti arriva via email.",
+    body: "Un clic. Il link arriva via email.",
   },
   {
     icon: Video,
     title: "Ti colleghi",
-    body: "Una serie di call brevi con le persone del team che assume. Il CV, se serve, arriva dopo.",
+    body: "Call brevi con il team che assume.",
   },
 ];
 
@@ -35,7 +35,7 @@ export function SmartInterviews() {
           </div>
           <div className="flex flex-col gap-6 items-start md:items-end">
             <p className="text-slate-500 max-w-md font-medium text-lg md:text-right">
-              Sessioni organizzate dalle aziende: prenoti un posto e conosci il team, anche senza un match.
+              Sessioni aperte dalle aziende. Prenoti un posto e conosci il team, anche senza match.
             </p>
             <Link
               href="/events"

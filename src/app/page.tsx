@@ -31,17 +31,17 @@ const PILLARS = [
   {
     icon: Eye,
     title: "Il budget si vede",
-    body: "Ogni offerta mostra la sua fascia di budget e i professionisti indicano quanto chiedono. Se i numeri non tornano, lo scopri prima di perderci tempo.",
+    body: "Le offerte dicono quanto pagano, i professionisti quanto chiedono. Prima dello swipe.",
   },
   {
     icon: Zap,
     title: "Il contatto è reciproco",
-    body: "Un'azienda ti contatta solo se anche tu hai detto sì: candidandoti, ricambiando un like o prenotando un evento.",
+    body: "Un'azienda ti scrive solo se hai detto sì anche tu.",
   },
   {
     icon: Calendar,
     title: "Niente chat",
-    body: "L'abbiamo tolta di proposito. Dopo il match si fissa una call di 30 minuti, che di solito chiarisce più di una settimana di messaggi.",
+    body: "Dopo il match, una call di 30 minuti. Tutto qui.",
   },
 ];
 
@@ -117,7 +117,7 @@ export default function LandingPage() {
                 variants={itemUp}
                 className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto mb-16 leading-relaxed font-medium"
               >
-                Ogni offerta dice quanto paga. Fai swipe, e se l&apos;interesse è reciproco l&apos;azienda ti propone fino a tre orari per una call di 30 minuti. Senza chat in mezzo.
+                Vedi quanto paga, fai swipe, fissi una call di 30 minuti. La chat non c&apos;è.
               </motion.p>
 
               <motion.div

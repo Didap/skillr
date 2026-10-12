@@ -3,31 +3,31 @@ import { Plus } from "lucide-react";
 const QUESTIONS = [
   {
     q: "Quanto costa Skillr?",
-    a: "Niente. Creare il profilo è gratis, per i professionisti e per le aziende.",
+    a: "Niente. Il profilo è gratis per tutti.",
   },
   {
     q: "Perché non c'è una chat?",
-    a: "Perché le chat si allungano e raramente arrivano a una decisione. Su Skillr skill, tariffa e budget sono già sulla card, quindi dopo il match si passa a una call di 30 minuti.",
+    a: "Perché skill, tariffa e budget sono già sulla card. Il resto si chiarisce in 30 minuti di call.",
   },
   {
     q: "Chi vede la mia tariffa?",
-    a: "Le aziende iscritte, quando il tuo profilo compare tra quelli da valutare. Vale anche al contrario: ogni offerta mostra il suo budget ai professionisti.",
+    a: "Le aziende iscritte. In cambio, tu vedi il budget di ogni offerta.",
   },
   {
     q: "Cosa succede dopo il match?",
-    a: "Vi arriva una email. L'azienda propone fino a 3 orari, il professionista ne sceglie uno e l'invito con il link (Google Meet, Zoom o Teams) entra nel calendario di entrambi. Prima della call arriva anche un promemoria.",
+    a: "L'azienda propone fino a 3 orari, tu ne scegli uno. Invito, link e promemoria arrivano da soli.",
   },
   {
     q: "Come funzionano le recensioni?",
-    a: "Si sbloccano passato l'orario della call. Professionista e azienda si valutano a vicenda da 1 a 5 stelle, con un commento se vogliono. La media compare sul profilo.",
+    a: "Dopo l'orario della call vi valutate a vicenda, da 1 a 5 stelle. La media va sul profilo.",
   },
   {
     q: "Come capisco se un'azienda è seria?",
-    a: "Ogni azienda si registra con la Partita IVA e dichiara che i dati sono veri, e nessuna offerta va online senza budget. Il resto lo dicono le recensioni di chi ci ha già fatto una call.",
+    a: "Partita IVA obbligatoria, budget obbligatorio e le recensioni di chi ci ha già parlato.",
   },
   {
     q: "Cosa sono gli Smart Interview?",
-    a: "Sessioni organizzate dalle aziende: più professionisti prenotano un posto e conoscono il team con call brevi. Servono a farsi notare anche senza un match.",
+    a: "Sessioni aperte dalle aziende: prenoti un posto e conosci il team con call brevi, anche senza match.",
   },
 ];
 

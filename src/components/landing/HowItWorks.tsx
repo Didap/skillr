@@ -25,45 +25,45 @@ const STEPS: Record<Role, Step[]> = {
   professional: [
     {
       label: "Profilo",
-      title: "Il profilo, con la tua tariffa",
-      body: "Scegli i settori e le 3 skill che ti rappresentano meglio, poi indica quanto chiedi: al giorno, all'ora o come RAL. CV e portfolio sono facoltativi, ma se li carichi verifichiamo le competenze e sul profilo compare il badge.",
+      title: "Chi sei e quanto chiedi",
+      body: "3 skill, la tua tariffa (al giorno, all'ora o RAL), CV e portfolio. Le competenze le verifichiamo noi.",
     },
     {
       label: "Swipe",
-      title: "Swipe sulle offerte, budget in vista",
-      body: "Ti mostriamo solo offerte che cercano almeno una delle tue skill, e ognuna dice quanto paga. Destra per candidarti, sinistra per passare oltre. Se un'azienda ha già messo like al tuo profilo, puoi ricambiare.",
+      title: "Offerte con il budget",
+      body: "Solo offerte in linea con le tue skill, con il budget in chiaro. Destra ti candidi, sinistra passi. Se un'azienda ti ha messo like, puoi ricambiare.",
     },
     {
       label: "Match",
-      title: "Il match",
-      body: "C'è match quando l'azienda accetta la tua candidatura, oppure quando ricambi un suo like. Vi arriva una email a testa. Prima di quel momento l'azienda non ha modo di scriverti.",
+      title: "Interesse reciproco",
+      body: "L'azienda accetta la tua candidatura, o tu ricambi il suo like: è match. Prima, nessuno può scriverti.",
     },
     {
       label: "Call",
       title: "Scegli l'orario",
-      body: "L'azienda ti propone fino a 3 orari per una call di 30 minuti. Ne scegli uno e l'invito con il link Meet entra nel calendario di entrambi, poi prima della call ti arriva un promemoria. Finita la call, vi lasciate una recensione a vicenda.",
+      body: "L'azienda propone fino a 3 slot da 30 minuti. Ne scegli uno: invito in calendario, link Meet e promemoria. Dopo, recensione reciproca.",
     },
   ],
   company: [
     {
       label: "Profilo",
-      title: "L'azienda e la prima offerta",
-      body: "Inserisci nome, Partita IVA e logo, e dichiari che i dati sono veri. Poi pubblichi un'offerta con le skill che cerchi e una fascia di budget. Senza budget l'offerta non si pubblica.",
+      title: "Azienda e offerta",
+      body: "Partita IVA, logo e dichiarazione di veridicità. Poi l'offerta: skill e budget. Senza budget non si pubblica.",
     },
     {
       label: "Swipe",
-      title: "Swipe sui profili",
-      body: "Ogni card mostra skill, tariffa e una breve bio, quanto basta per capire se vale una call. Destra se ti interessa. Nel frattempo chi ha le skill giuste si candida alle tue offerte.",
+      title: "Talenti in una card",
+      body: "Skill, tariffa e bio. Destra se ti interessa. Intanto i candidati arrivano dalle tue offerte.",
     },
     {
       label: "Match",
-      title: "Accetti chi ti convince",
-      body: "Ogni offerta ha la sua lista di candidati: accetti o rifiuti. Se accetti è match, e lo stesso succede quando un professionista ricambia un tuo like. Non c'è una casella messaggi da tenere d'occhio.",
+      title: "Accetti o rifiuti",
+      body: "Accetti un candidato, o un professionista ricambia il tuo like: è match. Nessuna inbox da gestire.",
     },
     {
       label: "Call",
       title: "Proponi gli orari",
-      body: "Scegli fino a 3 slot da 30 minuti. Il link Google Meet lo generiamo noi, oppure incolli quello di Zoom o Teams. Quando il candidato sceglie, l'invito arriva a entrambi.",
+      body: "Fino a 3 slot da 30 minuti. Link Meet automatico, o il tuo Zoom o Teams. L'invito arriva a entrambi.",
     },
   ],
 };
@@ -89,7 +89,7 @@ export function HowItWorks() {
             Dal profilo alla call, <span className="italic text-emerald-600">in quattro passi.</span>
           </h2>
           <p className="text-lg text-slate-500 font-medium leading-relaxed">
-            Il percorso è lo stesso per chi cerca lavoro e per chi assume, cambia solo il lato da cui lo guardi. Scegli il tuo.
+            Stesso percorso, due lati. Scegli il tuo.
           </p>
         </div>
 
