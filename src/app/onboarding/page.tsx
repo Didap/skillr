@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { User, Building2, ChevronRight, Check, Zap, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
@@ -23,6 +23,11 @@ import { validateItalianVAT } from "@/lib/vat";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { FileCardUpload } from "@/components/ui/file-card-upload";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { credentialsErrorMessage } from "@/components/auth/login-errors";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const DRAFT_KEY = "onboarding_draft";
 
 interface Skill {
   id: string;
@@ -47,6 +52,11 @@ export default function OnboardingPage() {
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [legalConsent, setLegalConsent] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(undefined);
+  // Without a site key (local dev) there is no widget; the server skips the check as well.
+  const turnstileReady = !TURNSTILE_SITE_KEY || !!turnstileToken;
 
    const [formData, setFormData] = useState({
     firstName: "",
@@ -89,12 +99,18 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     // Persistent state recovery
-    const savedData = localStorage.getItem("onboarding_draft");
+    const savedData = localStorage.getItem(DRAFT_KEY);
     if (savedData) {
       const parsed = JSON.parse(savedData);
       Promise.resolve().then(() => {
         if (parsed.role) setRole(parsed.role);
-        if (parsed.formData) setFormData(prev => ({ ...prev, ...parsed.formData }));
+        if (parsed.formData) {
+          // Older drafts stored the email and the plaintext password: never restore those.
+          const restored = { ...parsed.formData };
+          delete restored.email;
+          delete restored.password;
+          setFormData(prev => ({ ...prev, ...restored }));
+        }
         // Se l'utente è appena tornato da un login, saltiamo allo step 2 (dati personali)
         if (status === "authenticated" && step === 1) {
           setStep(2);
@@ -105,7 +121,9 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (role) {
-      localStorage.setItem("onboarding_draft", JSON.stringify({ role, formData, step }));
+      // The draft sits in localStorage in clear text: keep credentials out of it.
+      const draft = { ...formData, email: undefined, password: undefined };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ role, formData: draft, step }));
     }
   }, [role, formData, step]);
 
@@ -121,22 +139,53 @@ export default function OnboardingPage() {
     setFormData({ ...formData, [e.target.id || e.target.name]: e.target.value });
   };
 
+  // Turnstile tokens are single use: drop the one just sent and ask the widget for a new one.
+  const consumeTurnstile = () => {
+    setTurnstileToken(null);
+    turnstileRef.current?.reset();
+  };
+
+  const turnstileWidget = TURNSTILE_SITE_KEY ? (
+    <div className="flex justify-center">
+      <Turnstile
+        ref={turnstileRef}
+        siteKey={TURNSTILE_SITE_KEY}
+        options={{ theme: "light" }}
+        onSuccess={(token) => setTurnstileToken(token)}
+        onExpire={() => setTurnstileToken(null)}
+        onError={() => setTurnstileToken(null)}
+      />
+    </div>
+  ) : null;
+
   const handleComplete = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || !role) return;
     
     setIsSubmitting(true);
-    console.log("Submitting onboarding data...");
-    
-    if (!role) return;
     
     try {
+      // Profile fields only: the email and password never leave the account step.
       const result = await completeOnboardingAction({
-        role: role as "professional" | "company",
-        ...formData
+        role,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        title: formData.title,
+        photoUrl: formData.photoUrl,
+        topSkills: formData.topSkills,
+        selectedClusters: formData.selectedClusters,
+        rateAmount: formData.rateAmount,
+        rateType: formData.rateType,
+        bio: formData.bio,
+        bioLong: formData.bioLong,
+        cvUrl: formData.cvUrl,
+        portfolioUrls: formData.portfolioUrls,
+        companyName: formData.companyName,
+        vatNumber: formData.vatNumber,
+        vatDisclaimerAccepted: formData.vatDisclaimerAccepted,
       });
       
       if (result.success) {
-        console.log("Onboarding success, updating session...");
+        localStorage.removeItem(DRAFT_KEY);
         await update({ role }); // Refresh session with new role
         router.push("/dashboard");
       } else {
@@ -157,8 +206,8 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // DEBUG INFO - Rimuovere dopo il test
-  console.log("DEBUG ONBOARDING:", { status, role: session?.user?.role });
+  // Steps are 0-based: professionals go through 0-7, companies through 0-2.
+  const totalSteps = role === "professional" ? 8 : 3;
 
   return (
     <div className="min-h-screen bg-[#FDFDFC] flex flex-col items-center justify-center p-6 selection:bg-emerald-100 selection:text-emerald-900">
@@ -166,7 +215,7 @@ export default function OnboardingPage() {
         {/* Progress Header */}
         <div className="mb-8 text-center">
            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-[0.15em] mb-4">
-              <Zap size={10} fill="currentColor" /> Step {step + 1} di {role === 'professional' ? 8 : 3}
+              <Zap size={10} fill="currentColor" /> Step {step + 1} di {totalSteps}
            </div>
            <h1 className="font-display text-4xl italic font-bold text-slate-950 tracking-tight">
               Configura Profilo
@@ -179,9 +228,9 @@ export default function OnboardingPage() {
           <motion.div 
             className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded-full"
             initial={{ width: "0%" }}
-            animate={{ width: `${(step / (role === 'professional' ? 7 : 3)) * 100}%` }}
+            animate={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
           />
-          {[0, 1, 2, 3, 4, 5, 6, 7].filter(i => i <= (role === 'professional' ? 7 : 3)).map((i) => (
+          {Array.from({ length: totalSteps }, (_, i) => i).map((i) => (
             <div 
               key={i}
               className={cn(
@@ -253,7 +302,7 @@ export default function OnboardingPage() {
                   title={isVerifyingEmail ? "Verifica la tua email" : (isLoginMode ? "Accedi al tuo account" : "Crea il tuo account")} 
                   description={
                     isVerifyingEmail 
-                      ? `Abbiamo inviato un codice a 6 cifre a ${formData.email}` 
+                      ? `Inserisci il codice a 6 cifre inviato a ${formData.email}. Se hai già un account, ti abbiamo scritto come accedere.`  
                       : (isLoginMode ? "Bentornato! Inserisci le tue credenziali." : "Per salvare i tuoi progressi e iniziare a fare swipe.")
                   }
                   onBack={() => isVerifyingEmail ? setIsVerifyingEmail(false) : prevStep()}
@@ -275,8 +324,10 @@ export default function OnboardingPage() {
                         />
                       </div>
                       
-                      <Button 
-                        disabled={isSubmitting || verificationCode.length !== 6}
+                      {turnstileWidget}
+
+                      <Button
+                        disabled={isSubmitting || verificationCode.length !== 6 || !turnstileReady}
                         onClick={async () => {
                           setIsSubmitting(true);
                           try {
@@ -284,12 +335,14 @@ export default function OnboardingPage() {
                             if (res.success) {
                               toast.success("Email verificata con successo!");
                               // Now login automatically
-                              const signInRes = await signIn("credentials", { 
-                                email: formData.email, 
-                                password: formData.password, 
-                                redirect: false 
+                              const signInRes = await signIn("credentials", {
+                                email: formData.email,
+                                password: formData.password,
+                                turnstileToken: turnstileToken ?? "",
+                                redirect: false
                               });
-                              
+                              consumeTurnstile();
+
                               if (signInRes?.error) {
                                 toast.error("Verifica completata, ma errore nel login. Per favore accedi manualmente.");
                                 setIsVerifyingEmail(false);
@@ -319,11 +372,16 @@ export default function OnboardingPage() {
                       </Button>
 
                       <div className="text-center">
-                        <button 
+                        <button
+                          type="button"
                           onClick={async () => {
                             toast.info("Invio nuovo codice...");
-                            await generateVerificationCode(formData.email);
-                            toast.success("Codice inviato!");
+                            const res = await generateVerificationCode(formData.email);
+                            if (res.success) {
+                              toast.success("Codice inviato!");
+                            } else {
+                              toast.error(res.error);
+                            }
                           }}
                           className="text-xs font-bold text-slate-400 hover:text-pa-blue transition-colors"
                         >
@@ -371,41 +429,51 @@ export default function OnboardingPage() {
                         </div>
                       )}
 
-                      <Button 
-                        disabled={isSubmitting || !formData.email || formData.password.length < 8 || (!isLoginMode && !legalConsent)}
+                      {sendError && !isLoginMode && (
+                        <div role="alert" className="p-4 rounded-2xl border border-red-100 bg-red-50 text-xs font-bold text-red-600 leading-relaxed">
+                          {sendError} Premi di nuovo &quot;Crea Account&quot; per riprovare.
+                        </div>
+                      )}
+
+                      {turnstileWidget}
+
+                      <Button
+                        disabled={isSubmitting || !formData.email || formData.password.length < 8 || (!isLoginMode && !legalConsent) || !turnstileReady}
                         onClick={async () => {
                           setIsSubmitting(true);
+                          setSendError(null);
                           try {
                             if (isLoginMode) {
                               // LOGIN
-                              const res = await signIn("credentials", { 
-                                email: formData.email, 
-                                password: formData.password, 
-                                redirect: false 
+                              const res = await signIn("credentials", {
+                                email: formData.email,
+                                password: formData.password,
+                                turnstileToken: turnstileToken ?? "",
+                                redirect: false
                               });
-                              
+                              consumeTurnstile();
+
                               if (res?.error) {
-                                toast.error("Credenziali non valide.");
+                                toast.error(credentialsErrorMessage(res.code));
                               } else {
                                 await update();
                                 setStep(2);
                               }
                             } else {
                               // REGISTRATION
-                               const res = await registerUserAction({ 
-                                 email: formData.email, 
+                               const res = await registerUserAction({
+                                 email: formData.email,
                                  password: formData.password,
-                                 turnstileToken: undefined,
+                                 turnstileToken: turnstileToken ?? undefined,
                                  legalConsent: legalConsent
                                });
+                               consumeTurnstile();
 
                               if (res.success) {
-                                if (res.message) {
-                                  toast.info(res.message);
-                                } else {
-                                  toast.success("Account creato! Verifica la tua email.");
-                                }
+                                toast.success("Controlla la tua email per continuare.");
                                 setIsVerifyingEmail(true);
+                              } else if (res.reason === "send_failed") {
+                                setSendError(res.error);
                               } else {
                                 toast.error(res.error || "Errore nella registrazione");
                               }
@@ -465,10 +533,11 @@ export default function OnboardingPage() {
 
               {step === 2 && role === "professional" && (
                 <StepLayout 
-                  title="Dati Personali" 
+                  title="Dati Personali"
                   description="Come ti presenterai agli altri."
                   onBack={prevStep}
                   onNext={nextStep}
+                  nextDisabled={!formData.firstName.trim() || !formData.lastName.trim()}
                 >
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">

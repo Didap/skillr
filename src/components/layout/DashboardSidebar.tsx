@@ -95,7 +95,11 @@ export function DashboardSidebar() {
           active={pathname === "/settings"}
         />
         <button 
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => {
+            // Don't leave a half-finished onboarding draft for the next person on this browser
+            try { localStorage.removeItem("onboarding_draft"); } catch {}
+            signOut({ callbackUrl: "/" });
+          }}
           className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all font-bold text-sm group"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />

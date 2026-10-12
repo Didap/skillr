@@ -122,9 +122,10 @@ async function seed() {
       email: p.email,
       password: hashedPassword,
       role: "professional",
+      emailVerified: new Date(), // credentials login requires a verified email
     }).onConflictDoUpdate({
       target: users.email,
-      set: { name: p.name }
+      set: { name: p.name, emailVerified: new Date() }
     }).returning();
 
     await db.insert(professionalProfiles).values({
@@ -199,9 +200,10 @@ async function seed() {
       email: c.email,
       password: hashedPassword,
       role: "company",
+      emailVerified: new Date(), // credentials login requires a verified email
     }).onConflictDoUpdate({
       target: users.email,
-      set: { name: c.name }
+      set: { name: c.name, emailVerified: new Date() }
     }).returning();
 
     await db.insert(companyProfiles).values({

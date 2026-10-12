@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Turnstile } from "@marsidev/react-turnstile";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { useSession, signIn } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { credentialsErrorMessage } from "@/components/auth/login-errors";
 
 export default function LoginPage() {
   return (
@@ -38,7 +39,7 @@ function LoginPageInner() {
     const error = searchParams.get("error");
     if (error) {
       if (error === "CredentialsSignin") {
-        toast.error("Email o password non corretti.");
+        toast.error(credentialsErrorMessage(searchParams.get("code")));
       } else {
         toast.error("Si è verificato un errore durante l'accesso.");
       }
@@ -52,6 +53,7 @@ function LoginPageInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(undefined);
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,14 +74,18 @@ function LoginPageInner() {
     if (!email || !password) return;
     setIsLoading(true);
     try {
-      const result = await signIn("credentials", { 
-        email, 
-        password, 
-        redirect: false 
+      const result = await signIn("credentials", {
+        email,
+        password,
+        turnstileToken: turnstileToken ?? "",
+        redirect: false
       });
+      // The server has used up this token: get a fresh one for the next attempt.
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
 
       if (result?.error) {
-        toast.error("Email o password non corretti.");
+        toast.error(credentialsErrorMessage(result.code));
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
@@ -176,10 +182,12 @@ function LoginPageInner() {
                )}
                
                <div className="py-2 flex justify-center">
-                 <Turnstile 
-                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} 
+                 <Turnstile
+                   ref={turnstileRef}
+                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                    options={{ theme: "light" }}
                    onSuccess={(token) => setTurnstileToken(token)}
+                   onExpire={() => setTurnstileToken(null)}
                  />
                </div>
 
