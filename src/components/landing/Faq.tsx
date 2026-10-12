@@ -33,7 +33,7 @@ const QUESTIONS = [
 
 export function Faq() {
   return (
-    <section id="faq" className="py-32 bg-white scroll-mt-20">
+    <section id="faq" className="py-20 md:py-32 bg-white scroll-mt-20">
       <div className="max-w-4xl mx-auto px-6">
         <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight mb-16 text-center">
           Domande <span className="italic text-emerald-600">frequenti.</span>

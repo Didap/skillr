@@ -25,7 +25,7 @@ const POINTS = [
 
 export function TrustSection() {
   return (
-    <section id="fiducia" className="py-32 md:py-40 bg-slate-950 relative overflow-hidden scroll-mt-20">
+    <section id="fiducia" className="py-20 md:py-40 bg-slate-950 relative overflow-hidden scroll-mt-20">
       <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 blur-[120px]" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 blur-[120px]" />
 

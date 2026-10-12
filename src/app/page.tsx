@@ -89,7 +89,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative pt-40 pb-32 overflow-hidden">
+        <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[800px] bg-linear-to-b from-emerald-50/50 to-transparent -z-10 rounded-[100%]" />
 
           <div className="max-w-6xl mx-auto px-6 text-center">
@@ -122,18 +122,18 @@ export default function LandingPage() {
 
               <motion.div
                 variants={itemUp}
-                className="flex flex-col sm:flex-row items-center justify-center gap-6"
+                className="w-full max-w-sm sm:max-w-none flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6"
               >
                 <Link
                   href="/onboarding"
-                  className="group relative inline-flex h-16 items-center justify-center overflow-hidden rounded-full bg-slate-950 px-10 font-bold text-white transition-all hover:bg-emerald-900 shadow-2xl shadow-slate-300"
+                  className="pressable group relative inline-flex w-full sm:w-auto h-16 items-center justify-center overflow-hidden rounded-full bg-slate-950 px-10 font-bold text-white transition-all hover:bg-emerald-900 shadow-2xl shadow-slate-300"
                 >
                   <span className="mr-2">Voglio assumere</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   href="/onboarding"
-                  className="inline-flex h-16 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-10 font-bold text-slate-900 transition-all hover:border-emerald-600 hover:text-emerald-600"
+                  className="pressable inline-flex w-full sm:w-auto h-16 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-10 font-bold text-slate-900 transition-all hover:border-emerald-600 hover:text-emerald-600"
                 >
                   Cerco lavoro
                 </Link>
@@ -154,7 +154,7 @@ export default function LandingPage() {
         <HowItWorks />
 
         {/* The "Three Pillars" Section */}
-        <section className="py-32 border-y border-slate-100">
+        <section className="py-20 md:py-32 border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-6">
             <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight mb-20 max-w-3xl">
               Tre regole <span className="italic text-emerald-600">che non cambiamo.</span>
@@ -180,7 +180,7 @@ export default function LandingPage() {
         <Faq />
 
         {/* CTA Section */}
-        <section className="py-40 bg-[#FDFDFC]">
+        <section className="py-24 md:py-40 bg-[#FDFDFC]">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <h2 className="font-display text-5xl md:text-7xl text-slate-950 mb-12 leading-tight">
               Pronto per il tuo <br /><span className="italic text-emerald-600 underline underline-offset-8 decoration-emerald-200">prossimo match?</span>

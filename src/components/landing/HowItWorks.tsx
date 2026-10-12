@@ -79,7 +79,7 @@ export function HowItWorks() {
   const steps = STEPS[role];
 
   return (
-    <section id="come-funziona" className="py-32 bg-white scroll-mt-20">
+    <section id="come-funziona" className="py-20 md:py-32 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-3xl mb-16 space-y-6">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest border border-emerald-100">
@@ -154,12 +154,24 @@ export function HowItWorks() {
                     </div>
                   </div>
                 </button>
-                {/* On small screens the preview sits right under its step */}
-                <div className="lg:hidden mt-4">
-                  <PreviewFrame>
-                    <StepPreview role={role} step={i} />
-                  </PreviewFrame>
-                </div>
+                {/* On small screens only the selected step opens its preview, right under it */}
+                <AnimatePresence initial={false}>
+                  {active === i && (
+                    <motion.div
+                      key={`${role}-${i}-preview`}
+                      className="lg:hidden overflow-hidden"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto", transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } }}
+                      exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+                    >
+                      <div className="pt-4">
+                        <PreviewFrame>
+                          <StepPreview role={role} step={i} />
+                        </PreviewFrame>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </li>
             ))}
           </ol>
