@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { DashboardSidebar } from "./DashboardSidebar";
@@ -15,12 +15,9 @@ import { pageEnter } from "@/lib/motion";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   // The first page of a visit is server-rendered: fading it in from 0 would keep it invisible
-  // until hydration. Only client-side navigations after that ease in. The shell stays mounted
-  // across sections (single (app) layout), so a ref is enough.
-  const hydrated = useRef(false);
-  useEffect(() => {
-    hydrated.current = true;
-  }, []);
+  // until hydration, so it renders as is. Pages reached by client navigation ease in. The
+  // shell stays mounted across sections (single (app) layout), so this is set once per visit.
+  const [landingPath] = useState(pathname);
 
   return (
     <div className="h-dvh bg-[#FDFDFC] flex selection:bg-emerald-100 selection:text-emerald-900 overflow-hidden">
@@ -28,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
       <motion.div
         key={pathname}
-        initial={hydrated.current ? pageEnter.initial : false}
+        initial={pathname === landingPath ? false : pageEnter.initial}
         animate={pageEnter.animate}
         className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
       >
