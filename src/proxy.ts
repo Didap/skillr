@@ -36,6 +36,7 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|gif|ico|css|js|woff2?|map)$).*)",
+    // manifest.webmanifest must stay public: the browser fetches it without a session
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|webp|gif|ico|css|js|woff2?|map)$).*)",
   ],
 };
