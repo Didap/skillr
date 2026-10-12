@@ -82,7 +82,7 @@ export function HowItWorks() {
     <section id="come-funziona" className="py-20 md:py-32 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-3xl mb-16 space-y-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-widest border border-emerald-100">
             <Sparkles size={12} /> Come funziona
           </span>
           <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight text-balance">
@@ -144,7 +144,7 @@ export function HowItWorks() {
                       {i + 1}
                     </span>
                     <div className="space-y-2 min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                      <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">
                         {step.label}
                       </p>
                       <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight">
@@ -240,7 +240,7 @@ function ProfilePreview() {
           <p className="text-sm text-slate-500 font-medium">UX/UI Designer</p>
         </div>
       </div>
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Top 3 skill</p>
+      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Top 3 skill</p>
       <div className="flex flex-wrap gap-2 mb-6">
         <Chip tone="emerald">Figma</Chip>
         <Chip tone="emerald">Design System</Chip>
@@ -266,7 +266,7 @@ function JobPostPreview() {
           <p className="text-xs text-slate-400 font-medium">P.IVA 01234567890</p>
         </div>
       </div>
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Nuova offerta</p>
+      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Nuova offerta</p>
       <p className="text-xl font-bold text-slate-950 mb-4">Senior React Developer</p>
       <div className="flex flex-wrap gap-2 mb-6">
         <Chip>React</Chip>
@@ -274,7 +274,7 @@ function JobPostPreview() {
         <Chip>Next.js</Chip>
       </div>
       <div className="rounded-2xl bg-slate-50 p-4">
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">
           Budget · obbligatorio
         </p>
         <p className="font-bold text-slate-950">€45.000 – 55.000 RAL</p>
@@ -316,7 +316,7 @@ function JobCardPreview() {
           <Chip>Prototyping</Chip>
         </div>
         <div className="rounded-2xl bg-emerald-600 text-white p-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 mb-1">
+          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-100 mb-1">
             Budget
           </p>
           <p className="font-bold text-lg">€300 – 400 / giorno</p>
@@ -340,7 +340,7 @@ function TalentCardPreview() {
             <p className="text-sm text-slate-500 font-medium">Senior Fullstack Developer</p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 mb-5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest">
+        <span className="inline-flex items-center gap-1.5 mb-5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-widest">
           <Check size={12} /> Competenze verificate
         </span>
         <div className="flex flex-wrap gap-2 mb-6">
@@ -387,7 +387,7 @@ function ApplicantsPreview() {
   ];
   return (
     <div className={mockCard}>
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Product Designer</p>
+      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Product Designer</p>
       <p className="font-bold text-slate-950 mb-5">Candidati da valutare</p>
       <div className="space-y-3">
         {applicants.map((a) => (

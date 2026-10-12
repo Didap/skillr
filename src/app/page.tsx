@@ -74,7 +74,7 @@ export default function LandingPage() {
             </Link>
           </div>
           <div className="flex md:hidden items-center gap-5">
-            <Link href="/login" className="text-sm font-semibold text-slate-900">
+            <Link href="/login" className="pressable px-3 py-3 text-sm font-semibold text-slate-900">
               Accedi
             </Link>
             <Link
@@ -200,7 +200,7 @@ export default function LandingPage() {
           <div className="font-display text-2xl italic font-bold text-slate-950">
             Skillr<span className="text-emerald-600">.</span>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm font-bold text-slate-400">
+          <div className="flex flex-wrap justify-center gap-x-8 md:gap-x-12 gap-y-1 md:gap-y-4 text-sm font-bold text-slate-500 [&>a]:py-3 md:[&>a]:py-0">
             <Link href="/pa" className="text-emerald-600 hover:text-emerald-700 transition-colors">Skillr per la PA</Link>
             <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-slate-900 transition-colors">Termini</Link>

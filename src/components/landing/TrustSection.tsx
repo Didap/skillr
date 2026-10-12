@@ -32,7 +32,7 @@ export function TrustSection() {
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-20 lg:gap-24 items-center">
           <div className="space-y-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold uppercase tracking-widest">
               <ShieldCheck size={14} /> Fiducia
             </div>
             <h2 className="font-display text-5xl md:text-7xl text-white leading-tight">
@@ -98,7 +98,7 @@ function SampleProfile() {
 
         <div className="flex items-center justify-between pt-6 border-t border-slate-800">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Tariffa</p>
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">Tariffa</p>
             <p className="font-bold text-white text-lg">€350 / giorno</p>
           </div>
           <span className="inline-flex h-11 items-center px-6 rounded-full bg-emerald-500 text-slate-950 text-sm font-bold">
