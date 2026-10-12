@@ -10,6 +10,7 @@ import { BookingEmail } from "@/emails/BookingEmail";
 import { ConfirmationEmail } from "@/emails/ConfirmationEmail";
 import { createMeetEvent, deleteMeetEvent } from "@/lib/google-calendar";
 import { generateIcsString } from "@/lib/calendar-utils";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function proposeSlots(matchId: string, slots: { startTime: Date, endTime: Date }[], meetingLink?: string) {
   const session = await auth();
@@ -19,8 +20,8 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
     const match = await db.query.matches.findFirst({
       where: and(eq(matches.id, matchId), eq(matches.companyId, session.user.id)),
       with: { 
-        professional: { with: { professionalProfile: true } },
-        company: { with: { companyProfile: true } }
+        professional: { columns: publicUserColumns, with: { professionalProfile: true } },
+        company: { columns: publicUserColumns, with: { companyProfile: true } }
       }
     });
 
@@ -111,8 +112,8 @@ export async function confirmSlot(slotId: string) {
       with: {
         match: {
           with: {
-            professional: { with: { professionalProfile: true } },
-            company: { with: { companyProfile: true } }
+            professional: { columns: publicUserColumns, with: { professionalProfile: true } },
+            company: { columns: publicUserColumns, with: { companyProfile: true } }
           }
         }
       }
@@ -232,8 +233,8 @@ export async function getCalendarEventsAction() {
         ? and(eq(matches.companyId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked'))
         : and(eq(matches.professionalId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked')),
       with: {
-        professional: { with: { professionalProfile: true } },
-        company: { with: { companyProfile: true } }
+        professional: { columns: publicUserColumns, with: { professionalProfile: true } },
+        company: { columns: publicUserColumns, with: { companyProfile: true } }
       }
     });
 
@@ -278,7 +279,7 @@ export async function getCalendarEventsAction() {
         with: {
           event: {
             with: {
-              company: { with: { companyProfile: true } }
+              company: { columns: publicUserColumns, with: { companyProfile: true } }
             }
           }
         }

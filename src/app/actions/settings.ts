@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users, professionalProfiles, companyProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function updateUserImageAction(url: string) {
   const session = await auth();
@@ -52,6 +53,7 @@ export async function getUserSettingsAction() {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, userId),
+      columns: publicUserColumns,
       with: {
         professionalProfile: true,
         companyProfile: true,

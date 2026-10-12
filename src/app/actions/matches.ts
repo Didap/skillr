@@ -7,6 +7,7 @@ import { eq, and, notInArray, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function getMatches() {
   const session = await auth();
@@ -21,11 +22,13 @@ export async function getMatches() {
         ? and(eq(matches.companyId, userId), eq(matches.professionalStatus, 'liked'), eq(matches.companyStatus, 'liked'))
         : and(eq(matches.professionalId, userId), eq(matches.professionalStatus, 'liked'), eq(matches.companyStatus, 'liked')),
       with: {
-        professional: { 
-          with: { professionalProfile: true } 
+        professional: {
+          columns: publicUserColumns,
+          with: { professionalProfile: true }
         },
-        company: { 
-          with: { companyProfile: true } 
+        company: {
+          columns: publicUserColumns,
+          with: { companyProfile: true }
         },
         job: true,
       },
@@ -90,7 +93,7 @@ export async function getPotentialMatches() {
       const potentialProfessionals = await db.query.professionalProfiles.findMany({
         where: excludedIds.length > 0 ? notInArray(professionalProfiles.userId, excludedIds) : undefined,
         with: {
-          user: true
+          user: { columns: publicUserColumns }
         },
         limit: 20,
       });
@@ -142,6 +145,7 @@ export async function getPotentialMatches() {
         ),
         with: {
           company: {
+            columns: publicUserColumns,
             with: { companyProfile: true }
           }
         },
@@ -206,10 +210,12 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
           const [user, target] = await Promise.all([
             db.query.users.findFirst({
               where: eq(users.id, userId),
+              columns: publicUserColumns,
               with: { professionalProfile: true, companyProfile: true }
             }),
             db.query.users.findFirst({
               where: eq(users.id, targetId),
+              columns: publicUserColumns,
               with: { professionalProfile: true, companyProfile: true }
             })
           ]);
@@ -280,8 +286,8 @@ export async function getMatchDetail(matchId: string) {
     const match = await db.query.matches.findFirst({
       where: eq(matches.id, matchId),
       with: {
-        professional: { with: { professionalProfile: true } },
-        company: { with: { companyProfile: true } },
+        professional: { columns: publicUserColumns, with: { professionalProfile: true } },
+        company: { columns: publicUserColumns, with: { companyProfile: true } },
         job: true,
         proposedSlots: true,
         reviews: true,

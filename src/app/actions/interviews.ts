@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import React from "react";
 import crypto from "crypto";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function createInterviewEventAction(data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) {
   console.log("STARTING_EVENT_CREATION_JOURNEY");
@@ -135,7 +136,7 @@ export async function updateMeetingLinkAction(eventId: string, meetingLink: stri
     const bookings = await db.query.interviewBookings.findMany({
       where: eq(interviewBookings.eventId, eventId),
       with: {
-        professional: true,
+        professional: { columns: publicUserColumns },
       }
     });
 
@@ -180,6 +181,7 @@ export async function getEventByIdAction(eventId: string) {
       where: eq(interviewEvents.id, eventId),
       with: {
         company: {
+          columns: publicUserColumns,
           with: {
             companyProfile: true
           }
@@ -212,6 +214,7 @@ export async function getPublicEventsAction() {
       where: (events, { gte }) => gte(events.date, new Date()),
       with: {
         company: {
+          columns: publicUserColumns,
           with: {
             companyProfile: true
           }
@@ -247,6 +250,7 @@ export async function getEventParticipantsAction(eventId: string) {
       where: eq(interviewBookings.eventId, eventId),
       with: {
         professional: {
+          columns: publicUserColumns,
           with: {
             professionalProfile: true
           }
@@ -279,6 +283,7 @@ export async function getAvailableEventsAction() {
       where: (events, { gte }) => gte(events.date, new Date()),
       with: {
         company: {
+          columns: publicUserColumns,
           with: {
             companyProfile: true
           }

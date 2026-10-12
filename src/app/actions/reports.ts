@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users, matches, interviewBookings, reviews } from "@/db/schema";
 import { and, gte, lte, eq } from "drizzle-orm";
 import { auth } from "@/auth";
+import { publicUserColumns } from "@/db/safe-columns";
 
 /**
  * Generates a CSV report for PA reporting.
@@ -12,12 +13,9 @@ import { auth } from "@/auth";
 export async function generateKpiReportAction(startDate: Date, endDate: Date) {
   const session = await auth();
 
-  // Security check: Only pa_admin can generate reports
+  // The report contains personal data of every professional: PA admins only.
   if (session?.user?.role !== "pa_admin") {
-    // throw new Error("Unauthorized: Only PA administrators can generate reports.");
-    // For demo purposes, we'll allow it if the user is authenticated, 
-    // but in production, the above line should be active.
-    console.warn("User is not a pa_admin, but allowing report generation for development.");
+    return { success: false as const, error: "Solo gli amministratori PA possono generare il report." };
   }
 
   // 1. Fetch Professionals (NEETs) registered in the period
@@ -27,6 +25,7 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
       gte(users.createdAt, startDate),
       lte(users.createdAt, endDate)
     ),
+    columns: publicUserColumns,
     with: {
       professionalProfile: true,
     }
@@ -98,7 +97,7 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
     .join("\n");
 
   return {
-    success: true,
+    success: true as const,
     csv: csvContent,
     filename: `report_skillr_pa_${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}.csv`
   };

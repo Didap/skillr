@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function applyToJob(jobId: string) {
   const session = await auth();
@@ -46,6 +47,7 @@ export async function getJobApplicants(jobId: string) {
       where: eq(jobApplications.jobId, jobId),
       with: {
         professional: {
+          columns: publicUserColumns,
           with: {
             professionalProfile: true,
           },
@@ -95,10 +97,12 @@ export async function acceptApplicant(applicationId: string) {
       const [professional, company] = await Promise.all([
         db.query.users.findFirst({
           where: eq(users.id, application.professionalId),
+          columns: publicUserColumns,
           with: { professionalProfile: true }
         }),
         db.query.users.findFirst({
           where: eq(users.id, session.user.id),
+          columns: publicUserColumns,
           with: { companyProfile: true }
         })
       ]);

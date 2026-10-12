@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProfessionalProfileView } from "@/components/profile/ProfessionalProfileView";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export default async function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,6 +15,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
   // Fetch the user and basic profile data
   const user = await db.query.users.findFirst({
     where: eq(users.id, id),
+    columns: publicUserColumns,
     with: {
       professionalProfile: true,
       companyProfile: true,
@@ -28,7 +30,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
   const receivedReviews = await db.query.reviews.findMany({
     where: eq(reviews.targetId, id),
     with: {
-      author: true
+      author: { columns: { name: true, image: true } }
     },
     orderBy: [desc(reviews.createdAt)]
   });

@@ -43,20 +43,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // onboarding: "/onboarding",
   },
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.role = user.role;
       }
-      
-      // Se c'è un update manuale dalla client side (es. post-onboarding)
-      if (trigger === "update" && session?.role) {
-        token.role = session.role;
-      }
 
-      // Fallback: se il ruolo manca ma abbiamo l'ID, lo cerchiamo (opzionale per robustezza)
-      if (!token.role && token.sub) {
+      // On a client-side update (e.g. after onboarding) and when the role is missing,
+      // re-read it from the DB. Never take the role from the update payload:
+      // any logged-in user can call update({ role }).
+      if ((trigger === "update" || !token.role) && token.sub) {
         const dbUser = await db.query.users.findFirst({
-          where: eq(users.id, token.sub as string)
+          where: eq(users.id, token.sub as string),
+          columns: { role: true },
         });
         if (dbUser) token.role = dbUser.role;
       }

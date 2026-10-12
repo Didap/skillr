@@ -45,7 +45,7 @@ export default function PaReportsPage() {
         
         toast.success("Report generato con successo!");
       } else {
-        toast.error("Errore nella generazione del report.");
+        toast.error("error" in result ? result.error : "Errore nella generazione del report.");
       }
     } catch (error) {
       console.error("Export error:", error);

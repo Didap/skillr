@@ -5,6 +5,7 @@ import { reviews, professionalProfiles, companyProfiles, users, matches } from "
 import { eq, and, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { publicUserColumns } from "@/db/safe-columns";
 
 export async function saveReviewAction(data: {
   matchId?: string;
@@ -68,6 +69,7 @@ export async function saveReviewAction(data: {
     // First, find target's role
     const target = await db.query.users.findFirst({
       where: eq(users.id, targetId),
+      columns: publicUserColumns,
       with: {
           professionalProfile: true,
           companyProfile: true
