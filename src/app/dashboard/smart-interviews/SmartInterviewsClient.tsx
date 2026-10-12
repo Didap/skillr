@@ -49,7 +49,7 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
     if (res.success) {
       haptic();
       toast.success("Prenotazione effettuata con successo!");
-      setEvents(events.map(e => e.id === eventId ? { ...e, isBooked: true, bookingCount: e.bookingCount + 1 } : e));
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, isBooked: true, bookingCount: e.bookingCount + 1 } : e));
     } else {
       toast.error(res.error || "Errore durante la prenotazione");
     }
@@ -62,7 +62,7 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
     const res = await cancelInterviewBookingAction(eventId);
     if (res.success) {
       toast.success("Prenotazione annullata.");
-      setEvents(events.map(e => e.id === eventId ? { ...e, isBooked: false, bookingCount: Math.max(0, e.bookingCount - 1) } : e));
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, isBooked: false, bookingCount: Math.max(0, e.bookingCount - 1) } : e));
       setCancelId(null);
     } else {
       toast.error(res.error || "Errore durante l'annullamento");

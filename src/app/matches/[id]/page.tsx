@@ -46,14 +46,14 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     redirect("/login");
   }
 
-  const res = await getMatchDetail(id);
-  
+  // Independent queries: the skill labels don't wait on the match lookup
+  const [res, labelBySlug] = await Promise.all([getMatchDetail(id), getSkillLabelMap()]);
+
   if (res.error || !res.data) {
     notFound();
   }
 
   const match = res.data as MatchDetail;
-  const labelBySlug = await getSkillLabelMap();
   const role = session.user.role as "professional" | "company";
 
   // Companies see where the professional works from; professionals see the job's location.

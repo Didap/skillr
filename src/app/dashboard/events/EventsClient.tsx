@@ -79,7 +79,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
     setLoading(true);
     const res = await updateMeetingLinkAction(eventId, newLink);
     if (res.success) {
-      setEvents(events.map(e => e.id === eventId ? { ...e, meetingLink: newLink } : e));
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, meetingLink: newLink.trim() } : e));
       setLinkEvent(null);
       setNewLink("");
       toast.success("Link aggiornato con successo!");

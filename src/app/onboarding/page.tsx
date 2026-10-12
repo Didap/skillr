@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { User, Building2, ChevronRight, Check, Zap, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useIsPresent } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -931,6 +931,15 @@ function RoleOption({ id, value, icon, label, description, isSelected }: { id: s
 
 function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: { onBack?: () => void, onNext: () => void, nextLabel?: string, loading?: boolean, nextDisabled?: boolean, hideNext?: boolean }) {
   const slot = useContext(StepNavSlot);
+  // While a step animates out its buttons stay on screen (the phone bar sits in the same
+  // spot for every step): ignore taps on them, or a quick double tap would skip a step.
+  const isPresent = useIsPresent();
+  const handleNext = () => {
+    if (isPresent) onNext();
+  };
+  const handleBack = onBack && (() => {
+    if (isPresent) onBack();
+  });
   const nextContent = (
     <>
       {loading ? <Loader2 className="animate-spin" size={18} /> : null}
@@ -950,11 +959,11 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
         )}
       >
         {onBack && (
-          <Button variant="ghost" onClick={onBack} className="pressable rounded-xl h-12 px-6 font-black text-slate-500 hover:text-slate-900 text-sm">Indietro</Button>
+          <Button variant="ghost" onClick={handleBack} className="pressable rounded-xl h-12 px-6 font-black text-slate-500 hover:text-slate-900 text-sm">Indietro</Button>
         )}
         {!hideNext && (
           <Button
-            onClick={onNext}
+            onClick={handleNext}
             disabled={loading || nextDisabled}
             className={cn(
               "pressable group rounded-2xl h-14 px-10 bg-slate-950 hover:bg-emerald-800 text-white transition-colors font-black text-base shadow-xl shadow-slate-200 flex items-center justify-center gap-2",
@@ -971,14 +980,14 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
           {onBack && (
             <Button
               variant="ghost"
-              onClick={onBack}
+              onClick={handleBack}
               className="pressable shrink-0 rounded-2xl h-12 px-4 font-black text-slate-500 hover:text-slate-900 text-[15px]"
             >
               Indietro
             </Button>
           )}
           <Button
-            onClick={onNext}
+            onClick={handleNext}
             disabled={loading || nextDisabled}
             className="pressable flex-1 min-w-0 rounded-2xl h-12 px-5 bg-slate-950 hover:bg-emerald-800 text-white transition-colors font-black text-base flex items-center justify-center gap-2"
           >

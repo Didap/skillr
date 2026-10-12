@@ -248,7 +248,8 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
               <div className="relative mt-5 flex items-end justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-semibold text-emerald-200/80">{labels.rate}</div>
-                  <div className="font-display italic text-white text-[2rem] leading-none tracking-tight truncate">
+                  {/* Wraps instead of truncating: a RAL range is wider than half a phone card */}
+                  <div className="font-display italic text-white text-[2rem] leading-[1.05] tracking-tight wrap-break-word">
                     {profile.rate}
                   </div>
                 </div>

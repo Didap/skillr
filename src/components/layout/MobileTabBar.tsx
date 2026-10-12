@@ -24,7 +24,9 @@ export function MobileTabBar() {
   const calendarInSheet = session.user.role === "company";
   const accountActive =
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/profile") ||
+    // Own profile only: other people's /profile/[id] pages are not "you"
+    pathname === "/profile" ||
+    pathname === `/profile/${session.user.id}` ||
     (calendarInSheet && pathname.startsWith("/dashboard/calendar"));
 
   return (

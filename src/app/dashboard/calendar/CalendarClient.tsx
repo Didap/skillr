@@ -9,6 +9,7 @@ import {
   Zap,
   User,
   Lock,
+  Check,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -328,6 +329,13 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                     <Video size={18} />
                                     <span className="text-sm font-bold">Partecipa</span>
                                   </a>
+                                );
+                              } else if (now.getTime() > joinClosesAt) {
+                                return (
+                                  <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center gap-2">
+                                    <Check size={16} className="shrink-0" />
+                                    <span className="text-sm font-bold">Concluso</span>
+                                  </div>
                                 );
                               } else {
                                 const daysUntil = differenceInDays(startTime, now);

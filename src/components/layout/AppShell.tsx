@@ -1,10 +1,15 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileTabBar } from "./MobileTabBar";
 import { pageEnter } from "@/lib/motion";
+
+// The first page of a visit is server-rendered: animating it from opacity 0 would keep the
+// content invisible until hydration. Only client-side navigations after that ease in.
+let hasHydrated = false;
 
 /**
  * Logged-in app frame. Desktop: sidebar + scrolling content column. Phone: full-width
@@ -14,13 +19,17 @@ import { pageEnter } from "@/lib/motion";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  useEffect(() => {
+    hasHydrated = true;
+  }, []);
+
   return (
     <div className="h-dvh bg-[#FDFDFC] flex selection:bg-emerald-100 selection:text-emerald-900 overflow-hidden">
       <DashboardSidebar />
       {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
       <motion.div
         key={pathname}
-        initial={pageEnter.initial}
+        initial={hasHydrated ? pageEnter.initial : false}
         animate={pageEnter.animate}
         className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
       >

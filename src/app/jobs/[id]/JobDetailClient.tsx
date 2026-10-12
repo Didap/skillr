@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { skillLabel } from "@/lib/skill-slugs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { duration, ease, haptic, spring } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { cn, formatEur } from "@/lib/utils";
 
 interface Applicant {
   id: string;
@@ -69,9 +69,6 @@ const pendingCardVariants = {
     transition: { duration: duration.state, ease: ease.in },
   }),
 };
-
-const euro = (n: number | null | undefined) =>
-  typeof n === "number" && !Number.isNaN(n) ? n.toLocaleString("it-IT") : "—";
 
 function applicantName(app: Applicant) {
   const profile = app.professional.professionalProfile;
@@ -179,7 +176,7 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
                   </div>
                   <div className="flex items-center gap-1.5 tabular-nums">
                     <Zap size={16} className="text-emerald-500 shrink-0" />
-                    <span>{euro(job.budgetMinEur)}–{euro(job.budgetMaxEur)} €{rateLabel}</span>
+                    <span>{formatEur(job.budgetMinEur)}–{formatEur(job.budgetMaxEur)} €{rateLabel}</span>
                   </div>
                 </div>
 

@@ -40,7 +40,7 @@ export function DashboardSidebar() {
           href="/profile" 
           icon={<User size={20} />} 
           label="Profilo" 
-          active={pathname.startsWith("/profile")}
+          active={pathname === "/profile" || pathname === `/profile/${session.user.id}`}
         />
       </nav>
 

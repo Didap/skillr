@@ -181,7 +181,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
     setLoading(true);
     const res = await updateMeetingLinkAction(event.id, newLink);
     if (res.success) {
-      setEvent({ ...event, meetingLink: newLink });
+      setEvent(prev => ({ ...prev, meetingLink: newLink.trim() }));
       setLinkOpen(false);
       toast.success("Link aggiornato con successo!");
     } else {

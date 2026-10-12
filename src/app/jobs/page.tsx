@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { getCompanyJobs, deleteJob, toggleJobStatus } from "@/app/actions/jobs";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -28,8 +28,9 @@ import { toast } from "sonner";
 import { JobData } from "@/types/job";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { ConfirmSheet } from "@/components/interviews/ConfirmSheet";
 import { duration, ease, haptic, spring } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { cn, formatEur } from "@/lib/utils";
 
 interface JobWithStats extends JobData {
   id: string;
@@ -40,9 +41,6 @@ interface JobWithStats extends JobData {
 
 const rateSuffix = (rateType: string | null | undefined) =>
   rateType === "ral_annual" ? "anno" : rateType === "daily" ? "giorno" : "ora";
-
-const euro = (n: number | null | undefined) =>
-  typeof n === "number" && !Number.isNaN(n) ? n.toLocaleString("it-IT") : "—";
 
 const iconButton =
   "pressable shrink-0 w-11 h-11 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40";
@@ -76,6 +74,8 @@ export default function JobsPage() {
   useEffect(() => {
     Promise.resolve().then(() => loadJobs());
   }, []);
+
+  const closeDelete = useCallback(() => setDeleteId(null), []);
 
   const confirmDelete = async () => {
     if (!deleteId) return;
@@ -244,7 +244,7 @@ export default function JobsPage() {
                               <span className="truncate">{job.location || "Sede centrale"}</span>
                             </span>
                             <span className="tabular-nums whitespace-nowrap">
-                              {euro(job.budgetMinEur)}–{euro(job.budgetMaxEur)} € / {rateSuffix(job.rateType)}
+                              {formatEur(job.budgetMinEur)}–{formatEur(job.budgetMaxEur)} € / {rateSuffix(job.rateType)}
                             </span>
                           </p>
 
@@ -434,36 +434,16 @@ export default function JobsPage() {
       </BottomSheet>
 
       {/* Delete confirmation: bottom sheet on phones, centred dialog from md */}
-      <BottomSheet
+      <ConfirmSheet
         open={!!deleteId}
-        onClose={() => {
-          if (!isDeleting) setDeleteId(null);
-        }}
+        onClose={closeDelete}
+        onConfirm={confirmDelete}
+        loading={isDeleting}
         title="Elimina ricerca"
-      >
-        <p className="text-slate-600 leading-relaxed">
-          Sei sicuro di voler eliminare questa ricerca? L&apos;azione è irreversibile e tutti i match associati verranno archiviati.
-        </p>
-        <div className="mt-6 flex flex-col-reverse md:flex-row gap-3">
-          <button
-            type="button"
-            onClick={() => setDeleteId(null)}
-            disabled={isDeleting}
-            className="pressable flex-1 h-12 rounded-2xl border border-slate-200 bg-white font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Annulla
-          </button>
-          <button
-            type="button"
-            onClick={confirmDelete}
-            disabled={isDeleting}
-            className="pressable flex-1 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-70"
-          >
-            {isDeleting && <Loader2 size={18} className="animate-spin" />}
-            Elimina definitivamente
-          </button>
-        </div>
-      </BottomSheet>
+        description="Sei sicuro di voler eliminare questa ricerca? L'azione è irreversibile e tutti i match associati verranno archiviati."
+        confirmText="Elimina definitivamente"
+        cancelText="Annulla"
+      />
     </div>
   );
 }
