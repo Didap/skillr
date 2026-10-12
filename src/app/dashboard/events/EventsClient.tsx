@@ -1,43 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { 
-  Zap, 
-  Plus, 
-  Users, 
-  Link as LinkIcon, 
-  X, 
+import { useCallback, useState } from "react";
+import {
+  Zap,
+  Plus,
+  Users,
+  Link as LinkIcon,
   Clock,
-  ExternalLink,
   Loader2,
   Image as ImageIcon,
   Search,
   ChevronLeft,
   ChevronRight,
-  ArrowUpRight,
-  User
+  MapPin,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { toast } from "sonner";
 import { InterviewEvent } from "@/types/interview";
 import { updateMeetingLinkAction, getEventParticipantsAction } from "@/app/actions/interviews";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { duration, ease } from "@/lib/motion";
+import { ParticipantList, type Participant } from "@/components/interviews/ParticipantList";
 import { formatEventMonth, formatEventDayOfMonth, formatEventTime } from "@/components/interviews/event-time";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
-
-interface Participant {
-  id: string;
-  name: string | null;
-  email: string;
-  image: string | null;
-  title?: string | null;
-  photoUrl?: string | null;
-}
 
 interface EventsClientProps {
   initialEvents: InterviewEvent[];
@@ -45,21 +34,27 @@ interface EventsClientProps {
 
 const ITEMS_PER_PAGE = 5;
 
+// List entrance: short rise, stagger capped so the last card lands within ~200ms
+const itemEnter = (index: number) => ({
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: duration.state, ease: ease.out, delay: Math.min(index * 0.04, 0.2) },
+});
+
 export default function EventsClient({ initialEvents }: EventsClientProps) {
-  const { data: session } = useSession();
   const [events, setEvents] = useState<InterviewEvent[]>(initialEvents);
   const [loading, setLoading] = useState(false);
-  const [editingLink, setEditingLink] = useState<string | null>(null);
+  const [linkEvent, setLinkEvent] = useState<InterviewEvent | null>(null);
   const [newLink, setNewLink] = useState("");
   const [viewingParticipants, setViewingParticipants] = useState<InterviewEvent | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
-  
+
   // Pagination & Search
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredEvents = events.filter(event => 
+  const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     event.topic?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -69,6 +64,15 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+  const totalBookings = events.reduce((acc, curr) => acc + (curr.bookingCount || 0), 0);
+
+  const closeLinkSheet = useCallback(() => setLinkEvent(null), []);
+  const closeParticipants = useCallback(() => setViewingParticipants(null), []);
+
+  const openLinkEditor = (event: InterviewEvent) => {
+    setLinkEvent(event);
+    setNewLink(event.meetingLink || "");
+  };
 
   const handleUpdateLink = async (eventId: string) => {
     if (!newLink) return;
@@ -76,7 +80,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
     const res = await updateMeetingLinkAction(eventId, newLink);
     if (res.success) {
       setEvents(events.map(e => e.id === eventId ? { ...e, meetingLink: newLink } : e));
-      setEditingLink(null);
+      setLinkEvent(null);
       setNewLink("");
       toast.success("Link aggiornato con successo!");
     } else {
@@ -99,345 +103,270 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
-      {/* Header Standard del Sito */}
-      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 sticky top-0 z-40">
-        <div>
-          <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">
-            Smart Interviews
-          </h1>
-          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">
-            Gestione eventi e Speed-Dating
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard/events/new">
-            <Button 
-              className="rounded-full gap-2 shadow-lg shadow-emerald-500/10 h-11 px-6 bg-emerald-500 hover:bg-emerald-600 transition-all text-xs font-display font-bold italic"
+      <PageHeader
+        title="Smart Interview"
+        subtitle="Gestione eventi e speed-dating"
+        actions={
+          <>
+            <Link
+              href="/dashboard/events/new"
+              aria-label="Nuovo evento"
+              className="pressable md:hidden w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20"
             >
-              <Plus size={18} /> Nuovo Evento
-            </Button>
-          </Link>
-          <div className="w-px h-8 bg-slate-100 hidden sm:block" />
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-950">{session?.user?.name}</p>
-              <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest">{session?.user?.role}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-card overflow-hidden ring-4 ring-slate-50">
-               {session?.user?.image ? (
-                 <Image src={session.user.image} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" />
-               ) : (
-                 <div className="w-full h-full flex items-center justify-center text-slate-300">
-                    <User size={24} />
-                 </div>
-               )}
-            </div>
-          </div>
-        </div>
-      </header>
+              <Plus size={22} />
+            </Link>
+            <Link
+              href="/dashboard/events/new"
+              className="pressable hidden md:inline-flex items-center gap-2 rounded-full h-11 px-6 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/10 transition-colors text-sm font-display font-bold italic"
+            >
+              <Plus size={18} /> Nuovo evento
+            </Link>
+          </>
+        }
+      />
 
-      {/* Main Content Area con Scroll Indipendente */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <main className="max-w-6xl w-full mx-auto p-6 md:p-12 space-y-12">
-          {/* Top Section: Search */}
-          <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-white p-4 rounded-[2rem] border border-slate-50 shadow-sm">
+      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+        <main className="max-w-6xl w-full mx-auto px-4 py-5 md:p-12 space-y-6 md:space-y-12">
+          {/* Search + stats */}
+          <div className="flex flex-col md:flex-row gap-3 md:gap-6 md:items-center md:justify-between md:bg-white md:p-4 md:rounded-[2rem] md:border md:border-slate-50 md:shadow-sm">
             <div className="relative w-full md:w-96 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-              <Input 
-                placeholder="Cerca tra i tuoi eventi..." 
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none" size={18} />
+              <Input
+                type="search"
+                enterKeyHint="search"
+                aria-label="Cerca tra i tuoi eventi"
+                placeholder="Cerca tra i tuoi eventi..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 } }
-                className="h-12 pl-12 pr-4 rounded-2xl bg-slate-50/50 border-transparent focus:bg-white focus:border-emerald-500/20 transition-all font-medium"
+                className="h-12 pl-12 pr-4 rounded-2xl bg-white md:bg-slate-50/50 border-slate-100 md:border-transparent focus:bg-white focus:border-emerald-500/20 transition-all font-medium"
               />
             </div>
 
-            <div className="flex items-center gap-8 px-4">
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Eventi</span>
-                <span className="text-xl font-display font-bold text-slate-950 mt-1">{events.length}</span>
+            <dl className="flex items-center gap-4 md:gap-8 px-1 md:px-4 text-sm">
+              <div className="flex items-baseline md:flex-col md:items-center gap-1.5 md:gap-0">
+                <dd className="order-1 md:order-2 font-display font-bold text-slate-950 text-lg md:text-xl md:mt-1 tabular-nums">{events.length}</dd>
+                <dt className="order-2 md:order-1 text-slate-500 md:text-[9px] md:font-black md:text-slate-400 md:uppercase md:tracking-widest md:leading-none">Eventi</dt>
               </div>
-              <div className="w-px h-8 bg-slate-100" />
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Booking</span>
-                <span className="text-xl font-display font-bold text-emerald-600 mt-1">
-                  {events.reduce((acc, curr) => acc + (curr.bookingCount || 0), 0)}
-                </span>
+              <div className="w-px h-4 md:h-8 bg-slate-200 md:bg-slate-100" aria-hidden="true" />
+              <div className="flex items-baseline md:flex-col md:items-center gap-1.5 md:gap-0">
+                <dd className="order-1 md:order-2 font-display font-bold text-emerald-600 text-lg md:text-xl md:mt-1 tabular-nums">{totalBookings}</dd>
+                <dt className="order-2 md:order-1 text-slate-500 md:text-[9px] md:font-black md:text-slate-400 md:uppercase md:tracking-widest md:leading-none">Prenotazioni</dt>
               </div>
-            </div>
+            </dl>
           </div>
 
-          {/* Events Grid */}
+          {/* Events */}
           <div className="space-y-6">
-            <AnimatePresence mode="popLayout">
-              {paginatedEvents.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6">
-                  {paginatedEvents.map((event, index) => (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Card className="bg-white border-slate-100 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all group overflow-hidden border-none ring-1 ring-slate-100">
-                        <div className="flex flex-col lg:flex-row">
-                          {/* Image Side */}
-                          <div className="lg:w-72 h-48 lg:h-auto relative overflow-hidden shrink-0">
-                            {event.imageUrl ? (
-                              <Image 
-                                src={event.imageUrl} 
-                                alt={event.title} 
-                                fill 
-                                className="object-cover group-hover:scale-105 transition-transform duration-1000" 
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-slate-900 flex items-center justify-center relative">
-                                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
-                                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white/50 border border-white/10">
-                                  <ImageIcon size={32} />
-                                </div>
+            {paginatedEvents.length > 0 ? (
+              <ul className="grid grid-cols-1 gap-4 md:gap-6">
+                {paginatedEvents.map((event, index) => {
+                  const booked = event.bookingCount || 0;
+                  const fill = Math.min(100, (booked / (event.maxSlots || 1)) * 100);
+                  return (
+                    <motion.li key={event.id} {...itemEnter(index)}>
+                      <article className="relative bg-white rounded-3xl md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-[box-shadow,scale] duration-200 group overflow-hidden ring-1 ring-slate-100 has-[.card-link:active]:scale-[0.985] motion-reduce:has-[.card-link:active]:scale-100 lg:flex">
+                        {/* Cover */}
+                        <div className="relative aspect-video lg:aspect-auto lg:w-72 lg:min-h-60 overflow-hidden shrink-0 bg-slate-900">
+                          {event.imageUrl ? (
+                            <Image
+                              src={event.imageUrl}
+                              alt=""
+                              fill
+                              sizes="(min-width: 1024px) 288px, 100vw"
+                              className="object-cover md:group-hover:scale-105 transition-transform duration-1000"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+                              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white/50 border border-white/10">
+                                <ImageIcon size={28} />
                               </div>
-                            )}
-                            <div className="absolute top-4 left-4">
-                               <div className="bg-white/90 backdrop-blur-md rounded-xl px-3 py-1.5 flex flex-col items-center border border-white/20 shadow-lg">
-                                  <span className="text-[9px] font-black uppercase text-slate-400 leading-none">
-                                    {formatEventMonth(event.date)}
-                                  </span>
-                                  <span className="text-base font-display font-bold text-slate-950 leading-none mt-0.5">
-                                    {formatEventDayOfMonth(event.date).padStart(2, "0")}
-                                  </span>
-                               </div>
                             </div>
-                          </div>
-
-                          {/* Content Side */}
-                          <div className="flex-1 p-8 flex flex-col justify-between">
-                            <div className="space-y-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-3 mb-1">
-                                    <Badge variant="secondary" className="rounded-full bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[9px] uppercase px-2 py-0.5">
-                                      {event.topic || "Speed Dating"}
-                                    </Badge>
-                                    <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                      <Clock size={10} />
-                                      {formatEventTime(event.date)}
-                                    </div>
-                                  </div>
-                                  <Link href={`/dashboard/events/${event.id}`}>
-                                    <h4 className="text-xl font-display font-bold text-slate-950 hover:text-emerald-500 transition-colors leading-tight">{event.title}</h4>
-                                  </Link>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-                                    {event.bookingCount || 0} / {event.maxSlots} Iscritti
-                                  </span>
-                                  <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full bg-emerald-500 rounded-full" 
-                                      style={{ width: `${Math.min(100, ((event.bookingCount || 0) / event.maxSlots) * 100)}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
-                                {event.description || "Nessuna descrizione fornita."}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-slate-50 mt-6">
-                               <Button 
-                                  variant="secondary"
-                                  className="w-full sm:w-auto rounded-full px-5 h-10 gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs"
-                                  onClick={() => handleViewParticipants(event)}
-                               >
-                                  <Users size={14} /> Partecipanti
-                               </Button>
-                               
-                               <div className="flex-1 w-full">
-                                 {editingLink === event.id ? (
-                                   <div className="flex gap-2">
-                                     <Input 
-                                       placeholder="Link..." 
-                                       value={newLink}
-                                       onChange={(e) => setNewLink(e.target.value)}
-                                       className="h-10 rounded-xl flex-1 bg-slate-50 border-transparent focus:bg-white"
-                                     />
-                                     <Button onClick={() => handleUpdateLink(event.id)} disabled={loading} className="rounded-xl h-10 bg-emerald-500 px-4">
-                                        {loading ? <Loader2 className="animate-spin size-4" /> : "OK"}
-                                     </Button>
-                                   </div>
-                                 ) : (
-                                   <Button 
-                                      variant="ghost" 
-                                      className="w-full sm:w-auto rounded-full gap-2 text-slate-400 hover:text-emerald-600 font-bold text-[11px] px-4"
-                                      onClick={() => {
-                                        setEditingLink(event.id);
-                                        setNewLink(event.meetingLink || "");
-                                      }}
-                                   >
-                                      <LinkIcon size={12} /> {event.meetingLink ? "Modifica Link" : "Aggiungi Meeting"}
-                                   </Button>
-                                 )}
-                               </div>
-
-                               <Link href={`/dashboard/events/${event.id}`} className="w-full sm:w-auto">
-                                  <Button className="w-full sm:w-auto rounded-full px-5 h-10 gap-2 bg-slate-950 hover:bg-emerald-500 transition-all text-xs font-bold text-white">
-                                     Dettagli <ArrowUpRight size={14} />
-                                  </Button>
-                               </Link>
-                            </div>
+                          )}
+                          <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-white/95 backdrop-blur-md rounded-xl px-3 py-1.5 flex flex-col items-center shadow-lg">
+                            <span className="text-[11px] font-black uppercase text-slate-500 leading-none">
+                              {formatEventMonth(event.date)}
+                            </span>
+                            <span className="text-lg font-display font-bold text-slate-950 leading-none mt-0.5 tabular-nums">
+                              {formatEventDayOfMonth(event.date).padStart(2, "0")}
+                            </span>
                           </div>
                         </div>
-                      </Card>
-                    </motion.div>
-                  ))}
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 p-5 md:p-8 flex flex-col">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <Badge variant="secondary" className="rounded-full bg-emerald-50 text-emerald-700 border-emerald-100 font-black text-[11px] md:text-[10px] uppercase px-2 py-0.5 max-w-full justify-start">
+                              {event.topic || "Speed Dating"}
+                            </Badge>
+                            <span className="flex items-center gap-1 text-[13px] md:text-xs font-bold text-slate-500 tabular-nums">
+                              <Clock size={13} />
+                              {formatEventTime(event.date)}
+                            </span>
+                          </div>
+
+                          {/* The title link covers the whole card (stretched), the tools below sit above it */}
+                          <h2 className="mt-2 text-lg md:text-xl font-display font-bold text-slate-950 leading-snug line-clamp-2">
+                            <Link
+                              href={`/dashboard/events/${event.id}`}
+                              className="card-link md:hover:text-emerald-600 transition-colors outline-none after:absolute after:inset-0 after:rounded-3xl md:after:rounded-[2.5rem] focus-visible:after:ring-2 focus-visible:after:ring-emerald-500"
+                            >
+                              {event.title}
+                            </Link>
+                          </h2>
+
+                          <p className="hidden md:block mt-3 text-slate-500 text-sm leading-relaxed line-clamp-2">
+                            {event.description || "Nessuna descrizione fornita."}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[15px] md:text-sm text-slate-600">
+                            <span className="inline-flex items-center gap-2 font-semibold tabular-nums">
+                              <Users size={16} className="text-emerald-500" />
+                              {booked} / {event.maxSlots}
+                              <span className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden" aria-hidden="true">
+                                <span className="block h-full bg-emerald-500 rounded-full" style={{ width: `${fill}%` }} />
+                              </span>
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 min-w-0 max-w-full">
+                              <MapPin size={16} className="text-emerald-500 shrink-0" />
+                              <span className="truncate">{event.location || "Online"}</span>
+                            </span>
+                          </div>
+
+                          {/* Owner tools */}
+                          <div className="relative z-10 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-100 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleViewParticipants(event)}
+                              className="pressable flex-1 md:flex-none h-11 rounded-full px-4 md:px-5 inline-flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm"
+                            >
+                              <Users size={16} /> Iscritti
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openLinkEditor(event)}
+                              className="pressable flex-1 md:flex-none h-11 rounded-full px-4 md:px-5 inline-flex items-center justify-center gap-2 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 font-bold text-sm"
+                            >
+                              <LinkIcon size={16} />
+                              <span className="truncate">{event.meetingLink ? "Modifica link" : "Aggiungi meeting"}</span>
+                            </button>
+                            <span className="hidden md:inline-flex ml-auto items-center gap-1 text-sm font-bold text-slate-400 group-hover:text-emerald-600 transition-colors" aria-hidden="true">
+                              Dettagli <ChevronRight size={16} />
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: duration.state } }}
+                className="text-center px-6 py-14 md:py-24 bg-white rounded-3xl md:rounded-[3rem] border border-dashed border-slate-200"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-5 md:mb-6">
+                  <Zap size={32} />
                 </div>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-slate-200"
-                >
-                   <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
-                      <Zap size={40} />
-                   </div>
-                   <h3 className="text-xl font-display font-bold italic text-slate-950 mb-2">Ancora nulla qui</h3>
-                   <p className="text-slate-400 mb-8 max-w-sm mx-auto">Crea il tuo primo evento Smart Interview per incontrare nuovi talenti.</p>
-                   <Link href="/dashboard/events/new">
-                     <Button className="rounded-full gap-2 px-8 h-12 shadow-xl shadow-emerald-500/10 bg-emerald-500 hover:bg-emerald-600 font-display font-bold italic">
-                        <Plus size={18} /> Inizia ora
-                     </Button>
-                   </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                {searchQuery ? (
+                  <>
+                    <h3 className="text-xl font-display font-bold italic text-slate-950 mb-2">Nessun risultato</h3>
+                    <p className="text-[15px] text-slate-500 max-w-sm mx-auto">Nessun evento corrisponde a &quot;{searchQuery}&quot;.</p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-display font-bold italic text-slate-950 mb-2">Ancora nulla qui</h3>
+                    <p className="text-[15px] text-slate-500 mb-7 md:mb-8 max-w-sm mx-auto">Crea il tuo primo evento Smart Interview per incontrare nuovi talenti.</p>
+                    <Link
+                      href="/dashboard/events/new"
+                      className="pressable inline-flex items-center gap-2 rounded-full px-8 h-12 shadow-xl shadow-emerald-500/10 bg-emerald-500 hover:bg-emerald-600 text-white font-display font-bold italic"
+                    >
+                      <Plus size={18} /> Inizia ora
+                    </Link>
+                  </>
+                )}
+              </motion.div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-6">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="rounded-xl h-10 w-10 border-slate-100 disabled:opacity-30"
+              <nav aria-label="Pagine" className="flex items-center justify-center gap-2 pt-2 md:pt-6">
+                <button
+                  type="button"
+                  aria-label="Pagina precedente"
+                  className="pressable rounded-full h-11 w-11 flex items-center justify-center bg-white border border-slate-100 text-slate-600 disabled:opacity-30 disabled:pointer-events-none"
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft size={18} />
-                </Button>
-                <div className="px-4 h-10 bg-white border border-slate-100 rounded-xl flex items-center">
-                  <span className="text-xs font-black text-slate-950">{currentPage} / {totalPages}</span>
+                </button>
+                <div className="px-4 h-11 bg-white border border-slate-100 rounded-full flex items-center">
+                  <span className="text-sm font-bold text-slate-950 tabular-nums">{currentPage} / {totalPages}</span>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="rounded-xl h-10 w-10 border-slate-100 disabled:opacity-30"
+                <button
+                  type="button"
+                  aria-label="Pagina successiva"
+                  className="pressable rounded-full h-11 w-11 flex items-center justify-center bg-white border border-slate-100 text-slate-600 disabled:opacity-30 disabled:pointer-events-none"
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
                   <ChevronRight size={18} />
-                </Button>
-              </div>
+                </button>
+              </nav>
             )}
           </div>
         </main>
       </div>
 
-      {/* Modal Partecipanti */}
-      <AnimatePresence>
+      {/* Participants */}
+      <BottomSheet open={!!viewingParticipants} onClose={closeParticipants} title="Iscritti">
         {viewingParticipants && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-            onClick={() => setViewingParticipants(null)}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 40 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 40 }}
-              className="bg-white rounded-[2.5rem] p-0 max-w-lg w-full shadow-2xl relative overflow-hidden border border-slate-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-8 bg-slate-50/50 border-b border-slate-100">
-                <div>
-                  <h2 className="text-2xl font-display italic font-bold text-slate-950 leading-none">Iscritti</h2>
-                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-2 truncate max-w-[300px]">
-                    {viewingParticipants.title}
-                  </p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setViewingParticipants(null)}
-                  className="rounded-full hover:bg-slate-100"
-                >
-                  <X size={20} />
-                </Button>
-              </div>
-
-              <div className="p-6 max-h-[50vh] overflow-y-auto space-y-3 custom-scrollbar">
-                {loadingParticipants ? (
-                  <div className="py-20 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="animate-spin text-emerald-500 size-8" />
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Caricamento...</p>
-                  </div>
-                ) : participants.length > 0 ? (
-                  participants.map((p) => (
-                    <div key={p.id} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-md transition-all group">
-                      <div className="w-11 h-11 rounded-xl bg-slate-200 overflow-hidden shrink-0 border border-white shadow-sm relative">
-                        {(p.photoUrl || p.image) ? (
-                          <Image 
-                            src={(p.photoUrl || p.image) as string} 
-                            alt={p.name || "Participant"} 
-                            fill
-                            className="object-cover" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
-                            <Users size={18} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-950 truncate">{p.name}</p>
-                        <p className="text-[10px] text-slate-500 truncate font-medium uppercase tracking-tight">{p.title || "Professionista"}</p>
-                      </div>
-                      <Link 
-                        href={`/profile/${p.id}`}
-                        className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-slate-300 hover:text-emerald-500 hover:shadow-sm transition-all border border-slate-100"
-                      >
-                        <ExternalLink size={14} />
-                      </Link>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-16 text-center">
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4">
-                      <Users size={32} />
-                    </div>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-tight">Nessun iscritto.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-8 pt-0 mt-2">
-                <Button 
-                  className="w-full rounded-full h-14 bg-slate-950 font-bold text-sm"
-                  onClick={() => setViewingParticipants(null)}
-                >
-                  Chiudi
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
+          <p className="-mt-2 mb-4 text-sm text-slate-500 truncate">{viewingParticipants.title}</p>
         )}
-      </AnimatePresence>
+        <ParticipantList loading={loadingParticipants} participants={participants} />
+      </BottomSheet>
+
+      {/* Meeting link editor */}
+      <BottomSheet open={!!linkEvent} onClose={closeLinkSheet} title="Link del meeting">
+        {linkEvent && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdateLink(linkEvent.id);
+            }}
+            className="space-y-4"
+          >
+            <p className="text-sm text-slate-500 truncate -mt-2">{linkEvent.title}</p>
+            <div className="relative">
+              <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Input
+                type="url"
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                aria-label="Link del meeting"
+                placeholder="https://meet.google.com/..."
+                value={newLink}
+                onChange={(e) => setNewLink(e.target.value)}
+                className="h-14 pl-12 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base"
+              />
+            </div>
+            <p className="text-[13px] text-slate-500">Solo i professionisti iscritti vedranno questo link.</p>
+            <button
+              type="submit"
+              disabled={loading || !newLink}
+              className="pressable w-full h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" />}
+              Salva link
+            </button>
+          </form>
+        )}
+      </BottomSheet>
     </div>
   );
 }
