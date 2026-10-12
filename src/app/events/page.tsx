@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { InterviewEvent } from "@/types/interview";
 import { useSession } from "next-auth/react";
 import { formatEventMonth, formatEventDayOfMonth } from "@/lib/rome-time";
@@ -71,7 +72,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const closeFilters = useCallback(() => setFiltersOpen(false), []);
+  const closeFilters = () => setFiltersOpen(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -227,7 +228,7 @@ export default function EventsPage() {
               {loading ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="h-96 md:h-[450px] bg-slate-50 animate-pulse motion-reduce:animate-none rounded-3xl md:rounded-[2.5rem]" />
+                    <Skeleton key={i} className="h-96 md:h-[450px] bg-slate-50 rounded-3xl md:rounded-[2.5rem]" />
                   ))}
                 </div>
               ) : filteredEvents.length > 0 ? (

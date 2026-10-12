@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Calendar,
   MapPin,
@@ -21,22 +21,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
 import { toast } from "sonner";
 import {
   bookInterviewAction,
   cancelInterviewBookingAction,
   updateInterviewEventAction,
   deleteInterviewEventAction,
-  getEventParticipantsAction,
-  updateMeetingLinkAction,
 } from "@/app/actions/interviews";
 import { formatEventDay, formatEventTime, isSafeHttpUrl } from "@/lib/rome-time";
 import { SeatCount } from "@/components/interviews/SeatCount";
 import { ConfirmSheet } from "@/components/ui/confirm-sheet";
-import { ParticipantList, type Participant } from "@/components/interviews/ParticipantList";
+import { ParticipantsSheet } from "@/components/interviews/ParticipantsSheet";
+import { MeetingLinkSheet } from "@/components/interviews/MeetingLinkSheet";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -65,14 +63,8 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
   const [isEditing, setIsEditing] = useState(false);
   const [confirming, setConfirming] = useState<"cancel" | "delete" | null>(null);
   const [participantsOpen, setParticipantsOpen] = useState(false);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
-  const [newLink, setNewLink] = useState("");
-
-  const closeConfirm = useCallback(() => setConfirming(null), []);
-  const closeParticipants = useCallback(() => setParticipantsOpen(false), []);
-  const closeLink = useCallback(() => setLinkOpen(false), []);
+  const closeConfirm = () => setConfirming(null);
 
   // Escape closes the full-screen editor
   useEffect(() => {
@@ -159,36 +151,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
     }
   };
 
-  const openParticipants = async () => {
-    setParticipantsOpen(true);
-    setLoadingParticipants(true);
-    const res = await getEventParticipantsAction(event.id);
-    if (res.success) {
-      setParticipants(res.data || []);
-    } else {
-      toast.error(res.error || "Errore nel caricamento dei partecipanti");
-    }
-    setLoadingParticipants(false);
-  };
-
-  const openLinkEditor = () => {
-    setNewLink(event.meetingLink || "");
-    setLinkOpen(true);
-  };
-
-  const handleUpdateLink = async () => {
-    if (!newLink) return;
-    setLoading(true);
-    const res = await updateMeetingLinkAction(event.id, newLink);
-    if (res.success) {
-      setEvent(prev => ({ ...prev, meetingLink: newLink.trim() }));
-      setLinkOpen(false);
-      toast.success("Link aggiornato con successo!");
-    } else {
-      toast.error(res.error || "Errore durante l'aggiornamento");
-    }
-    setLoading(false);
-  };
+  const openParticipants = () => setParticipantsOpen(true);
 
   // Formatted in Italian time so the server-rendered and hydrated text match
   const eventDate = event.date ? new Date(event.date) : null;
@@ -213,7 +176,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+    <>
       <PageHeader
         title={event.title}
         subtitle={isOwner ? "Gestione evento" : "Sessione di matching rapido"}
@@ -250,7 +213,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
         }
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="custom-scrollbar bg-white">
         {/* Phone hero: full-bleed cover, then the facts as a list */}
         <section className="md:hidden">
           <div className="relative aspect-16/10 rounded-b-[2rem] overflow-hidden bg-slate-950">
@@ -502,7 +465,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                    </button>
                    <button
                      type="button"
-                     onClick={openLinkEditor}
+                     onClick={() => setLinkOpen(true)}
                      className="pressable w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-left"
                    >
                      <span className="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><LinkIcon size={18} /></span>
@@ -584,40 +547,34 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                 <Pencil size={17} /> Modifica
               </button>
             </div>
-          ) : booked ? (
-            isPast ? (
-              <div className="h-12 rounded-2xl bg-slate-100 text-slate-500 font-bold text-[15px] flex items-center justify-center">
-                Evento concluso
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConfirming("cancel")}
-                  disabled={loading}
-                  className="pressable h-12 px-4 rounded-2xl bg-red-50 text-red-600 font-bold text-[15px] disabled:opacity-50"
-                >
-                  Annulla prenotazione
-                </button>
-                {meetingLink ? (
-                  <a
-                    href={meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="pressable flex-1 min-w-0 h-12 rounded-2xl bg-emerald-500 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
-                  >
-                    <Video size={18} /> <span className="truncate">Entra</span>
-                  </a>
-                ) : (
-                  <div className="flex-1 min-w-0 h-12 rounded-2xl bg-emerald-50 text-emerald-700 font-bold text-[15px] inline-flex items-center justify-center gap-2">
-                    <CheckCircle2 size={18} /> Iscritto
-                  </div>
-                )}
-              </div>
-            )
           ) : isPast ? (
             <div className="h-12 rounded-2xl bg-slate-100 text-slate-500 font-bold text-[15px] flex items-center justify-center">
               Evento concluso
+            </div>
+          ) : booked ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming("cancel")}
+                disabled={loading}
+                className="pressable h-12 px-4 rounded-2xl bg-red-50 text-red-600 font-bold text-[15px] disabled:opacity-50"
+              >
+                Annulla prenotazione
+              </button>
+              {meetingLink ? (
+                <a
+                  href={meetingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pressable flex-1 min-w-0 h-12 rounded-2xl bg-emerald-500 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
+                >
+                  <Video size={18} /> <span className="truncate">Entra</span>
+                </a>
+              ) : (
+                <div className="flex-1 min-w-0 h-12 rounded-2xl bg-emerald-50 text-emerald-700 font-bold text-[15px] inline-flex items-center justify-center gap-2">
+                  <CheckCircle2 size={18} /> Iscritto
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-4">
@@ -638,7 +595,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
             </div>
           )}
         </div>
-      </div>
+      </PageBody>
 
       {/* Edit: full-screen layer on phones, side panel from md up */}
       <AnimatePresence>
@@ -709,44 +666,13 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
         confirmText="Elimina evento"
       />
 
-      <BottomSheet open={participantsOpen} onClose={closeParticipants} title="Iscritti">
-        <p className="-mt-2 mb-4 text-sm text-slate-500 truncate">{event.title}</p>
-        <ParticipantList loading={loadingParticipants} participants={participants} />
-      </BottomSheet>
+      <ParticipantsSheet event={participantsOpen ? event : null} onClose={() => setParticipantsOpen(false)} />
 
-      <BottomSheet open={linkOpen} onClose={closeLink} title="Link del meeting">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleUpdateLink();
-          }}
-          className="space-y-4"
-        >
-          <div className="relative">
-            <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <Input
-              type="url"
-              inputMode="url"
-              autoCapitalize="none"
-              autoCorrect="off"
-              aria-label="Link del meeting"
-              placeholder="https://meet.google.com/..."
-              value={newLink}
-              onChange={(e) => setNewLink(e.target.value)}
-              className="h-14 pl-12 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base"
-            />
-          </div>
-          <p className="text-[13px] text-slate-500">Solo i professionisti iscritti vedranno questo link.</p>
-          <button
-            type="submit"
-            disabled={loading || !newLink}
-            className="pressable w-full h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" />}
-            Salva link
-          </button>
-        </form>
-      </BottomSheet>
-    </div>
+      <MeetingLinkSheet
+        event={linkOpen ? event : null}
+        onClose={() => setLinkOpen(false)}
+        onSaved={(link) => setEvent(prev => ({ ...prev, meetingLink: link }))}
+      />
+    </>
   );
 }

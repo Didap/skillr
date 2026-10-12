@@ -8,6 +8,7 @@ import { InterviewForm } from "@/components/interviews/InterviewForm";
 import { createInterviewEventAction } from "@/app/actions/interviews";
 import { InterviewEvent } from "@/types/interview";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
 import { motion } from "framer-motion";
 import { duration, ease } from "@/lib/motion";
 
@@ -65,7 +66,7 @@ export default function NewEventClient() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+    <>
       <PageHeader
         title="Nuovo evento"
         subtitle="Smart Interview"
@@ -78,13 +79,13 @@ export default function NewEventClient() {
         }
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="custom-scrollbar">
         <main className="w-full mx-auto px-4 pt-6 pb-2 md:p-10 lg:p-16">
           <div className="max-w-5xl mx-auto">
             <InterviewForm onSubmit={handleCreate} loading={loading} />
           </div>
         </main>
-      </div>
-    </div>
+      </PageBody>
+    </>
   );
 }

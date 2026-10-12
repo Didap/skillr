@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
   Zap,
   Plus,
   Users,
   Link as LinkIcon,
   Clock,
-  Loader2,
   Image as ImageIcon,
   Search,
   ChevronLeft,
@@ -16,14 +15,13 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { toast } from "sonner";
+import { PageBody } from "@/components/layout/PageBody";
 import { InterviewEvent } from "@/types/interview";
-import { updateMeetingLinkAction, getEventParticipantsAction } from "@/app/actions/interviews";
 import { motion } from "framer-motion";
 import { duration, ease } from "@/lib/motion";
-import { ParticipantList, type Participant } from "@/components/interviews/ParticipantList";
+import { ParticipantsSheet } from "@/components/interviews/ParticipantsSheet";
+import { MeetingLinkSheet } from "@/components/interviews/MeetingLinkSheet";
 import { formatEventMonth, formatEventDayOfMonth, formatEventTime } from "@/lib/rome-time";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,12 +41,8 @@ const itemEnter = (index: number) => ({
 
 export default function EventsClient({ initialEvents }: EventsClientProps) {
   const [events, setEvents] = useState<InterviewEvent[]>(initialEvents);
-  const [loading, setLoading] = useState(false);
   const [linkEvent, setLinkEvent] = useState<InterviewEvent | null>(null);
-  const [newLink, setNewLink] = useState("");
   const [viewingParticipants, setViewingParticipants] = useState<InterviewEvent | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [loadingParticipants, setLoadingParticipants] = useState(false);
 
   // Pagination & Search
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,43 +60,8 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
   );
   const totalBookings = events.reduce((acc, curr) => acc + (curr.bookingCount || 0), 0);
 
-  const closeLinkSheet = useCallback(() => setLinkEvent(null), []);
-  const closeParticipants = useCallback(() => setViewingParticipants(null), []);
-
-  const openLinkEditor = (event: InterviewEvent) => {
-    setLinkEvent(event);
-    setNewLink(event.meetingLink || "");
-  };
-
-  const handleUpdateLink = async (eventId: string) => {
-    if (!newLink) return;
-    setLoading(true);
-    const res = await updateMeetingLinkAction(eventId, newLink);
-    if (res.success) {
-      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, meetingLink: newLink.trim() } : e));
-      setLinkEvent(null);
-      setNewLink("");
-      toast.success("Link aggiornato con successo!");
-    } else {
-      toast.error(res.error || "Errore durante l'aggiornamento");
-    }
-    setLoading(false);
-  };
-
-  const handleViewParticipants = async (event: InterviewEvent) => {
-    setViewingParticipants(event);
-    setLoadingParticipants(true);
-    const res = await getEventParticipantsAction(event.id);
-    if (res.success) {
-      setParticipants(res.data || []);
-    } else {
-      toast.error(res.error || "Errore nel caricamento dei partecipanti");
-    }
-    setLoadingParticipants(false);
-  };
-
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+    <>
       <PageHeader
         title="Smart Interview"
         subtitle="Gestione eventi e speed-dating"
@@ -125,7 +84,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
         }
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="custom-scrollbar">
         <main className="max-w-6xl w-full mx-auto px-4 py-5 md:p-12 space-y-6 md:space-y-12">
           {/* Search + stats */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-6 md:items-center md:justify-between md:bg-white md:p-4 md:rounded-[2rem] md:border md:border-slate-50 md:shadow-sm">
@@ -240,14 +199,14 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                           <div className="relative z-10 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-100 flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => handleViewParticipants(event)}
+                              onClick={() => setViewingParticipants(event)}
                               className="pressable flex-1 md:flex-none h-11 rounded-full px-4 md:px-5 inline-flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm"
                             >
                               <Users size={16} /> Iscritti
                             </button>
                             <button
                               type="button"
-                              onClick={() => openLinkEditor(event)}
+                              onClick={() => setLinkEvent(event)}
                               className="pressable flex-1 md:flex-none h-11 rounded-full px-4 md:px-5 inline-flex items-center justify-center gap-2 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 font-bold text-sm"
                             >
                               <LinkIcon size={16} />
@@ -320,53 +279,20 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
             )}
           </div>
         </main>
-      </div>
+      </PageBody>
 
       {/* Participants */}
-      <BottomSheet open={!!viewingParticipants} onClose={closeParticipants} title="Iscritti">
-        {viewingParticipants && (
-          <p className="-mt-2 mb-4 text-sm text-slate-500 truncate">{viewingParticipants.title}</p>
-        )}
-        <ParticipantList loading={loadingParticipants} participants={participants} />
-      </BottomSheet>
+      <ParticipantsSheet event={viewingParticipants} onClose={() => setViewingParticipants(null)} />
 
       {/* Meeting link editor */}
-      <BottomSheet open={!!linkEvent} onClose={closeLinkSheet} title="Link del meeting">
-        {linkEvent && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleUpdateLink(linkEvent.id);
-            }}
-            className="space-y-4"
-          >
-            <p className="text-sm text-slate-500 truncate -mt-2">{linkEvent.title}</p>
-            <div className="relative">
-              <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <Input
-                type="url"
-                inputMode="url"
-                autoCapitalize="none"
-                autoCorrect="off"
-                aria-label="Link del meeting"
-                placeholder="https://meet.google.com/..."
-                value={newLink}
-                onChange={(e) => setNewLink(e.target.value)}
-                className="h-14 pl-12 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base"
-              />
-            </div>
-            <p className="text-[13px] text-slate-500">Solo i professionisti iscritti vedranno questo link.</p>
-            <button
-              type="submit"
-              disabled={loading || !newLink}
-              className="pressable w-full h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" />}
-              Salva link
-            </button>
-          </form>
-        )}
-      </BottomSheet>
-    </div>
+      <MeetingLinkSheet
+        event={linkEvent}
+        subtitle={linkEvent?.title}
+        onClose={() => setLinkEvent(null)}
+        onSaved={(link, eventId) =>
+          setEvents(prev => prev.map(e => e.id === eventId ? { ...e, meetingLink: link } : e))
+        }
+      />
+    </>
   );
 }

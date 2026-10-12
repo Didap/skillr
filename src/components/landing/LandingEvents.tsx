@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Users, ArrowRight, MapPin } from "lucide-react";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicEventsAction } from "@/app/actions/interviews";
@@ -12,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { InterviewEvent } from "@/types/interview";
 import { useSession } from "next-auth/react";
+import { formatEventDayShort } from "@/lib/rome-time";
 
 // Grid of upcoming events; the surrounding section (SmartInterviews) provides the header.
 export function LandingEvents() {
@@ -59,7 +58,7 @@ export function LandingEvents() {
               )}
               <div className="absolute top-4 left-4">
                 <Badge className="bg-white/90 backdrop-blur-md text-slate-900 border-none px-4 py-1.5 rounded-xl font-bold shadow-sm">
-                  {format(new Date(event.date), "d MMM", { locale: it })}
+                  {formatEventDayShort(event.date)}
                 </Badge>
               </div>
             </div>

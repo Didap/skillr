@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
   Zap,
   Calendar,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { bookInterviewAction, cancelInterviewBookingAction } from "@/app/actions/interviews";
@@ -41,8 +42,6 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
 
-  const closeCancel = useCallback(() => setCancelId(null), []);
-
   const handleBook = async (eventId: string) => {
     setLoadingId(eventId);
     const res = await bookInterviewAction(eventId);
@@ -71,7 +70,7 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+    <>
       <PageHeader
         title="Smart Interview"
         subtitle="Speed-dating e matching rapido"
@@ -82,7 +81,7 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
         }
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="custom-scrollbar">
         <main className="max-w-5xl w-full mx-auto px-4 py-5 md:p-10 space-y-8 md:space-y-10">
           {/* Intro */}
           <div className="bg-emerald-600 rounded-3xl md:rounded-[2.5rem] p-5 md:p-10 text-white relative overflow-hidden shadow-xl md:shadow-2xl shadow-emerald-200/50">
@@ -213,17 +212,17 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
             )}
           </section>
         </main>
-      </div>
+      </PageBody>
 
       <ConfirmSheet
         open={!!cancelId}
-        onClose={closeCancel}
+        onClose={() => setCancelId(null)}
         onConfirm={() => cancelId && handleCancel(cancelId)}
         loading={!!cancelId && loadingId === cancelId}
         title="Annullare la prenotazione?"
         description="Il posto tornerà disponibile per altri candidati. Potrai prenotare di nuovo finché ci sono posti liberi."
         confirmText="Annulla prenotazione"
       />
-    </div>
+    </>
   );
 }
