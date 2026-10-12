@@ -84,19 +84,19 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-16">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+    <form onSubmit={handleSubmit} className="space-y-8 md:space-y-16">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16">
         {/* Left Column: Base Info & Budget */}
-        <div className="space-y-16">
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-border-subtle pb-6">
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+        <div className="space-y-10 md:space-y-16">
+          <section className="space-y-5 md:space-y-8">
+            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Briefcase size={20} />
               </div>
-              <h2 className="text-3xl font-display italic font-bold text-text-primary">Informazioni Base</h2>
+              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Informazioni Base</h2>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Titolo della ricerca</Label>
                 <Input 
@@ -105,9 +105,9 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                   required 
                   defaultValue={initialData?.title}
                   placeholder="Es: Senior React Developer (Remote)" 
-                  className="rounded-2xl h-14 bg-white border-border-subtle focus:border-primary px-6" 
+                  className="rounded-2xl h-14 bg-white border-border-subtle focus:border-primary px-4 md:px-6 text-base" 
                 />
-                <p className="text-xs text-text-muted italic px-1">Sii specifico e conciso: è la prima cosa che vedrà il pro.</p>
+                <p className="text-sm md:text-xs text-text-muted italic px-1">Sii specifico e conciso: è la prima cosa che vedrà il pro.</p>
               </div>
 
               <div className="space-y-2">
@@ -117,26 +117,26 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                   name="description" 
                   defaultValue={initialData?.description || ""}
                   placeholder="Descrivi il team, il progetto e cosa cerchi..." 
-                  className="rounded-2xl min-h-[160px] resize-none bg-white border-border-subtle focus:border-primary p-6" 
+                  className="rounded-2xl min-h-[140px] md:min-h-[160px] resize-none bg-white border-border-subtle focus:border-primary p-4 md:p-6 text-base" 
                 />
               </div>
             </div>
           </section>
 
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-border-subtle pb-6">
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+          <section className="space-y-5 md:space-y-8">
+            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Euro size={20} />
               </div>
-              <h2 className="text-3xl font-display italic font-bold text-text-primary">Budget e Tipo Contratto</h2>
+              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Budget e Tipo Contratto</h2>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
+              <div className="space-y-5 md:space-y-6">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Tipo di Retribuzione</Label>
                   <Select name="rateType" value={rateType} onValueChange={(v: string | null) => setRateType((v ?? "daily") as "ral_annual" | "daily" | "hourly")}>
-                    <SelectTrigger className="rounded-2xl h-14 bg-white border-border-subtle px-6 text-base font-bold text-text-primary">
+                    <SelectTrigger className="rounded-2xl h-14 w-full bg-white border-border-subtle px-4 md:px-6 text-base font-bold text-text-primary">
                       <SelectValue>
                         {rateTypeLabels[rateType as keyof typeof rateTypeLabels]}
                       </SelectValue>
@@ -149,7 +149,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-3 md:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="budgetMinEur" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Budget Minimo</Label>
                     <div className="relative">
@@ -160,9 +160,10 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                         required 
                         defaultValue={initialData?.budgetMinEur || ""}
                         placeholder="Min" 
-                        className="rounded-2xl h-14 bg-white border-border-subtle pl-6 pr-12 text-lg font-bold" 
+                        inputMode="numeric"
+                        className="rounded-2xl h-14 bg-white border-border-subtle pl-4 md:pl-6 pr-10 md:pr-12 text-lg font-bold tabular-nums" 
                       />
-                      <span className="absolute right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg">€</span>
+                      <span aria-hidden="true" className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg pointer-events-none">€</span>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -175,14 +176,15 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                         required 
                         defaultValue={initialData?.budgetMaxEur || ""}
                         placeholder="Max" 
-                        className="rounded-2xl h-14 bg-white border-border-subtle pl-6 pr-12 text-lg font-bold" 
+                        inputMode="numeric"
+                        className="rounded-2xl h-14 bg-white border-border-subtle pl-4 md:pl-6 pr-10 md:pr-12 text-lg font-bold tabular-nums" 
                       />
-                      <span className="absolute right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg">€</span>
+                      <span aria-hidden="true" className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg pointer-events-none">€</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="p-6 bg-emerald-50/50 rounded-[2rem] flex gap-4 text-emerald-900 text-sm italic border border-emerald-100/50">
+              <div className="p-4 md:p-6 bg-emerald-50/50 rounded-2xl md:rounded-[2rem] flex gap-3 md:gap-4 text-emerald-900 text-sm italic border border-emerald-100/50">
                 <Info size={20} className="shrink-0 text-emerald-600" />
                 <p>La trasparenza è obbligatoria. Skillr mostrerà questa fascia direttamente sulla card.</p>
               </div>
@@ -191,24 +193,24 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
         </div>
 
         {/* Right Column: Location & Skills */}
-        <div className="space-y-16">
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-border-subtle pb-6">
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+        <div className="space-y-10 md:space-y-16">
+          <section className="space-y-5 md:space-y-8">
+            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <MapPin size={20} />
               </div>
-              <h2 className="text-3xl font-display italic font-bold text-text-primary">Location</h2>
+              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Location</h2>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-6 bg-surface-warm/50 rounded-[2rem] border border-border-subtle">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-border-subtle flex items-center justify-center text-text-muted">
+            <div className="space-y-5 md:space-y-6">
+              <div className="flex items-center justify-between gap-4 p-4 md:p-6 bg-surface-warm/50 rounded-2xl md:rounded-[2rem] border border-border-subtle">
+                <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                  <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-2xl bg-white border border-border-subtle flex items-center justify-center text-text-muted">
                     <Laptop size={20} />
                   </div>
                   <div>
                     <Label htmlFor="remoteOk" className="font-bold text-text-primary cursor-pointer">Lavoro da remoto</Label>
-                    <p className="text-xs text-text-muted">Abilita per attirare candidati da tutta Italia.</p>
+                    <p className="text-sm md:text-xs text-text-muted">Abilita per attirare candidati da tutta Italia.</p>
                   </div>
                 </div>
                 <Switch id="remoteOk" name="remoteOk" defaultChecked={initialData?.remoteOk || false} className="data-[state=checked]:bg-primary" />
@@ -227,22 +229,23 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
             </div>
           </section>
 
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 border-b border-border-subtle pb-6">
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+          <section className="space-y-5 md:space-y-8">
+            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Briefcase size={20} />
               </div>
-              <h2 className="text-3xl font-display italic font-bold text-text-primary">Skill Richieste</h2>
+              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Skill Richieste</h2>
             </div>
             
-            <div className="space-y-8">
-              <div className="space-y-4">
+            <div className="space-y-6 md:space-y-8">
+              <div className="space-y-3 md:space-y-4">
                 <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Seleziona i Cluster di riferimento</Label>
                 <div className="flex flex-wrap gap-2">
                   {catalog.map(cluster => (
                     <button
                       key={cluster.id}
                       type="button"
+                      aria-pressed={selectedClusters.includes(cluster.slug)}
                       onClick={() => {
                         const exists = selectedClusters.includes(cluster.slug);
                         setSelectedClusters(exists 
@@ -251,7 +254,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                         );
                       }}
                       className={cn(
-                        "px-5 py-2.5 rounded-xl border text-sm font-bold transition-all",
+                        "pressable min-h-11 px-4 md:px-5 py-2 rounded-xl border text-sm font-bold transition-colors",
                         selectedClusters.includes(cluster.slug)
                           ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                           : "bg-white border-border-subtle text-text-secondary hover:border-primary/40"
@@ -264,22 +267,23 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               </div>
 
               {selectedClusters.length > 0 && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center px-1">
+                <div className="space-y-3 md:space-y-4">
+                  <div className="flex justify-between items-center gap-3 px-1">
                     <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80">Seleziona le Skill (max 10)</Label>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    <span className="shrink-0 text-xs font-black tabular-nums text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                       {selectedSkills.length}/10
                     </span>
                   </div>
-                  <div className="space-y-6 max-h-[350px] overflow-y-auto p-6 bg-surface-warm/30 rounded-[2rem] border border-border-subtle scrollbar-thin scrollbar-thumb-border-strong">
+                  <div className="space-y-6 md:max-h-[350px] md:overflow-y-auto overscroll-contain p-4 md:p-6 bg-surface-warm/30 rounded-2xl md:rounded-[2rem] border border-border-subtle scrollbar-thin scrollbar-thumb-border-strong">
                     {catalog.filter(c => selectedClusters.includes(c.slug)).map(cluster => (
                       <div key={cluster.id} className="space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-60 pl-1">{cluster.label}</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-text-muted pl-1">{cluster.label}</p>
                         <div className="flex flex-wrap gap-2">
                           {cluster.skills.map((skill: Skill) => (
                             <button
                               key={skill.id}
                               type="button"
+                              aria-pressed={selectedSkills.includes(skill.slug)}
                               onClick={() => {
                                 const exists = selectedSkills.includes(skill.slug);
                                 if (!exists && selectedSkills.length >= 10) return;
@@ -289,10 +293,11 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                                 );
                               }}
                               className={cn(
-                                "px-4 py-2 rounded-full border text-xs font-bold transition-all",
+                                "pressable min-h-11 md:min-h-9 px-4 py-2 rounded-full border text-sm md:text-xs font-bold transition-colors",
                                 selectedSkills.includes(skill.slug)
                                   ? "bg-slate-950 border-slate-950 text-white shadow-md"
-                                  : "bg-white border-border-strong text-text-secondary hover:bg-surface-warm"
+                                  : "bg-white border-border-strong text-text-secondary hover:bg-surface-warm",
+                                !selectedSkills.includes(skill.slug) && selectedSkills.length >= 10 && "opacity-40"
                               )}
                             >
                               {skill.label}
@@ -309,15 +314,16 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
         </div>
       </div>
 
-      <div className="pt-12 border-t border-border-subtle/50 flex justify-center">
+      {/* Phones: sticky action bar above the tab bar. From md: in-flow centred button */}
+      <div className="sticky z-20 bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
         <Button 
           type="submit" 
           disabled={loading} 
-          className="w-full max-w-md h-16 rounded-2xl text-xl font-bold shadow-2xl shadow-primary/20 bg-primary hover:bg-primary-dark transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="pressable w-full md:max-w-md h-13 md:h-16 rounded-2xl text-base md:text-xl font-bold shadow-xl md:shadow-2xl shadow-primary/20 bg-primary hover:bg-primary-dark transition-colors md:transition-all md:hover:scale-[1.02] md:active:scale-[0.98]"
         >
           {loading ? (
             <div className="flex items-center gap-3">
-              <Loader2 className="animate-spin" size={24} /> 
+              <Loader2 className="animate-spin size-5 md:size-6" /> 
               <span>Salvataggio...</span>
             </div>
           ) : (

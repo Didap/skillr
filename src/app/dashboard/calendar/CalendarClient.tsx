@@ -1,27 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Video, 
-  Clock, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Video,
+  Clock,
   Zap,
   User,
+  Lock,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  isSameMonth, 
-  isSameDay, 
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
   eachDayOfInterval,
   isToday,
   differenceInDays,
@@ -32,6 +31,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CustomTooltip } from "@/components/ui/tooltip";
 import { formatRomeDate } from "@/lib/calendar-utils";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { duration, ease, haptic } from "@/lib/motion";
 
 interface CalendarEvent {
   id: string;
@@ -48,18 +49,48 @@ interface CalendarClientProps {
   initialEvents: CalendarEvent[];
 }
 
+const WEEKDAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+
+// The month grid slides the way the user moved (dir: 1 next, -1 previous)
+const monthVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir * 24 }),
+  center: { opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -24, transition: { duration: duration.feedback, ease: ease.in } }),
+};
+
+const hhmm = (d: Date) => formatRomeDate(d, { hour: '2-digit', minute: '2-digit' });
+
 export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  
+  // Direction of the last month change, so the grid slides the way the user moved
+  const [monthDir, setMonthDir] = useState(0);
+
   const events = initialEvents.map(e => ({
     ...e,
     start: new Date(e.start),
     end: new Date(e.end)
   }));
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextMonth = () => {
+    setMonthDir(1);
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+  const prevMonth = () => {
+    setMonthDir(-1);
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+  const goToToday = () => {
+    const now = new Date();
+    setMonthDir(currentMonth < startOfMonth(now) ? 1 : -1);
+    setCurrentMonth(now);
+    setSelectedDate(now);
+    haptic();
+  };
+  const selectDay = (day: Date) => {
+    if (!isSameDay(day, selectedDate)) haptic(6);
+    setSelectedDate(day);
+  };
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -72,238 +103,276 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   });
 
   const selectedDateEvents = events.filter(event => isSameDay(event.start, selectedDate));
+  const viewingToday = isToday(selectedDate) && isSameMonth(currentMonth, new Date());
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#FDFDFC]">
-      {/* Header - Simple & Clean */}
-      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 sticky top-0 z-40 shrink-0">
-        <div>
-          <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">Il Tuo Calendario</h1>
-          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">Gestisci i tuoi appuntamenti</p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Badge variant="outline" className="rounded-full border-slate-200 text-slate-400 font-bold px-4 py-1">
-             {events.length} Eventi Totali
-          </Badge>
-        </div>
-      </header>
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+      <PageHeader
+        title="Calendario"
+        subtitle="Gestisci i tuoi appuntamenti"
+        actions={
+          <>
+            <Badge variant="outline" className="hidden md:inline-flex h-9 rounded-full border-slate-200 text-slate-500 font-semibold px-4 text-sm tabular-nums">
+              {events.length} eventi totali
+            </Badge>
+            <button
+              type="button"
+              onClick={goToToday}
+              disabled={viewingToday}
+              className="pressable h-11 px-4 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Oggi
+            </button>
+          </>
+        }
+      />
 
-      <main className="flex-1 p-6 md:p-8 overflow-hidden">
-        <div className="grid lg:grid-cols-12 gap-6 h-full items-stretch max-w-full mx-auto w-full">
-          
-          {/* Left: Calendar Grid */}
-          <div className="lg:col-span-7 xl:col-span-8 h-full flex flex-col">
-            <Card className="flex-1 p-6 bg-white border-slate-100 rounded-[2.5rem] shadow-premium overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between mb-6 shrink-0">
-                  <h2 className="text-2xl font-display italic font-bold text-slate-950 capitalize">
-                      {format(currentMonth, "MMMM yyyy", { locale: it })}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl border-slate-100 h-9 w-9 hover:bg-slate-50">
-                        <ChevronLeft size={16} />
-                      </Button>
-                      <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl border-slate-100 h-9 w-9 hover:bg-slate-50">
-                        <ChevronRight size={16} />
-                      </Button>
-                  </div>
-                </div>
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain lg:overflow-hidden pb-tabbar">
+        <div className="px-4 pt-4 pb-8 md:p-8 lg:h-full grid lg:grid-cols-12 gap-6 md:gap-8 lg:gap-6 lg:items-stretch">
 
-                <div className="grid grid-cols-7 gap-px mb-2 shrink-0">
-                  {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map(day => (
-                      <div key={day} className="text-center py-1">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">{day}</span>
-                      </div>
-                  ))}
-                </div>
-
-                <div className="flex-1 grid grid-cols-7 gap-2 min-h-0">
-                  {calendarDays.map((day) => {
-                      const dayEvents = events.filter(e => isSameDay(e.start, day));
-                      const isSelected = isSameDay(day, selectedDate);
-                      const isCurrentMonth = isSameMonth(day, monthStart);
-                      
-                      return (
-                        <button
-                            key={day.toString()}
-                            onClick={() => setSelectedDate(day)}
-                            className={cn(
-                              "relative rounded-2xl p-1.5 transition-all group flex flex-col items-center justify-center gap-0.5 min-h-0",
-                              isSelected 
-                                  ? "bg-slate-950 text-white shadow-xl shadow-slate-200 scale-105 z-10" 
-                                  : isToday(day)
-                                    ? "bg-emerald-50 text-emerald-600 ring-2 ring-emerald-100 ring-offset-2"
-                                    : isCurrentMonth ? "bg-white hover:bg-slate-50 border border-slate-100" : "bg-white opacity-20 pointer-events-none"
-                            )}
-                        >
-                            <span className={cn(
-                              "text-xs font-bold",
-                              isSelected ? "text-white" : isCurrentMonth ? "text-slate-900" : "text-slate-300"
-                            )}>
-                              {format(day, "d")}
-                            </span>
-                            
-                            <div className="flex gap-0.5 justify-center mt-0.5">
-                              {dayEvents.slice(0, 3).map((e) => (
-                                  <div 
-                                    key={e.id} 
-                                    className={cn(
-                                        "w-1 h-1 rounded-full",
-                                        isSelected ? "bg-emerald-400" : e.type === 'smart' ? "bg-emerald-500" : "bg-primary"
-                                    )} 
-                                  />
-                              ))}
-                            </div>
-                        </button>
-                      );
-                  })}
-                </div>
-            </Card>
-          </div>
-
-          {/* Right: Selected Day Events */}
-          <div className="lg:col-span-5 xl:col-span-4 h-full flex flex-col min-h-0">
-            <div className="flex items-center justify-between px-2 mb-4 shrink-0">
-                <h3 className="text-lg font-display italic font-bold text-slate-950">
-                  {isToday(selectedDate) ? "Oggi" : format(selectedDate, "d MMMM", { locale: it })}
-                </h3>
-                <Badge variant="secondary" className="rounded-full bg-slate-100 text-slate-500 font-bold text-[10px]">
-                  {selectedDateEvents.length} eventi
-                </Badge>
+          {/* Month grid */}
+          <section
+            aria-label="Mese"
+            className="relative lg:col-span-7 xl:col-span-8 lg:h-full lg:min-h-0 flex flex-col md:p-6 md:bg-white md:border md:border-slate-100 md:rounded-[2.5rem] md:shadow-premium overflow-hidden"
+          >
+            <div className="flex items-center justify-between gap-3 mb-3 md:mb-6 shrink-0">
+              <h2 className="text-2xl font-display italic text-slate-950 capitalize truncate" aria-live="polite">
+                {format(currentMonth, "MMMM yyyy", { locale: it })}
+              </h2>
+              <div className="flex items-center gap-1 md:gap-2 -mr-1.5 md:mr-0">
+                <button
+                  type="button"
+                  onClick={prevMonth}
+                  aria-label="Mese precedente"
+                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  onClick={nextMonth}
+                  aria-label="Mese successivo"
+                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                <AnimatePresence mode="popLayout">
-                  {selectedDateEvents.length > 0 ? (
-                      selectedDateEvents.map((event) => (
-                        <motion.div
-                            key={event.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                        >
-                             <Card className="relative overflow-hidden bg-white border-slate-100/60 rounded-[2rem] shadow-premium hover:shadow-2xl hover:border-emerald-200/50 transition-all duration-500 group">
-                                {/* Decorative background element */}
-                                <div className={cn(
-                                  "absolute top-0 right-0 w-32 h-32 blur-3xl opacity-5 transition-opacity group-hover:opacity-10",
-                                  event.type === 'smart' ? "bg-emerald-500" : "bg-blue-500"
-                                )} />
-                                
-                                <div className="p-6 relative z-10 flex flex-col gap-6">
-                                  <div className="flex items-start justify-between gap-4">
-                                    <div className="flex gap-4">
-                                      <div className={cn(
-                                        "w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center relative",
-                                        event.type === 'smart' ? "bg-emerald-50" : "bg-slate-50"
-                                      )}>
-                                        {event.image ? (
-                                          <Image src={event.image} alt="" width={64} height={64} className="w-full h-full object-cover rounded-2xl shadow-md border-2 border-white" />
-                                        ) : (
-                                          <div className="text-slate-300">
-                                            {event.type === 'smart' ? <Zap size={28} /> : <User size={28} />}
-                                          </div>
-                                        )}
-                                        <div className={cn(
-                                          "absolute -top-2 -left-2 w-6 h-6 rounded-lg flex items-center justify-center shadow-sm border border-white",
-                                          event.type === 'smart' ? "bg-emerald-500 text-white" : "bg-slate-900 text-white"
-                                        )}>
-                                          {event.type === 'smart' ? <Zap size={10} /> : <Clock size={10} />}
-                                        </div>
-                                      </div>
+            <div className="grid grid-cols-7 md:gap-2 mb-1 md:mb-2 shrink-0" aria-hidden="true">
+              {WEEKDAYS.map(day => (
+                <div key={day} className="text-center py-1">
+                  <span className="text-[11px] md:text-[10px] font-bold md:font-black uppercase tracking-wider md:tracking-widest text-slate-400 md:text-slate-300">{day}</span>
+                </div>
+              ))}
+            </div>
 
-                                      <div className="flex flex-col justify-center">
-                                        <div className="flex items-center gap-2 mb-1.5">
-                                          <Badge className={cn(
-                                            "text-[8px] font-black uppercase tracking-[0.15em] rounded-lg px-2 py-0.5 border-none",
-                                            event.type === 'smart' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
-                                          )}>
-                                            {event.type === 'smart' ? 'Smart' : 'Match'}
-                                          </Badge>
-                                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100/50">
-                                            <Clock size={10} className="text-slate-300" />
-                                            {formatRomeDate(event.start, { hour: '2-digit', minute: '2-digit' })}
-                                          </div>
-                                        </div>
-                                        <h4 className="font-display font-bold italic text-slate-950 text-base leading-tight group-hover:text-emerald-600 transition-colors">
-                                          {event.title}
-                                        </h4>
+            <AnimatePresence mode="popLayout" initial={false} custom={monthDir}>
+              <motion.div
+                key={format(monthStart, "yyyy-MM")}
+                custom={monthDir}
+                variants={monthVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="grid grid-cols-7 gap-y-1 md:gap-2 lg:flex-1 lg:min-h-0"
+              >
+                {calendarDays.map((day) => {
+                  const dayEvents = events.filter(e => isSameDay(e.start, day));
+                  const isSelected = isSameDay(day, selectedDate);
+                  const isCurrentMonth = isSameMonth(day, monthStart);
+                  const today = isToday(day);
+
+                  return (
+                    <button
+                      key={day.toString()}
+                      type="button"
+                      onClick={() => selectDay(day)}
+                      disabled={!isCurrentMonth}
+                      aria-pressed={isSelected}
+                      aria-current={today ? "date" : undefined}
+                      aria-label={`${format(day, "EEEE d MMMM", { locale: it })}${dayEvents.length ? `, ${dayEvents.length} ${dayEvents.length === 1 ? "evento" : "eventi"}` : ""}`}
+                      className={cn(
+                        "pressable relative h-12 sm:h-14 lg:h-auto lg:min-h-0 flex flex-col items-center justify-center gap-0.5 rounded-xl md:rounded-2xl md:p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-[background-color,box-shadow,transform] duration-200",
+                        // Desktop keeps the tiled look; phones use a circle on the number instead
+                        isSelected
+                          ? "md:bg-slate-950 md:shadow-xl md:shadow-slate-200 md:scale-105 md:z-10"
+                          : today
+                            ? "md:bg-emerald-50 md:ring-2 md:ring-emerald-100 md:ring-offset-2"
+                            : isCurrentMonth
+                              ? "md:bg-white md:hover:bg-slate-50 md:border md:border-slate-100"
+                              : "opacity-25 md:bg-white"
+                      )}
+                    >
+                      <span className={cn(
+                        "w-9 h-9 sm:w-10 sm:h-10 md:w-auto md:h-auto rounded-full flex items-center justify-center text-[15px] md:text-xs font-semibold md:font-bold tabular-nums transition-colors duration-200",
+                        isSelected
+                          ? "bg-slate-950 text-white md:bg-transparent"
+                          : today
+                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 md:bg-transparent md:ring-0"
+                            : isCurrentMonth ? "text-slate-900" : "text-slate-300"
+                      )}>
+                        {format(day, "d")}
+                      </span>
+
+                      <span className="flex h-1 gap-0.5 justify-center md:mt-0.5" aria-hidden="true">
+                        {dayEvents.slice(0, 3).map((e) => (
+                          <span
+                            key={e.id}
+                            className={cn(
+                              "w-1 h-1 rounded-full",
+                              isSelected ? "bg-emerald-500 md:bg-emerald-400" : e.type === 'smart' ? "bg-emerald-500" : "bg-primary"
+                            )}
+                          />
+                        ))}
+                      </span>
+                    </button>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+          </section>
+
+          {/* Agenda of the selected day */}
+          <section
+            aria-labelledby="agenda-heading"
+            className="lg:col-span-5 xl:col-span-4 lg:h-full flex flex-col lg:min-h-0"
+          >
+            <div className="flex items-center justify-between gap-3 md:px-2 mb-3 md:mb-4 shrink-0">
+              <h3 id="agenda-heading" className="text-xl md:text-lg font-display italic text-slate-950 first-letter:uppercase truncate">
+                {isToday(selectedDate) ? "Oggi" : format(selectedDate, "EEEE d MMMM", { locale: it })}
+              </h3>
+              <span className="shrink-0 inline-flex items-center h-7 px-3 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs tabular-nums">
+                {selectedDateEvents.length} {selectedDateEvents.length === 1 ? "evento" : "eventi"}
+              </span>
+            </div>
+
+            <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={format(selectedDate, "yyyy-MM-dd")}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
+                  exit={{ opacity: 0, transition: { duration: duration.feedback } }}
+                  className="space-y-3"
+                >
+                  {selectedDateEvents.length > 0 ? (
+                    selectedDateEvents.map((event) => (
+                      <article
+                        key={event.id}
+                        className="relative overflow-hidden bg-white border border-slate-100/80 rounded-3xl md:rounded-[2rem] shadow-card md:shadow-premium md:hover:shadow-2xl md:hover:border-emerald-200/50 transition-[box-shadow,border-color] duration-500 group"
+                      >
+                        {/* Decorative background element */}
+                        <div className={cn(
+                          "absolute top-0 right-0 w-32 h-32 blur-3xl opacity-5 transition-opacity group-hover:opacity-10 pointer-events-none",
+                          event.type === 'smart' ? "bg-emerald-500" : "bg-blue-500"
+                        )} />
+
+                        <div className="p-4 md:p-6 relative z-10 flex flex-col gap-4 md:gap-5">
+                          <div className="flex items-start gap-3 md:gap-4 min-w-0">
+                            <div className={cn(
+                              "w-12 h-12 md:w-16 md:h-16 rounded-2xl shrink-0 flex items-center justify-center relative",
+                              event.type === 'smart' ? "bg-emerald-50" : "bg-slate-50"
+                            )}>
+                              {event.image ? (
+                                <Image src={event.image} alt="" width={64} height={64} className="w-full h-full object-cover rounded-2xl shadow-md border-2 border-white" />
+                              ) : (
+                                <div className="text-slate-300">
+                                  {event.type === 'smart' ? <Zap className="size-6 md:size-7" /> : <User className="size-6 md:size-7" />}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                                <span className="inline-flex items-center gap-1 text-sm font-bold text-slate-900 tabular-nums">
+                                  <Clock size={14} className="text-slate-400" />
+                                  {hhmm(event.start)}
+                                  <span className="text-slate-400 font-medium">– {hhmm(event.end)}</span>
+                                </span>
+                                <span className={cn(
+                                  "inline-flex items-center h-5 text-[11px] font-bold uppercase tracking-wider rounded-md px-1.5",
+                                  event.type === 'smart' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
+                                )}>
+                                  {event.type === 'smart' ? 'Smart' : 'Match'}
+                                </span>
+                              </div>
+                              <h4 className="font-display italic text-slate-950 text-lg md:text-base leading-snug line-clamp-2 break-words md:group-hover:text-emerald-600 transition-colors">
+                                {event.title}
+                              </h4>
+                              {event.description && (
+                                <p className="mt-1 text-sm md:text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                                  {event.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {event.link ? (
+                            (() => {
+                              const now = new Date();
+                              const startTime = new Date(event.start);
+                              const fiveMinutesBefore = new Date(startTime.getTime() - 5 * 60 * 1000);
+                              // Same rule as the match page: the link stays usable up to an hour after the start.
+                              const joinClosesAt = Math.max(new Date(event.end).getTime(), startTime.getTime() + 60 * 60 * 1000);
+                              const isActive = now >= fiveMinutesBefore && now.getTime() <= joinClosesAt;
+
+                              if (isActive) {
+                                return (
+                                  <a
+                                    href={event.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl bg-slate-950 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 transition-colors shadow-lg"
+                                  >
+                                    <Video size={18} />
+                                    <span className="text-sm font-bold">Partecipa</span>
+                                  </a>
+                                );
+                              } else {
+                                const daysUntil = differenceInDays(startTime, now);
+                                let label = "Tra poco";
+
+                                if (daysUntil > 0) {
+                                  label = `Tra ${daysUntil} ${daysUntil === 1 ? 'giorno' : 'giorni'}`;
+                                } else if (isSameDay(now, startTime)) {
+                                  label = `Oggi alle ${hhmm(startTime)}`;
+                                }
+
+                                return (
+                                  <CustomTooltip content="I pulsanti delle chiamate si sbloccano 5 minuti prima della chiamata">
+                                    <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center gap-3 cursor-help">
+                                      <Lock size={16} className="shrink-0" />
+                                      <div className="flex flex-col leading-tight min-w-0">
+                                        <span className="text-sm font-bold truncate">{label}</span>
+                                        <span className="text-[11px] font-medium text-slate-500 truncate">Il link si attiva 5 min prima</span>
                                       </div>
                                     </div>
-                                  </div>
-
-                                  <div className="flex items-end justify-between gap-4 mt-1">
-                                    <p className="text-xs text-slate-400 font-medium line-clamp-2 max-w-[70%] leading-relaxed">
-                                      {event.description}
-                                    </p>
-
-                                    {event.link ? (
-                                      (() => {
-                                        const now = new Date();
-                                        const startTime = new Date(event.start);
-                                        const fiveMinutesBefore = new Date(startTime.getTime() - 5 * 60 * 1000);
-                                        // Same rule as the match page: the link stays usable up to an hour after the start.
-                                        const joinClosesAt = Math.max(new Date(event.end).getTime(), startTime.getTime() + 60 * 60 * 1000);
-                                        const isActive = now >= fiveMinutesBefore && now.getTime() <= joinClosesAt;
-                                        
-                                        if (isActive) {
-                                          return (
-                                            <a 
-                                              href={event.link} 
-                                              target="_blank" 
-                                              rel="noopener noreferrer"
-                                              className="h-12 px-5 rounded-xl bg-slate-950 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 group/btn"
-                                            >
-                                              <Video size={18} className="group-hover/btn:animate-pulse" />
-                                              <span className="text-xs font-black uppercase tracking-widest">Partecipa</span>
-                                            </a>
-                                          );
-                                        } else {
-                                          const daysUntil = differenceInDays(startTime, now);
-                                          let label = "Tra poco";
-                                          
-                                          if (daysUntil > 0) {
-                                            label = `Tra ${daysUntil} ${daysUntil === 1 ? 'giorno' : 'giorni'}`;
-                                          } else if (isSameDay(now, startTime)) {
-                                            label = `Oggi alle ${formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}`;
-                                          }
-
-                                          return (
-                                            <CustomTooltip content="I pulsanti delle chiamate si sbloccano 5 minuti prima della chiamata">
-                                              <div 
-                                                className="h-12 px-5 rounded-xl bg-slate-100 text-slate-400 flex flex-col items-center justify-center cursor-help opacity-70 grayscale"
-                                              >
-                                                <div className="flex items-center gap-2">
-                                                  <Video size={16} />
-                                                  <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-                                                </div>
-                                                <span className="text-[8px] font-medium opacity-60">Locked</span>
-                                              </div>
-                                            </CustomTooltip>
-                                          );
-                                        }
-                                      })()
-                                    ) : (
-                                      <Button variant="outline" className="h-12 px-5 rounded-xl border-slate-100 text-slate-400 font-bold text-xs hover:bg-slate-50">
-                                        Dettagli
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                             </Card>
-                        </motion.div>
-                      ))
+                                  </CustomTooltip>
+                                );
+                              }
+                            })()
+                          ) : (
+                            <button
+                              type="button"
+                              className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50"
+                            >
+                              Dettagli
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    ))
                   ) : (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="h-32 flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100"
-                      >
-                        <p className="text-slate-400 text-[10px] font-medium italic px-6 uppercase tracking-wider">Libero</p>
-                      </motion.div>
+                    <div className="h-28 md:h-32 flex flex-col items-center justify-center gap-1 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100 px-6">
+                      <p className="text-slate-500 text-sm font-semibold">Giornata libera</p>
+                      <p className="text-slate-400 text-xs">Nessun appuntamento in programma</p>
+                    </div>
                   )}
-                </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
             </div>
-          </div>
+          </section>
 
         </div>
       </main>

@@ -1,20 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { 
-  Briefcase, 
-  MapPin, 
-  Laptop, 
-  Users, 
-  CheckCircle2, 
-  XCircle, 
-  ChevronRight, 
+import {
+  Briefcase,
+  MapPin,
+  Laptop,
+  Users,
+  CheckCircle2,
+  XCircle,
+  ChevronRight,
   Star,
   Zap,
-  ArrowLeft
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -22,6 +19,9 @@ import Link from "next/link";
 import { acceptApplicant, rejectApplicant } from "@/app/actions/applications";
 import { toast } from "sonner";
 import { skillLabel } from "@/lib/skill-slugs";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { duration, ease, haptic, spring } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 interface Applicant {
   id: string;
@@ -58,19 +58,57 @@ interface Job {
   description: string | null;
 }
 
+type Decision = "accept" | "reject";
+
+// A pending card leaves towards the side of the decision: right for accepted, left for rejected
+const pendingCardVariants = {
+  exit: (decision: Decision | null) => ({
+    opacity: 0,
+    x: decision === "reject" ? -48 : 48,
+    scale: 0.98,
+    transition: { duration: duration.state, ease: ease.in },
+  }),
+};
+
+const euro = (n: number | null | undefined) =>
+  typeof n === "number" && !Number.isNaN(n) ? n.toLocaleString("it-IT") : "—";
+
+function applicantName(app: Applicant) {
+  const profile = app.professional.professionalProfile;
+  return profile?.firstName ? `${profile.firstName} ${profile.lastName}` : app.professional.name || "Professionista";
+}
+
+function Avatar({ app, name, className, size }: { app: Applicant; name: string; className?: string; size: number }) {
+  const src = app.professional.professionalProfile?.photoUrl || app.professional.image;
+  return (
+    <div className={cn("shrink-0 overflow-hidden bg-slate-50 border-2 border-white shadow-sm", className)}>
+      {src ? (
+        <Image src={src} alt={name} width={size} height={size} className="w-full h-full object-cover" unoptimized />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-300 font-display italic text-3xl md:text-5xl">
+          {name[0]}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: Job, initialApplicants: Applicant[], skillLabels: Record<string, string> }) {
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants);
   const labelBySlug = new Map(Object.entries(skillLabels));
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [lastDecision, setLastDecision] = useState<Decision | null>(null);
 
   const handleAccept = async (appId: string) => {
     setProcessingId(appId);
     const res = await acceptApplicant(appId);
     if (res.success) {
+      haptic([10, 40, 10]);
       toast.success("Match creato!", {
         description: "Il candidato è stato accettato. Ora puoi fissare un colloquio.",
         icon: <CheckCircle2 size={16} className="text-emerald-500" />,
       });
+      setLastDecision("accept");
       // Update local state instead of filtering out
       setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: 'accepted' } : a));
     } else {
@@ -83,10 +121,12 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
     setProcessingId(appId);
     const res = await rejectApplicant(appId);
     if (res.success) {
+      haptic();
       toast.success("Candidato rimosso", {
         description: "La candidatura è stata rifiutata.",
         icon: <XCircle size={16} className="text-red-500" />,
       });
+      setLastDecision("reject");
       setApplicants(prev => prev.filter(a => a.id !== appId));
     } else {
       toast.error(res.error || "Errore durante il rifiuto");
@@ -96,280 +136,297 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
 
   const pendingApplicants = applicants.filter(a => a.status === 'pending');
   const acceptedApplicants = applicants.filter(a => a.status === 'accepted');
+  const rateLabel = job.rateType === 'ral_annual' ? ' RAL' : job.rateType === 'daily' ? '/gg' : '/ora';
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 sticky top-0 z-40">
-        <div className="flex items-center gap-4">
-          <Link href="/jobs">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-50">
-              <ArrowLeft size={20} />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">{job.title}</h1>
-            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">Gestione Candidati</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-           <Badge variant="outline" className="rounded-full border-slate-200 text-slate-400 font-bold px-4 py-1">
-             {pendingApplicants.length} Candidature Pending
-           </Badge>
-        </div>
-      </header>
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+      <PageHeader
+        title={job.title}
+        subtitle="Gestione candidati"
+        backHref="/jobs"
+        actions={
+          <span className="hidden md:inline-flex items-center gap-2 h-9 px-4 rounded-full border border-slate-200 text-sm font-semibold text-slate-500 tabular-nums">
+            {pendingApplicants.length} {pendingApplicants.length === 1 ? "candidatura" : "candidature"} in attesa
+          </span>
+        }
+      />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <main className="max-w-6xl w-full mx-auto p-8 lg:p-12">
-          {/* Job Info Summary */}
-          <div className="mb-12 p-8 bg-slate-950 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
-            
-            <div className="relative flex flex-col md:flex-row justify-between gap-8">
-              <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-tabbar">
+        <main className="max-w-6xl w-full mx-auto px-4 pt-5 pb-8 md:p-8 lg:p-12">
+          {/* Job summary */}
+          <section
+            aria-label="Riepilogo ricerca"
+            className="mb-8 md:mb-12 p-5 md:p-8 bg-slate-950 rounded-3xl md:rounded-[2.5rem] text-white shadow-premium relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+            <div className="relative flex flex-col md:flex-row justify-between gap-5 md:gap-8">
+              <div className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-400">
-                    <Briefcase size={24} />
+                  <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-400">
+                    <Briefcase className="size-5 md:size-6" />
                   </div>
-                  <h2 className="text-3xl font-display italic font-bold">{job.title}</h2>
+                  <h2 className="text-2xl md:text-3xl font-display italic leading-tight line-clamp-2 break-words">{job.title}</h2>
                 </div>
-                <div className="flex flex-wrap gap-4 text-slate-400 text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-emerald-500" />
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-slate-300 text-sm font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={16} className="text-emerald-500 shrink-0" />
                     <span>{job.location || "Remote"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Laptop size={16} className="text-emerald-500" />
+                  <div className="flex items-center gap-1.5">
+                    <Laptop size={16} className="text-emerald-500 shrink-0" />
                     <span>{job.remoteOk ? "Remote OK" : "In sede"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Zap size={16} className="text-emerald-500" />
-                    <span>
-                      {job.budgetMinEur}-{job.budgetMaxEur}€ 
-                      {job.rateType === 'ral_annual' ? ' RAL' : job.rateType === 'daily' ? '/gg' : '/ora'}
-                    </span>
+                  <div className="flex items-center gap-1.5 tabular-nums">
+                    <Zap size={16} className="text-emerald-500 shrink-0" />
+                    <span>{euro(job.budgetMinEur)}–{euro(job.budgetMaxEur)} €{rateLabel}</span>
                   </div>
                 </div>
 
                 {job.description && (
-                  <p className="text-slate-300 text-sm leading-relaxed max-w-2xl pt-2 italic">
+                  <p className="text-slate-300 text-sm leading-relaxed max-w-2xl italic line-clamp-3 md:line-clamp-none">
                     &quot;{job.description}&quot;
                   </p>
                 )}
               </div>
-              
-              <div className="flex flex-wrap gap-2 items-start md:justify-end max-w-sm">
-                {job.skills?.map((s: string) => (
-                  <Badge key={s} className="bg-white/5 border-white/10 text-white/70 rounded-lg hover:bg-white/10 transition-colors uppercase text-[10px] font-black tracking-widest px-3">
-                    {skillLabel(s, labelBySlug)}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Applicants Section */}
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <Users size={20} />
+              {job.skills && job.skills.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 md:gap-2 items-start md:justify-end md:max-w-sm">
+                  {job.skills.map((s: string) => (
+                    <span key={s} className="inline-flex items-center h-7 px-3 rounded-lg bg-white/5 border border-white/10 text-white/75 text-[11px] font-bold uppercase tracking-wider">
+                      {skillLabel(s, labelBySlug)}
+                    </span>
+                  ))}
                 </div>
-                <h3 className="text-xl font-bold text-slate-950">Candidati da Valutare</h3>
+              )}
+            </div>
+          </section>
+
+          {/* Pending applicants */}
+          <section aria-labelledby="pending-heading" className="space-y-4 md:space-y-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                <Users size={20} />
               </div>
+              <h3 id="pending-heading" className="text-lg md:text-xl font-bold text-slate-950">Candidati da valutare</h3>
+              <span className="ml-auto md:ml-0 inline-flex items-center justify-center min-w-7 h-7 px-2 rounded-full bg-slate-100 text-slate-600 text-sm font-bold tabular-nums">
+                {pendingApplicants.length}
+              </span>
             </div>
 
-            <div className="grid gap-6">
-              <AnimatePresence mode="popLayout">
+            <div className="relative grid gap-4 md:gap-6">
+              <AnimatePresence mode="popLayout" custom={lastDecision}>
                 {pendingApplicants.length > 0 ? (
                   pendingApplicants.map((app, idx) => {
                     const prof = app.professional;
                     const profile = prof.professionalProfile;
-                    const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : prof.name || "Professionista";
-                    
+                    const name = applicantName(app);
+                    const isProcessing = processingId === app.id;
+
                     return (
-                      <motion.div
+                      <motion.article
                         key={app.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ delay: idx * 0.05 }}
+                        layout
+                        custom={lastDecision}
+                        variants={pendingCardVariants}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                          x: 0,
+                          scale: 1,
+                          transition: { duration: duration.view, ease: ease.out, delay: Math.min(idx, 4) * 0.05 },
+                        }}
+                        exit="exit"
+                        transition={spring.snappy}
+                        className="rounded-3xl md:rounded-[2rem] bg-white shadow-card md:hover:shadow-premium transition-shadow duration-500 group overflow-hidden"
                       >
-                        <Card className="p-1 rounded-[2rem] border-slate-50 shadow-card hover:shadow-premium transition-all duration-500 bg-white group overflow-hidden">
-                          <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-8">
+                        <div className="p-5 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+                          <div className="flex items-start md:items-center gap-4 md:gap-8 flex-1 min-w-0">
                             {/* Profile Image */}
                             <div className="relative shrink-0">
-                              <div className="w-24 h-24 md:w-32 md:h-32 rounded-[1.5rem] bg-slate-50 border-2 border-white shadow-sm overflow-hidden ring-4 ring-slate-50 transition-transform group-hover:scale-105 duration-500">
-                                {profile?.photoUrl || prof.image ? (
-                                  <Image 
-                                    src={profile?.photoUrl || prof.image || ""} 
-                                    alt={name} 
-                                    width={128} 
-                                    height={128} 
-                                    className="w-full h-full object-cover" 
-                                    unoptimized
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-200 font-display text-5xl italic font-bold">
-                                    {name[0]}
-                                  </div>
-                                )}
-                              </div>
+                              <Avatar
+                                app={app}
+                                name={name}
+                                size={128}
+                                className="w-16 h-16 md:w-32 md:h-32 rounded-2xl md:rounded-[1.5rem] ring-4 ring-slate-50 md:transition-transform md:group-hover:scale-105 md:duration-500"
+                              />
                               {profile?.averageRating && parseFloat(profile.averageRating) > 0 && (
-                                <div className="absolute -bottom-2 -right-2 bg-amber-50 text-amber-600 px-3 py-1 rounded-xl border border-amber-100 shadow-sm flex items-center gap-1.5 scale-90">
-                                  <Star size={12} fill="currentColor" />
-                                  <span className="text-xs font-black">{profile.averageRating}</span>
+                                <div className="absolute -bottom-2 -right-2 bg-amber-50 text-amber-600 px-2 md:px-3 py-0.5 md:py-1 rounded-lg md:rounded-xl border border-amber-100 shadow-sm flex items-center gap-1">
+                                  <Star size={11} fill="currentColor" />
+                                  <span className="text-[11px] md:text-xs font-black tabular-nums">{profile.averageRating}</span>
                                 </div>
                               )}
                             </div>
 
                             {/* Info */}
-                            <div className="flex-1 space-y-4">
-                              <div>
-                                <h4 className="text-2xl font-bold text-slate-950 group-hover:text-emerald-700 transition-colors">{name}</h4>
-                                <p className="text-emerald-600 font-bold italic">{profile?.title || "Professionista IT"}</p>
+                            <div className="flex-1 min-w-0 space-y-2.5 md:space-y-4">
+                              <div className="min-w-0">
+                                <h4 className="text-lg md:text-2xl font-bold text-slate-950 leading-tight truncate md:group-hover:text-emerald-700 transition-colors">{name}</h4>
+                                <p className="text-emerald-600 font-semibold italic text-sm md:text-base truncate">{profile?.title || "Professionista IT"}</p>
                               </div>
 
-                              <div className="flex flex-wrap gap-2">
-                                {profile?.topSkills?.slice(0, 4).map(s => (
-                                  <Badge key={s} variant="secondary" className="bg-slate-50 text-slate-600 border-slate-100 font-bold rounded-lg h-7">
-                                    {skillLabel(s, labelBySlug)}
-                                  </Badge>
-                                ))}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-slate-500">
+                                <span className="inline-flex items-center gap-1">
+                                  <MapPin size={13} className="text-emerald-500 shrink-0" />
+                                  {profile?.city || "Remote"}
+                                </span>
+                                <span className="inline-flex items-center gap-1 tabular-nums">
+                                  <Zap size={13} className="text-emerald-500 shrink-0" />
+                                  €{profile?.rateAmountEur}/{profile?.rateType === 'ral_annual' ? 'anno' : profile?.rateType === 'daily' ? 'giorno' : 'ora'}
+                                </span>
                               </div>
 
-                              <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                <div className="flex items-center gap-1.5">
-                                  <MapPin size={12} className="text-emerald-500" />
-                                  <span>{profile?.city || "Remote"}</span>
+                              {profile?.topSkills && profile.topSkills.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 md:gap-2">
+                                  {profile.topSkills.slice(0, 4).map(s => (
+                                    <span key={s} className="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-50 border border-slate-100 text-slate-600 text-xs font-semibold">
+                                      {skillLabel(s, labelBySlug)}
+                                    </span>
+                                  ))}
                                 </div>
-                                <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                <div className="flex items-center gap-1.5">
-                                  <Zap size={12} className="text-emerald-500" />
-                                  <span>€{profile?.rateAmountEur}/{profile?.rateType === 'ral_annual' ? 'anno' : profile?.rateType === 'daily' ? 'giorno' : 'ora'}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto pt-6 md:pt-0 border-t md:border-t-0 border-slate-50">
-                              <Button 
-                                onClick={() => handleAccept(app.id)}
-                                disabled={!!processingId}
-                                className="flex-1 md:flex-none rounded-2xl h-12 px-6 bg-slate-950 hover:bg-emerald-600 transition-all font-bold gap-2"
-                              >
-                                {processingId === app.id ? (
-                                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                  <>Accetta Match <CheckCircle2 size={18} /></>
-                                )}
-                              </Button>
-                              <Button 
-                                variant="outline"
-                                onClick={() => handleReject(app.id)}
-                                disabled={!!processingId}
-                                className="flex-1 md:flex-none rounded-2xl h-12 px-6 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all font-bold gap-2"
-                              >
-                                Rifiuta <XCircle size={18} />
-                              </Button>
-                              <Link href={`/profile/${prof.id}`} className="hidden md:block">
-                                <Button variant="ghost" className="w-full rounded-2xl h-10 text-slate-400 hover:text-slate-950 font-bold gap-2">
-                                  Vedi Profilo <ChevronRight size={16} />
-                                </Button>
-                              </Link>
+                              )}
                             </div>
                           </div>
-                        </Card>
-                      </motion.div>
+
+                          {/* Actions */}
+                          <div className="grid grid-cols-2 md:flex md:flex-col gap-2.5 md:gap-3 md:w-48 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+                            <button
+                              type="button"
+                              onClick={() => handleAccept(app.id)}
+                              disabled={!!processingId}
+                              className="pressable h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                            >
+                              {isProcessing ? (
+                                <Loader2 size={18} className="animate-spin" />
+                              ) : (
+                                <>
+                                  <CheckCircle2 size={18} /> Accetta
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(app.id)}
+                              disabled={!!processingId}
+                              className="pressable h-12 rounded-2xl border border-slate-200 bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 font-bold inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                            >
+                              <XCircle size={18} /> Rifiuta
+                            </button>
+                            <Link
+                              href={`/profile/${prof.id}`}
+                              className="pressable col-span-2 h-11 rounded-2xl text-sm text-slate-500 hover:text-slate-950 hover:bg-slate-50 font-semibold inline-flex items-center justify-center gap-1.5 transition-colors"
+                            >
+                              Vedi profilo <ChevronRight size={16} />
+                            </Link>
+                          </div>
+                        </div>
+                      </motion.article>
                     );
                   })
                 ) : (
-                  <div className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-slate-200">
-                    <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
-                      <Users size={40} />
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, transition: { duration: duration.state, delay: duration.state } }}
+                    exit={{ opacity: 0, transition: { duration: duration.feedback } }}
+                    className="text-center py-14 md:py-24 px-6 bg-white rounded-3xl md:rounded-[3rem] border border-dashed border-slate-200"
+                  >
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-5 md:mb-6">
+                      <Users className="size-8 md:size-10" />
                     </div>
-                    <h3 className="text-2xl font-display font-bold italic text-slate-400">Nessun candidato in attesa</h3>
-                    <p className="text-slate-400 font-medium mt-2">Le nuove candidature appariranno qui appena i professionisti metteranno like.</p>
-                  </div>
+                    <h3 className="text-xl md:text-2xl font-display italic text-slate-500">Nessun candidato in attesa</h3>
+                    <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto">Le nuove candidature appariranno qui appena i professionisti metteranno like.</p>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
-          </div>
+          </section>
 
-          {/* Accepted Applicants Section */}
-          {acceptedApplicants.length > 0 && (
-            <div className="space-y-8 mt-16 pt-16 border-t border-slate-100">
-              <div className="flex items-center justify-between">
+          {/* Accepted applicants */}
+          <AnimatePresence initial={false}>
+            {acceptedApplicants.length > 0 && (
+              <motion.section
+                key="accepted"
+                aria-labelledby="accepted-heading"
+                layout
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
+                exit={{ opacity: 0, transition: { duration: duration.feedback } }}
+                className="space-y-4 md:space-y-8 mt-10 md:mt-16 pt-8 md:pt-16 border-t border-slate-100"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
                     <CheckCircle2 size={20} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-950">Candidati Accettati</h3>
+                  <h3 id="accepted-heading" className="text-lg md:text-xl font-bold text-slate-950">Candidati accettati</h3>
+                  <span className="ml-auto md:ml-0 inline-flex items-center justify-center min-w-7 h-7 px-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold tabular-nums">
+                    {acceptedApplicants.length}
+                  </span>
                 </div>
-              </div>
 
-              <div className="grid gap-6">
-                {acceptedApplicants.map((app) => {
-                  const prof = app.professional;
-                  const profile = prof.professionalProfile;
-                  const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : prof.name || "Professionista";
-                  
-                  return (
-                    <Card key={app.id} className="p-1 rounded-[2rem] shadow-card bg-emerald-50/30 group overflow-hidden border-emerald-100/50">
-                      <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-8">
-                        {/* Profile Image */}
-                        <div className="relative shrink-0">
-                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-[1.2rem] bg-white border-2 border-white shadow-sm overflow-hidden ring-4 ring-emerald-50/50 transition-transform group-hover:scale-105 duration-500">
-                            {profile?.photoUrl || prof.image ? (
-                              <Image 
-                                src={profile?.photoUrl || prof.image || ""} 
-                                alt={name} 
-                                width={96} 
-                                height={96} 
-                                className="w-full h-full object-cover" 
-                                unoptimized
+                <div className="relative grid gap-4 md:gap-6">
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {acceptedApplicants.map((app) => {
+                      const prof = app.professional;
+                      const profile = prof.professionalProfile;
+                      const name = applicantName(app);
+
+                      return (
+                        <motion.article
+                          key={app.id}
+                          layout
+                          initial={{ opacity: 0, y: -16, scale: 0.98 }}
+                          animate={{
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            transition: { duration: duration.view, ease: ease.out, delay: duration.feedback },
+                          }}
+                          transition={spring.snappy}
+                          className="rounded-3xl md:rounded-[2rem] bg-emerald-50/40 border border-emerald-100/60 shadow-card group overflow-hidden"
+                        >
+                          <div className="p-5 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+                            <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+                              <Avatar
+                                app={app}
+                                name={name}
+                                size={96}
+                                className="w-14 h-14 md:w-24 md:h-24 rounded-2xl md:rounded-[1.2rem] bg-white ring-4 ring-emerald-50/50"
                               />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-200 font-display text-4xl italic font-bold">
-                                {name[0]}
+                              <div className="flex-1 min-w-0 space-y-1.5">
+                                <h4 className="text-lg md:text-xl font-bold text-slate-950 leading-tight truncate">{name}</h4>
+                                <p className="text-emerald-600 font-semibold italic text-sm truncate">{profile?.title || "Professionista IT"}</p>
+                                <p className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500">
+                                  <MapPin size={13} className="text-emerald-500 shrink-0" />
+                                  {profile?.city || "Remote"}
+                                </p>
                               </div>
-                            )}
-                          </div>
-                        </div>
+                            </div>
 
-                        {/* Info */}
-                        <div className="flex-1 space-y-2">
-                          <div>
-                            <h4 className="text-xl font-bold text-slate-950">{name}</h4>
-                            <p className="text-emerald-600 font-bold italic text-sm">{profile?.title || "Professionista IT"}</p>
-                          </div>
-                          <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                            <div className="flex items-center gap-1.5">
-                              <MapPin size={12} className="text-emerald-500" />
-                              <span>{profile?.city || "Remote"}</span>
+                            <div className="grid grid-cols-[1fr_auto] md:flex md:items-center gap-2.5 md:gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-emerald-100/60">
+                              <Link
+                                href="/matches"
+                                className="pressable h-12 px-5 md:px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold inline-flex items-center justify-center gap-2 transition-colors"
+                              >
+                                Vai ai match <ChevronRight size={18} />
+                              </Link>
+                              <Link
+                                href={`/profile/${prof.id}`}
+                                className="pressable h-12 px-5 rounded-2xl border border-emerald-100 bg-white text-slate-600 hover:text-slate-950 font-bold inline-flex items-center justify-center transition-colors"
+                              >
+                                Profilo
+                              </Link>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-3 w-full md:w-auto pt-6 md:pt-0 border-t md:border-t-0 border-slate-50">
-                          <Link href={`/matches`} className="flex-1 md:flex-none">
-                            <Button className="w-full rounded-2xl h-12 px-6 bg-emerald-600 hover:bg-emerald-700 transition-all font-bold gap-2">
-                              Vai ai Match <ChevronRight size={18} />
-                            </Button>
-                          </Link>
-                          <Link href={`/profile/${prof.id}`}>
-                            <Button variant="ghost" className="rounded-2xl h-12 px-4 text-slate-400 hover:text-slate-950 font-bold">
-                              Profilo
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                        </motion.article>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </div>
