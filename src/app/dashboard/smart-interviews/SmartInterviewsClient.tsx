@@ -13,9 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
-import { bookInterviewAction } from "@/app/actions/interviews";
+import { bookInterviewAction, cancelInterviewBookingAction } from "@/app/actions/interviews";
+import { formatEventDayShort, formatEventTime } from "@/components/interviews/event-time";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -47,6 +46,20 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
       setEvents(events.map(e => e.id === eventId ? { ...e, isBooked: true, bookingCount: e.bookingCount + 1 } : e));
     } else {
       toast.error(res.error || "Errore durante la prenotazione");
+    }
+    setLoadingId(null);
+  };
+
+  const handleCancel = async (eventId: string) => {
+    if (!confirm("Vuoi annullare la tua prenotazione? Il posto tornerà disponibile per altri candidati.")) return;
+
+    setLoadingId(eventId);
+    const res = await cancelInterviewBookingAction(eventId);
+    if (res.success) {
+      toast.success("Prenotazione annullata.");
+      setEvents(events.map(e => e.id === eventId ? { ...e, isBooked: false, bookingCount: Math.max(0, e.bookingCount - 1) } : e));
+    } else {
+      toast.error(res.error || "Errore durante l'annullamento");
     }
     setLoadingId(null);
   };
@@ -125,13 +138,13 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
                         <div className="flex items-center gap-2 text-slate-400">
                           <Calendar size={16} className="text-emerald-500" />
                           <span className="text-xs font-bold text-slate-600">
-                            {format(new Date(event.date), "d MMM", { locale: it })}
+                            {formatEventDayShort(event.date)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-slate-400">
                           <Clock size={16} className="text-emerald-500" />
                           <span className="text-xs font-bold text-slate-600">
-                            {format(new Date(event.date), "HH:mm")}
+                            {formatEventTime(event.date)}
                           </span>
                         </div>
                       </div>
@@ -141,13 +154,23 @@ export default function SmartInterviewsClient({ initialEvents }: SmartInterviews
                        <div className="flex flex-col">
                           <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Disponibilità</span>
                           <span className="text-sm font-bold text-slate-600">
-                            {event.bookingCount} / {event.maxSlots} <span className="text-slate-400 font-medium">booked</span>
+                            {event.bookingCount} / {event.maxSlots} <span className="text-slate-400 font-medium">iscritti</span>
                           </span>
                        </div>
                        
                        {event.isBooked ? (
-                         <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full font-bold text-sm border border-emerald-100">
-                           <CheckCircle2 size={16} /> Iscritto
+                         <div className="flex flex-col items-end gap-1">
+                           <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full font-bold text-sm border border-emerald-100">
+                             <CheckCircle2 size={16} /> Iscritto
+                           </div>
+                           <button
+                             type="button"
+                             onClick={() => handleCancel(event.id)}
+                             disabled={loadingId === event.id}
+                             className="text-[11px] font-bold text-slate-400 hover:text-red-600 transition-colors px-2 py-1 disabled:opacity-50"
+                           >
+                             {loadingId === event.id ? <Loader2 size={12} className="animate-spin" /> : "Annulla prenotazione"}
+                           </button>
                          </div>
                        ) : event.bookingCount >= event.maxSlots ? (
                          <Badge variant="outline" className="rounded-full border-slate-100 text-slate-400 py-2 px-4">Sold Out</Badge>

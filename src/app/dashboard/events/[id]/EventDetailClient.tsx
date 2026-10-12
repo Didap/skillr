@@ -15,15 +15,15 @@ import {
   X,
   Globe,
   ChevronRight,
-  Video
+  Video,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { bookInterviewAction, updateInterviewEventAction, deleteInterviewEventAction } from "@/app/actions/interviews";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { bookInterviewAction, cancelInterviewBookingAction, updateInterviewEventAction, deleteInterviewEventAction } from "@/app/actions/interviews";
+import { formatEventDay, formatEventTime, isSafeHttpUrl } from "@/components/interviews/event-time";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,13 +36,15 @@ interface EventDetailClientProps {
     companyName?: string; 
     companyImage?: string | null; 
     companyDescription?: string | null;
-  }; 
+    companyWebsite?: string | null;
+  };
   isBooked: boolean;
   isProfessional: boolean;
   isOwner: boolean;
+  isPast: boolean;
 }
 
-export default function EventDetailClient({ event: initialEvent, isBooked, isProfessional, isOwner }: EventDetailClientProps) {
+export default function EventDetailClient({ event: initialEvent, isBooked, isProfessional, isOwner, isPast }: EventDetailClientProps) {
   const router = useRouter();
   const [event, setEvent] = useState(initialEvent);
   const [loading, setLoading] = useState(false);
@@ -61,9 +63,25 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
     const res = await bookInterviewAction(event.id);
     if (res.success) {
       setBooked(true);
+      setEvent({ ...event, bookingCount: (event.bookingCount || 0) + 1, meetingLink: res.meetingLink ?? null });
       toast.success("Iscrizione completata con successo!");
     } else {
       toast.error(res.error || "Errore durante l'iscrizione");
+    }
+    setLoading(false);
+  };
+
+  const handleCancelBooking = async () => {
+    if (!confirm("Vuoi annullare la tua prenotazione? Il posto tornerà disponibile per altri candidati.")) return;
+
+    setLoading(true);
+    const res = await cancelInterviewBookingAction(event.id);
+    if (res.success) {
+      setBooked(false);
+      setEvent({ ...event, bookingCount: Math.max(0, (event.bookingCount || 0) - 1), meetingLink: null });
+      toast.success("Prenotazione annullata.");
+    } else {
+      toast.error(res.error || "Errore durante l'annullamento");
     }
     setLoading(false);
   };
@@ -100,9 +118,15 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
     setLoading(false);
   };
 
-  const eventDate = event.date ? new Date(event.date) : new Date();
-  const dateStr = !isNaN(eventDate.getTime()) ? format(eventDate, "EEEE d MMMM yyyy", { locale: it }) : "Data non disponibile";
-  const timeStr = !isNaN(eventDate.getTime()) ? format(eventDate, "HH:mm") : "--:--";
+  // Formatted in Italian time so the server-rendered and hydrated text match
+  const eventDate = event.date ? new Date(event.date) : null;
+  const validDate = eventDate && !isNaN(eventDate.getTime()) ? eventDate : null;
+  const dateStr = validDate ? formatEventDay(validDate) : "Data non disponibile";
+  const timeStr = validDate ? formatEventTime(validDate) : "--:--";
+  const endTimeStr = event.endTime ? formatEventTime(event.endTime) : null;
+  const isFull = (event.bookingCount || 0) >= (event.maxSlots || 0);
+  // The link only reaches the client for the organizer and booked professionals
+  const meetingLink = (booked || isOwner) && isSafeHttpUrl(event.meetingLink) ? event.meetingLink : null;
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
@@ -189,8 +213,18 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data e Ora</p>
                     <div className="flex items-center gap-2 text-lg font-medium">
                       <Calendar size={20} className="text-emerald-500" />
-                      <span className="capitalize">{dateStr} alle {timeStr}</span>
+                      <span className="capitalize">{dateStr} alle {timeStr}{endTimeStr && ` – ${endTimeStr}`}</span>
                     </div>
+                    {meetingLink && (
+                      <a
+                        href={meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 transition-colors"
+                      >
+                        <Video size={16} /> Entra nel meeting <ExternalLink size={14} />
+                      </a>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Luogo / Link</p>
@@ -222,24 +256,40 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                    <div className="space-y-6">
                       <div className="text-center">
                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Stato Iscrizioni</p>
-                         <h3 className="text-2xl font-display italic font-bold">Posti Disponibili</h3>
+                         <h3 className="text-2xl font-display italic font-bold">{isPast ? "Evento concluso" : "Posti Disponibili"}</h3>
                       </div>
 
-                      {booked ? (
-                        <div className="w-full h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center gap-3 font-bold shadow-lg shadow-emerald-500/20">
-                          <CheckCircle2 size={20} /> Iscritto
-                        </div>
-                      ) : isOwner ? (
+                      {isOwner ? (
                         <Button className="w-full h-14 rounded-2xl text-sm font-bold bg-white text-slate-950 hover:bg-emerald-400 transition-all shadow-lg" onClick={() => router.push("/dashboard/events")}>
                           Gestisci Iscritti <ChevronRight size={18} />
                         </Button>
+                      ) : booked ? (
+                        <div className="space-y-3">
+                          <div className="w-full h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center gap-3 font-bold shadow-lg shadow-emerald-500/20">
+                            <CheckCircle2 size={20} /> Iscritto
+                          </div>
+                          {!isPast && (
+                            <Button
+                              variant="ghost"
+                              onClick={handleCancelBooking}
+                              disabled={loading}
+                              className="w-full h-11 rounded-2xl text-xs font-bold text-slate-400 hover:text-red-300 hover:bg-white/5"
+                            >
+                              {loading ? <Loader2 className="animate-spin" size={16} /> : "Annulla prenotazione"}
+                            </Button>
+                          )}
+                        </div>
+                      ) : isPast ? (
+                        <div className="w-full h-14 rounded-2xl bg-white/10 text-slate-400 flex items-center justify-center font-bold border border-white/10">
+                          Evento concluso
+                        </div>
                       ) : (
-                        <Button 
+                        <Button
                           onClick={handleBooking}
-                          disabled={loading || (event.bookingCount || 0) >= (event.maxSlots || 0)}
+                          disabled={loading || isFull}
                           className="w-full h-14 rounded-2xl text-base font-bold bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 border-none"
                         >
-                          {loading ? <Loader2 className="animate-spin" /> : (event.bookingCount || 0) >= (event.maxSlots || 0) ? "Posti Esauriti" : "Riserva un posto"}
+                          {loading ? <Loader2 className="animate-spin" /> : isFull ? "Posti Esauriti" : "Riserva un posto"}
                         </Button>
                       )}
 
@@ -305,17 +355,18 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                        <h4 className="font-bold text-slate-950 text-lg leading-tight">{event.companyName}</h4>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                     <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 text-slate-600 text-sm font-medium">
-                        <Globe size={18} className="text-emerald-500" />
-                        <span>Sito Aziendale</span>
-                        <ChevronRight size={14} className="ml-auto" />
-                     </div>
-                     <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 text-slate-600 text-sm font-medium">
-                        <Video size={18} className="text-emerald-500" />
-                        <span>Supporto Live</span>
-                     </div>
-                  </div>
+                  {event.companyWebsite && (
+                    <a
+                      href={event.companyWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 text-slate-600 text-sm font-medium hover:bg-white hover:border-slate-100 hover:text-slate-950 transition-colors"
+                    >
+                       <Globe size={18} className="text-emerald-500" />
+                       <span>Sito Aziendale</span>
+                       <ChevronRight size={14} className="ml-auto" />
+                    </a>
+                  )}
                </Card>
 
                <div className="p-8 rounded-[2.5rem] bg-emerald-50/30 border border-emerald-100/50 text-center">

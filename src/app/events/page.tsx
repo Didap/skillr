@@ -14,8 +14,6 @@ import {
   Globe,
   Tag
 } from "lucide-react";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicEventsAction } from "@/app/actions/interviews";
@@ -25,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InterviewEvent } from "@/types/interview";
 import { useSession } from "next-auth/react";
+import { formatEventMonth, formatEventDayOfMonth } from "@/components/interviews/event-time";
 
 type PublicEvent = InterviewEvent & { 
   bookingCount: number; 
@@ -225,8 +224,8 @@ export default function EventsPage() {
                           )}
                           <div className="absolute top-6 left-6 flex flex-col gap-2">
                             <Badge className="bg-white/95 backdrop-blur-md text-slate-900 border-none px-5 py-2 rounded-2xl font-black shadow-xl text-center flex flex-col leading-none">
-                              <span className="text-xs uppercase">{format(new Date(event.date), "MMM", { locale: it })}</span>
-                              <span className="text-2xl">{format(new Date(event.date), "d", { locale: it })}</span>
+                              <span className="text-xs uppercase">{formatEventMonth(event.date)}</span>
+                              <span className="text-2xl">{formatEventDayOfMonth(event.date)}</span>
                             </Badge>
                           </div>
                           

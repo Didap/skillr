@@ -12,7 +12,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import { InterviewEvent } from "@/types/interview";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import Image from "next/image";
-import { format } from "date-fns";
+import { eventWallTimeToDate, getEventWallTime } from "./event-time";
 
 interface InterviewFormProps {
   onSubmit: (data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) => Promise<void>;
@@ -21,10 +21,31 @@ interface InterviewFormProps {
   buttonText?: string;
 }
 
+const DEFAULT_DURATION_MINUTES = 60;
+
+// Date and time are entered as Italian wall-clock time, whatever the browser timezone.
+// The date picker works with local-midnight Dates, so only its calendar day is used.
+function initialDateTime(value: Date | string | undefined) {
+  if (!value) return { date: new Date(), time: "09:00" };
+  const w = getEventWallTime(value);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return { date: new Date(w.year, w.month - 1, w.day), time: `${pad(w.hour)}:${pad(w.minute)}` };
+}
+
+function initialDuration(initialData?: Partial<InterviewEvent>) {
+  if (!initialData?.date || !initialData.endTime) return DEFAULT_DURATION_MINUTES;
+  const minutes = Math.round((new Date(initialData.endTime).getTime() - new Date(initialData.date).getTime()) / 60000);
+  return minutes > 0 ? minutes : DEFAULT_DURATION_MINUTES;
+}
+
 export function InterviewForm({ onSubmit, loading, initialData, buttonText }: InterviewFormProps) {
-  const [date, setDate] = useState<Date | undefined>(initialData?.date ? new Date(initialData.date) : new Date());
-  const [time, setTime] = useState(initialData?.date ? format(new Date(initialData.date), "HH:mm") : "09:00");
+  const [initial] = useState(() => initialDateTime(initialData?.date));
+  const [date, setDate] = useState<Date | undefined>(initial.date);
+  const [time, setTime] = useState(initial.time);
+  const [duration, setDuration] = useState(() => initialDuration(initialData));
   const [maxSlots, setMaxSlots] = useState(initialData?.maxSlots || 10);
+  // When editing, seats can't go below the professionals already booked
+  const minSlots = Math.max(1, initialData?.bookingCount || 0);
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(initialData?.imageUrl || null);
@@ -65,10 +86,10 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
 
     const formData = new FormData(e.currentTarget);
     
-    // Combine date and time
+    // Combine the picked day and time as Italian time
     const [hours, minutes] = time.split(":").map(Number);
-    const eventDate = new Date(date);
-    eventDate.setHours(hours, minutes, 0, 0);
+    const eventDate = eventWallTimeToDate(date.getFullYear(), date.getMonth() + 1, date.getDate(), hours, minutes);
+    const endTime = duration > 0 ? new Date(eventDate.getTime() + duration * 60000) : null;
 
     const data = {
       title: formData.get("title") as string,
@@ -78,6 +99,8 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
       imageUrl: previewImage,
       tags: tags,
       date: eventDate,
+      startTime: eventDate,
+      endTime,
       maxSlots: Number(formData.get("maxSlots")),
       format: formData.get("format") as string,
       meetingLink: formData.get("meetingLink") as string || null,
@@ -171,7 +194,7 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Data Evento</Label>
             <div className="relative">
@@ -196,6 +219,24 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="duration" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Durata (min)</Label>
+            <div className="relative">
+              <Input 
+                id="duration" 
+                name="duration" 
+                type="number" 
+                required 
+                min={15}
+                max={720}
+                step={15}
+                value={duration} 
+                onChange={(e) => setDuration(Number(e.target.value))} 
+                className="rounded-2xl h-14 bg-white border-slate-200 pl-12 pr-4 font-bold text-sm focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10" 
+              />
+              <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="maxSlots" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Posti</Label>
             <div className="relative">
               <Input 
@@ -203,6 +244,8 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
                 name="maxSlots" 
                 type="number" 
                 required 
+                min={minSlots}
+                step={1}
                 value={maxSlots} 
                 onChange={(e) => setMaxSlots(Number(e.target.value))} 
                 className="rounded-2xl h-14 bg-white border-slate-200 pl-12 pr-4 font-bold text-sm focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10" 
@@ -228,7 +271,7 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText }: In
         <div className="space-y-2">
           <Label htmlFor="meetingLink" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Link Meeting Diretto (Opzionale)</Label>
           <div className="relative">
-            <Input id="meetingLink" name="meetingLink" defaultValue={initialData?.meetingLink || undefined} placeholder="https://meet.google.com/..." className="rounded-xl h-12 bg-white border-slate-200 pl-12 pr-4 text-sm" />
+            <Input id="meetingLink" name="meetingLink" type="url" defaultValue={initialData?.meetingLink || undefined} placeholder="https://meet.google.com/..." className="rounded-xl h-12 bg-white border-slate-200 pl-12 pr-4 text-sm" />
             <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
           </div>
         </div>

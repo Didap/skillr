@@ -25,8 +25,7 @@ import { toast } from "sonner";
 import { InterviewEvent } from "@/types/interview";
 import { updateMeetingLinkAction, getEventParticipantsAction } from "@/app/actions/interviews";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { formatEventMonth, formatEventDayOfMonth, formatEventTime } from "@/components/interviews/event-time";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -205,10 +204,10 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                             <div className="absolute top-4 left-4">
                                <div className="bg-white/90 backdrop-blur-md rounded-xl px-3 py-1.5 flex flex-col items-center border border-white/20 shadow-lg">
                                   <span className="text-[9px] font-black uppercase text-slate-400 leading-none">
-                                    {format(new Date(event.date), "MMM", { locale: it })}
+                                    {formatEventMonth(event.date)}
                                   </span>
                                   <span className="text-base font-display font-bold text-slate-950 leading-none mt-0.5">
-                                    {format(new Date(event.date), "dd")}
+                                    {formatEventDayOfMonth(event.date).padStart(2, "0")}
                                   </span>
                                </div>
                             </div>
@@ -225,7 +224,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                                     </Badge>
                                     <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
                                       <Clock size={10} />
-                                      {format(new Date(event.date), "HH:mm")}
+                                      {formatEventTime(event.date)}
                                     </div>
                                   </div>
                                   <Link href={`/dashboard/events/${event.id}`}>

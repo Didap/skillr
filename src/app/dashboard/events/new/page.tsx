@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import NewEventClient from "./NewEventClient";
 
 export const metadata: Metadata = {
@@ -6,6 +8,17 @@ export const metadata: Metadata = {
   description: "Crea una nuova sessione di speed-dating professionale.",
 };
 
-export default function NewEventPage() {
+export default async function NewEventPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  // Only companies can create events (the action rejects everyone else anyway)
+  if (session.user.role !== 'company') {
+    redirect("/dashboard");
+  }
+
   return <NewEventClient />;
 }
