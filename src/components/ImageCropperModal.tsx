@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { X, Check, ZoomIn, ZoomOut } from 'lucide-react';
 import getCroppedImg from '@/lib/cropImage';
+import { duration, ease, spring } from '@/lib/motion';
 
 interface Area {
   width: number;
@@ -20,6 +22,13 @@ interface ImageCropperModalProps {
   onCancel: () => void;
 }
 
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3;
+
+/**
+ * Full-screen cropper on phones (the photo gets the whole screen, controls sit in thumb
+ * reach), a centred dialog from md up. Portalled to <body> so it always covers the tab bar.
+ */
 export default function ImageCropperModal({ image, onCropComplete, onCancel }: ImageCropperModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -30,7 +39,7 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
   };
 
   const onZoomChange = (zoom: number) => {
-    setZoom(zoom);
+    setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom)));
   };
 
   const onCropAreaChange = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -47,34 +56,62 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
     }
   };
 
-  return (
+  // Escape closes; the page behind must not scroll while cropping
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onCancel]);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+      animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
+      exit={{ opacity: 0, transition: { duration: duration.feedback } }}
+      className="fixed inset-0 z-100 flex items-stretch md:items-center justify-center md:p-4 bg-slate-950 md:bg-slate-950/80 md:backdrop-blur-sm"
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cropper-title"
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1, transition: spring.sheet }}
+        exit={{ y: 24, opacity: 0, transition: { duration: duration.feedback, ease: ease.in } }}
+        className="w-full md:max-w-2xl flex flex-col bg-slate-950 md:bg-white md:rounded-[2.5rem] overflow-hidden md:shadow-2xl h-dvh md:h-auto md:max-h-[90vh]"
       >
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-display font-bold italic">Ritaglia Foto</h3>
-            <p className="text-xs text-slate-400 font-medium">Trascina per posizionare, usa lo zoom per regolare</p>
+        <div className="pt-safe md:pt-0 shrink-0">
+          <div className="h-14 md:h-auto px-2 md:p-6 md:border-b border-slate-100 flex items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              onClick={onCancel}
+              aria-label="Chiudi"
+              className="pressable md:order-last rounded-full w-11 h-11 md:w-10 md:h-10 p-0 text-white md:text-slate-900 hover:bg-white/10 md:hover:bg-slate-100"
+            >
+              <X size={22} />
+            </Button>
+            <div className="flex-1 min-w-0 text-center md:text-left">
+              <h3 id="cropper-title" className="text-xl font-display font-bold italic text-white md:text-slate-950">Ritaglia Foto</h3>
+              <p className="hidden md:block text-xs text-slate-500 font-medium">Trascina per posizionare, usa lo zoom per regolare</p>
+            </div>
+            {/* Keeps the title centred on phones opposite the close button */}
+            <span aria-hidden="true" className="w-11 shrink-0 md:hidden" />
           </div>
-          <Button variant="ghost" onClick={onCancel} className="rounded-full w-10 h-10 p-0">
-            <X size={20} />
-          </Button>
         </div>
 
-        <div className="relative flex-1 min-h-[400px] bg-slate-900">
+        <div className="relative flex-1 min-h-0 md:flex-none md:h-[400px] bg-slate-900">
           <Cropper
             image={image}
             crop={crop}
             zoom={zoom}
+            minZoom={MIN_ZOOM}
+            maxZoom={MAX_ZOOM}
             aspect={1}
             onCropChange={onCropChange}
             onZoomChange={onZoomChange}
@@ -84,39 +121,55 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
           />
         </div>
 
-        <div className="p-8 space-y-6">
-          <div className="flex items-center gap-4">
-            <ZoomOut size={16} className="text-slate-400" />
+        <div className="shrink-0 px-4 pt-4 md:p-8 space-y-4 md:space-y-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-8 bg-slate-950 md:bg-white">
+          <p className="md:hidden text-center text-sm text-slate-400 font-medium">Trascina per posizionare, pizzica o usa lo zoom</p>
+          <div className="flex items-center gap-2 md:gap-4">
+            <button
+              type="button"
+              onClick={() => onZoomChange(zoom - 0.25)}
+              aria-label="Riduci zoom"
+              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-slate-300 md:text-slate-500 hover:bg-white/10 md:hover:bg-slate-100 transition-colors"
+            >
+              <ZoomOut size={18} />
+            </button>
             <input
               type="range"
               value={zoom}
-              min={1}
-              max={3}
+              min={MIN_ZOOM}
+              max={MAX_ZOOM}
               step={0.1}
-              aria-labelledby="Zoom"
+              aria-label="Zoom"
               onChange={(e) => onZoomChange(Number(e.target.value))}
-              className="flex-1 accent-emerald-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+              className="flex-1 min-w-0 h-11 accent-emerald-500 md:accent-emerald-600 cursor-pointer"
             />
-            <ZoomIn size={16} className="text-slate-400" />
+            <button
+              type="button"
+              onClick={() => onZoomChange(zoom + 0.25)}
+              aria-label="Aumenta zoom"
+              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-slate-300 md:text-slate-500 hover:bg-white/10 md:hover:bg-slate-100 transition-colors"
+            >
+              <ZoomIn size={18} />
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={onCancel} 
-              className="flex-1 rounded-2xl h-12 font-bold border-slate-200 hover:bg-slate-50 transition-all"
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              className="pressable flex-1 rounded-2xl h-12 font-bold bg-transparent md:bg-white text-white md:text-slate-900 border-white/20 md:border-slate-200 hover:bg-white/10 md:hover:bg-slate-50 transition-colors"
             >
               Annulla
             </Button>
-            <Button 
-              onClick={handleComplete} 
-              className="flex-1 rounded-2xl h-12 font-bold bg-slate-950 hover:bg-emerald-600 text-white gap-2 transition-all"
+            <Button
+              onClick={handleComplete}
+              className="pressable flex-1 rounded-2xl h-12 font-bold bg-white md:bg-slate-950 text-slate-950 md:text-white hover:bg-emerald-50 md:hover:bg-emerald-600 gap-2 transition-colors"
             >
               <Check size={18} /> Conferma
             </Button>
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }

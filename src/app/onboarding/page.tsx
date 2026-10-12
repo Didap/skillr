@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { User, Building2, ChevronRight, Check, Zap, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
@@ -25,9 +26,21 @@ import { toast } from "sonner";
 import { FileCardUpload } from "@/components/ui/file-card-upload";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { credentialsErrorMessage } from "@/components/auth/login-errors";
+import { duration, ease } from "@/lib/motion";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 const DRAFT_KEY = "onboarding_draft";
+
+// Phones: each step portals its Indietro/Continua buttons into one fixed bottom bar that lives
+// outside the animated step, so the bar stays put while the step content slides.
+const StepNavSlot = createContext<HTMLElement | null>(null);
+
+// Forward steps arrive from the right, going back arrives from the left.
+const stepVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir * 32 }),
+  center: { opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -32, transition: { duration: duration.feedback, ease: ease.in } }),
+};
 
 interface Skill {
   id: string;
@@ -46,6 +59,14 @@ export default function OnboardingPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(0);
+  // Slide direction follows whichever way the step number moved, wherever it was changed from
+  const [prevStepSeen, setPrevStepSeen] = useState(0);
+  const [direction, setDirection] = useState(1);
+  if (step !== prevStepSeen) {
+    setDirection(step > prevStepSeen ? 1 : -1);
+    setPrevStepSeen(step);
+  }
+  const [navSlot, setNavSlot] = useState<HTMLElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState<"professional" | "company" | null>(null);
   const [isLoginMode, setIsLoginMode] = useState(false);
@@ -145,12 +166,19 @@ export default function OnboardingPage() {
     turnstileRef.current?.reset();
   };
 
+  // A new step starts at its top: on phones the previous step may have been scrolled far down
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [step]);
+
+  // Flexible widget fills the row (min 300px); on the narrowest phones it borrows a little of
+  // the card padding so it is never clipped.
   const turnstileWidget = TURNSTILE_SITE_KEY ? (
-    <div className="flex justify-center">
+    <div className="-mx-3 sm:mx-0">
       <Turnstile
         ref={turnstileRef}
         siteKey={TURNSTILE_SITE_KEY}
-        options={{ theme: "light" }}
+        options={{ theme: "light", size: "flexible" }}
         onSuccess={(token) => setTurnstileToken(token)}
         onExpire={() => setTurnstileToken(null)}
         onError={() => setTurnstileToken(null)}
@@ -201,8 +229,8 @@ export default function OnboardingPage() {
 
 
   if (status === "loading") return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Zap className="text-emerald-500 animate-pulse" size={48} />
+    <div className="min-h-dvh flex items-center justify-center">
+      <Zap className="text-emerald-500 animate-pulse motion-reduce:animate-none" size={48} />
     </div>
   );
 
@@ -210,11 +238,36 @@ export default function OnboardingPage() {
   const totalSteps = role === "professional" ? 8 : 3;
 
   return (
-    <div className="min-h-screen bg-[#FDFDFC] flex flex-col items-center justify-center p-6 selection:bg-emerald-100 selection:text-emerald-900">
+    <StepNavSlot.Provider value={navSlot}>
+    <div className="min-h-dvh bg-[#FDFDFC] flex flex-col items-center justify-start md:justify-center px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:p-6 selection:bg-emerald-100 selection:text-emerald-900">
       <div className="max-w-lg w-full">
+        {/* Phones: compact header with a segmented progress strip */}
+        <div className="md:hidden mb-5">
+          <div className="flex items-baseline justify-between gap-4 mb-3">
+            <h1 className="font-display text-3xl italic font-bold text-slate-950 tracking-tight">
+              Configura Profilo
+            </h1>
+            <span className="text-sm font-bold text-slate-500 tabular-nums shrink-0" aria-label={`Step ${step + 1} di ${totalSteps}`}>
+              {step + 1}/{totalSteps}
+            </span>
+          </div>
+          <div className="flex gap-1.5" aria-hidden="true">
+            {Array.from({ length: totalSteps }, (_, i) => (
+              <span key={i} className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                <span
+                  className={cn(
+                    "block h-full rounded-full bg-emerald-500 origin-left transition-transform duration-300 ease-out motion-reduce:transition-none",
+                    i <= step ? "scale-x-100" : "scale-x-0"
+                  )}
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* Progress Header */}
-        <div className="mb-8 text-center">
-           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-[0.15em] mb-4">
+        <div className="hidden md:block mb-8 text-center">
+           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-[0.15em] mb-4">
               <Zap size={10} fill="currentColor" /> Step {step + 1} di {totalSteps}
            </div>
            <h1 className="font-display text-4xl italic font-bold text-slate-950 tracking-tight">
@@ -223,7 +276,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8 flex justify-between items-center relative px-6">
+        <div className="hidden md:flex mb-8 justify-between items-center relative px-6">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0 rounded-full" />
           <motion.div 
             className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded-full"
@@ -245,26 +298,28 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            custom={direction}
+            variants={stepVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
           >
-            <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white">
+            {/* overflow-visible lets the skill counter stay sticky while the page scrolls */}
+            <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white overflow-visible">
               {step === 0 && (
                 <>
-                  <CardHeader className="text-center pt-10 pb-4">
+                  <CardHeader className="text-center pt-8 md:pt-10 pb-2 md:pb-4 px-5 md:px-8">
                     <CardTitle className="text-3xl font-display italic font-bold text-slate-950">Chi sei?</CardTitle>
-                    <CardDescription className="text-slate-500 font-semibold mt-1">Scegli il tuo ruolo</CardDescription>
+                    <CardDescription className="text-slate-500 font-semibold mt-1 text-[15px] md:text-sm">Scegli il tuo ruolo</CardDescription>
                   </CardHeader>
-                  <CardContent className="px-8 pb-8 pt-4">
-                    <RadioGroup 
+                  <CardContent className="px-5 md:px-8 pb-6 md:pb-8 pt-4">
+                    <RadioGroup
                       value={role || ""}
                       onValueChange={(val) => setRole(val as "professional" | "company")}
-                      className="grid grid-cols-2 gap-4"
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4"
                     >
                       <RoleOption 
                         id="professional" 
@@ -284,16 +339,7 @@ export default function OnboardingPage() {
                       />
                     </RadioGroup>
                   </CardContent>
-                  <CardFooter className="px-8 pb-8 pt-0">
-                    <Button 
-                      disabled={!role} 
-                      onClick={nextStep} 
-                      className="w-full rounded-2xl h-14 text-lg font-black bg-slate-950 hover:bg-emerald-800 text-white transition-all shadow-xl shadow-slate-200 group flex items-center justify-center gap-2"
-                    >
-                      <span>Continua</span>
-                      <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </CardFooter>
+                  <StepNav onNext={nextStep} nextDisabled={!role} />
                 </>
               )}
 
@@ -314,8 +360,10 @@ export default function OnboardingPage() {
                       <div className="space-y-2">
                         <Label htmlFor="verificationCode" className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-widest">Codice di Verifica</Label>
                         <Input 
-                          placeholder="000000" 
-                          type="text" 
+                          placeholder="000000"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
                           id="verificationCode"
                           value={verificationCode}
                           onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -383,7 +431,7 @@ export default function OnboardingPage() {
                               toast.error(res.error);
                             }
                           }}
-                          className="text-xs font-bold text-slate-400 hover:text-pa-blue transition-colors"
+                          className="min-h-11 px-2 text-sm md:text-xs font-bold text-slate-500 hover:text-pa-blue transition-colors"
                         >
                           Non hai ricevuto il codice? <span className="text-pa-blue underline underline-offset-4">Inviamene un altro</span>
                         </button>
@@ -395,22 +443,24 @@ export default function OnboardingPage() {
                         <Label htmlFor="email" className="text-xs font-bold text-slate-500 ml-1">Email</Label>
                         <Input 
                           placeholder="mario.rossi@email.com" 
-                          type="email" 
+                          type="email"
                           id="email"
+                          autoComplete="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="h-14 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-all"
+                          className="h-12 md:h-14 px-4 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-colors"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="password" className="text-xs font-bold text-slate-500 ml-1">Password</Label>
                         <Input 
                           placeholder="Minimo 8 caratteri" 
-                          type="password" 
+                          type="password"
                           id="password"
+                          autoComplete={isLoginMode ? "current-password" : "new-password"}
                           value={formData.password}
                           onChange={handleChange}
-                          className="h-14 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-all"
+                          className="h-12 md:h-14 px-4 rounded-2xl border-slate-100 bg-slate-50/30 focus:bg-white transition-colors"
                         />
                       </div>
                       
@@ -421,9 +471,9 @@ export default function OnboardingPage() {
                             id="legalConsent" 
                             checked={legalConsent} 
                             onChange={(e) => setLegalConsent(e.target.checked)}
-                            className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                            className="mt-0.5 h-5 w-5 md:h-4 md:w-4 shrink-0 rounded border-slate-300 accent-emerald-600 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                           />
-                          <Label htmlFor="legalConsent" className="text-[11px] font-medium text-slate-500 leading-relaxed cursor-pointer select-none">
+                          <Label htmlFor="legalConsent" className="block text-[13px] md:text-[11px] font-medium text-slate-500 leading-relaxed cursor-pointer select-none">
                             Accetto i <Link href="/terms" target="_blank" className="text-emerald-600 font-bold underline decoration-emerald-200">Termini di Servizio</Link> e la <Link href="/privacy" target="_blank" className="text-emerald-600 font-bold underline decoration-emerald-200">Privacy Policy</Link> di Skillr.
                           </Label>
                         </div>
@@ -501,7 +551,7 @@ export default function OnboardingPage() {
                         <div className="absolute inset-0 flex items-center">
                           <span className="w-full border-t border-slate-100"></span>
                         </div>
-                        <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black text-slate-300">
+                        <div className="relative flex justify-center text-[11px] uppercase tracking-widest font-black text-slate-500">
                           <span className="bg-white px-4">Oppure</span>
                         </div>
                       </div>
@@ -520,9 +570,9 @@ export default function OnboardingPage() {
                           </svg>
                           {isLoginMode ? "Accedi con Google" : "Registrati con Google"}
                         </Button>
-                        <div className="text-center mt-2">
-                          <p className="text-[11px] text-slate-400 font-medium">
-                            {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-emerald-600 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
+                        <div className="text-center">
+                          <p className="text-sm md:text-xs text-slate-500 font-medium">
+                            {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button type="button" onClick={() => setIsLoginMode(!isLoginMode)} className="inline-flex items-center min-h-11 px-1 text-emerald-700 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
                           </p>
                         </div>
                       </div>
@@ -539,12 +589,12 @@ export default function OnboardingPage() {
                   onNext={nextStep}
                   nextDisabled={!formData.firstName.trim() || !formData.lastName.trim()}
                 >
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3 md:gap-6">
+                    <div className="space-y-3 min-w-0">
                       <Label htmlFor="firstName" className="font-bold text-slate-700 ml-1">Nome</Label>
                       <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="es. Mario" className="h-12 rounded-xl border-slate-100" />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0">
                       <Label htmlFor="lastName" className="font-bold text-slate-700 ml-1">Cognome</Label>
                       <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="es. Rossi" className="h-12 rounded-xl border-slate-100" />
                     </div>
@@ -569,10 +619,12 @@ export default function OnboardingPage() {
                   onNext={nextStep}
                   nextDisabled={formData.selectedClusters.length === 0}
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5 md:gap-3">
                     {catalog.map(cluster => (
                       <button
                         key={cluster.id}
+                        type="button"
+                        aria-pressed={formData.selectedClusters.includes(cluster.slug)}
                         onClick={() => {
                           const exists = formData.selectedClusters.includes(cluster.slug);
                           setFormData({
@@ -583,7 +635,7 @@ export default function OnboardingPage() {
                           });
                         }}
                         className={cn(
-                          "p-4 rounded-2xl border text-left transition-all font-bold text-sm",
+                          "pressable min-h-14 p-4 rounded-2xl border text-left transition-colors font-bold text-sm leading-snug wrap-break-word",
                           formData.selectedClusters.includes(cluster.slug)
                             ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200"
                             : "bg-white border-slate-100 text-slate-600 hover:border-emerald-400"
@@ -607,11 +659,13 @@ export default function OnboardingPage() {
                   <div className="space-y-6">
                     {catalog.filter(c => formData.selectedClusters.includes(c.slug)).map(cluster => (
                       <div key={cluster.id} className="space-y-3">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">{cluster.label}</h3>
+                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">{cluster.label}</h3>
                         <div className="flex flex-wrap gap-2">
                           {cluster.skills.map((skill: Skill) => (
                             <button
                               key={skill.id}
+                              type="button"
+                              aria-pressed={formData.topSkills.includes(skill.slug)}
                               onClick={() => {
                                 const exists = formData.topSkills.includes(skill.slug);
                                 if (!exists && formData.topSkills.length >= 3) return;
@@ -623,7 +677,7 @@ export default function OnboardingPage() {
                                 });
                               }}
                               className={cn(
-                                "px-4 py-2 rounded-full border text-sm transition-all font-semibold",
+                                "pressable min-h-11 md:min-h-10 px-4 py-2 rounded-full border text-sm transition-colors font-semibold",
                                 formData.topSkills.includes(skill.slug)
                                   ? "bg-slate-900 border-slate-900 text-white"
                                   : "bg-white border-slate-100 text-slate-500 hover:border-slate-300"
@@ -636,7 +690,8 @@ export default function OnboardingPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 p-4 bg-slate-50 rounded-2xl flex justify-between items-center">
+                  {/* Phones: stays in view above the bottom bar while scrolling the skill list */}
+                  <div className="sticky z-10 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:static mt-4 p-4 bg-slate-50 rounded-2xl flex justify-between items-center shadow-card md:shadow-none">
                     <span className="text-sm font-bold text-slate-500">Skill selezionate:</span>
                     <span className={cn(
                       "text-xl font-black tabular-nums",
@@ -655,18 +710,18 @@ export default function OnboardingPage() {
                   onBack={prevStep}
                   onNext={nextStep}
                 >
-                  <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2 space-y-3">
+                  <div className="grid grid-cols-3 gap-3 md:gap-6">
+                    <div className="col-span-2 space-y-3 min-w-0">
                       <Label htmlFor="rateAmount" className="font-bold text-slate-700 ml-1">Tariffa (EUR)</Label>
-                      <Input id="rateAmount" value={formData.rateAmount} onChange={handleChange} type="number" placeholder="500" className="h-12 rounded-xl border-slate-100" />
+                      <Input id="rateAmount" value={formData.rateAmount} onChange={handleChange} type="number" inputMode="numeric" placeholder="500" className="h-12 rounded-xl border-slate-100" />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0">
                       <Label htmlFor="rateType" className="font-bold text-slate-700 ml-1">Tipo</Label>
                       <Select 
                         value={formData.rateType}
                         onValueChange={(val) => setFormData({ ...formData, rateType: val as "daily" | "hourly" | "ral_annual" })}
                       >
-                        <SelectTrigger className="h-12 rounded-xl border-slate-100">
+                        <SelectTrigger className="h-12! w-full rounded-xl border-slate-100">
                           <SelectValue>
                             {formData.rateType === "daily" ? "Giorno" : 
                              formData.rateType === "hourly" ? "Ora" : 
@@ -775,7 +830,7 @@ export default function OnboardingPage() {
                       maxLength={13} 
                     />
                     {formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) && (
-                      <p className="text-[10px] text-red-500 font-bold ml-1">Formato Partita IVA non valido.</p>
+                      <p className="text-xs md:text-[11px] text-red-600 font-bold ml-1">Formato Partita IVA non valido.</p>
                     )}
                   </div>
                   <PhotoUpload 
@@ -804,7 +859,7 @@ export default function OnboardingPage() {
 
                   <div className="flex items-center gap-4 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 mt-4">
                     <ShieldCheck className="text-emerald-600" size={24} />
-                    <p className="text-[10px] text-emerald-800 font-bold leading-relaxed">
+                    <p className="text-xs md:text-[11px] text-emerald-800 font-bold leading-relaxed">
                       La verifica della P.IVA garantisce che sulla piattaforma ci siano solo realtà professionali serie.
                     </p>
                   </div>
@@ -814,7 +869,14 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Phones: fixed step navigation; each step portals its buttons in here (hidden when empty) */}
+      <div
+        ref={setNavSlot}
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] empty:hidden"
+      />
     </div>
+    </StepNavSlot.Provider>
   );
 }
 
@@ -825,70 +887,121 @@ function RoleOption({ id, value, icon, label, description, isSelected }: { id: s
       <Label
         htmlFor={id}
         className={cn(
-          "flex flex-col items-center justify-between rounded-3xl border-4 p-6 cursor-pointer transition-all h-full relative overflow-hidden",
-          isSelected 
-            ? "bg-emerald-600 border-emerald-600 text-white shadow-2xl shadow-emerald-200 ring-4 ring-emerald-500/20" 
+          "pressable flex flex-row sm:flex-col items-center sm:justify-between gap-4 sm:gap-0 rounded-3xl border-4 p-4 pr-12 sm:p-6 cursor-pointer transition-colors h-full relative overflow-hidden",
+          isSelected
+            ? "bg-emerald-600 border-emerald-600 text-white shadow-2xl shadow-emerald-200 ring-4 ring-emerald-500/20"
             : "bg-white border-slate-50 text-slate-900 hover:border-emerald-200 hover:bg-slate-50 shadow-sm"
         )}
       >
         <div className={cn(
-          "absolute top-3 right-3 transition-all transform",
+          "absolute top-1/2 -translate-y-1/2 right-4 sm:top-3 sm:right-3 sm:translate-y-0 transition-[opacity,scale] duration-200",
           isSelected ? "scale-100 opacity-100" : "scale-0 opacity-0"
         )}>
           <div className="bg-white text-emerald-600 rounded-full p-1 shadow-lg">
             <Check size={14} strokeWidth={4} />
           </div>
         </div>
-        
+
         <div className={cn(
-          "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 mb-4",
-          isSelected ? "bg-white/20 text-white" : "bg-slate-50 text-slate-400 group-hover:scale-105"
+          "w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl flex items-center justify-center transition-[background-color,color,scale] duration-300 sm:mb-4",
+          isSelected ? "bg-white/20 text-white" : "bg-slate-50 text-slate-500 group-hover:scale-105"
         )}>
            {icon}
         </div>
-        
-        <span className={cn(
-          "text-center font-black text-lg mb-0.5",
-          isSelected ? "text-white" : "text-slate-900"
-        )}>
-          {label}
-        </span>
-        
-        <span className={cn(
-          "text-[9px] font-black uppercase tracking-widest leading-tight text-center",
-          isSelected ? "text-emerald-100" : "text-slate-400 opacity-80"
-        )}>
-          {description}
-        </span>
+
+        <div className="flex flex-col sm:items-center min-w-0">
+          <span className={cn(
+            "sm:text-center font-black text-lg mb-0.5",
+            isSelected ? "text-white" : "text-slate-900"
+          )}>
+            {label}
+          </span>
+
+          <span className={cn(
+            "text-[11px] font-black uppercase tracking-wider sm:tracking-widest leading-tight sm:text-center",
+            isSelected ? "text-emerald-50" : "text-slate-500"
+          )}>
+            {description}
+          </span>
+        </div>
       </Label>
     </div>
+  );
+}
+
+function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: { onBack?: () => void, onNext: () => void, nextLabel?: string, loading?: boolean, nextDisabled?: boolean, hideNext?: boolean }) {
+  const slot = useContext(StepNavSlot);
+  const nextContent = (
+    <>
+      {loading ? <Loader2 className="animate-spin" size={18} /> : null}
+      <span className="truncate">{nextLabel}</span>
+      <ChevronRight className="h-5 w-5 shrink-0 md:group-hover:translate-x-1 transition-transform" />
+    </>
+  );
+
+  return (
+    <>
+      {/* In the card from md up; on phones only when there is no bottom bar (the account step) */}
+      <CardFooter
+        className={cn(
+          "px-5 md:px-8 pt-2 flex justify-between gap-4",
+          onBack ? "pb-6 md:pb-10" : "pb-8 pt-0",
+          !hideNext && "hidden md:flex"
+        )}
+      >
+        {onBack && (
+          <Button variant="ghost" onClick={onBack} className="pressable rounded-xl h-12 px-6 font-black text-slate-500 hover:text-slate-900 text-sm">Indietro</Button>
+        )}
+        {!hideNext && (
+          <Button
+            onClick={onNext}
+            disabled={loading || nextDisabled}
+            className={cn(
+              "pressable group rounded-2xl h-14 px-10 bg-slate-950 hover:bg-emerald-800 text-white transition-colors font-black text-base shadow-xl shadow-slate-200 flex items-center justify-center gap-2",
+              !onBack && "w-full text-lg"
+            )}
+          >
+            {nextContent}
+          </Button>
+        )}
+      </CardFooter>
+
+      {!hideNext && slot && createPortal(
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="pressable shrink-0 rounded-2xl h-12 px-4 font-black text-slate-500 hover:text-slate-900 text-[15px]"
+            >
+              Indietro
+            </Button>
+          )}
+          <Button
+            onClick={onNext}
+            disabled={loading || nextDisabled}
+            className="pressable flex-1 min-w-0 rounded-2xl h-12 px-5 bg-slate-950 hover:bg-emerald-800 text-white transition-colors font-black text-base flex items-center justify-center gap-2"
+          >
+            {nextContent}
+          </Button>
+        </div>,
+        slot
+      )}
+    </>
   );
 }
 
 function StepLayout({ title, description, children, onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: { title: string, description: string, children: React.ReactNode, onBack: () => void, onNext: () => void, nextLabel?: string, loading?: boolean, nextDisabled?: boolean, hideNext?: boolean }) {
   return (
     <>
-      <CardHeader className="px-8 pt-8 pb-4">
+      <CardHeader className="px-5 md:px-8 pt-6 md:pt-8 pb-2 md:pb-4">
         <CardTitle className="text-2xl font-display font-bold italic text-slate-950">{title}</CardTitle>
-        <CardDescription className="text-slate-500 font-medium text-sm">{description}</CardDescription>
+        <CardDescription className="text-slate-500 font-medium text-[15px] md:text-sm">{description}</CardDescription>
       </CardHeader>
-      <CardContent className="px-8 pb-8 pt-2 space-y-4">
+      <CardContent className="px-5 md:px-8 pb-6 md:pb-8 pt-2 space-y-4">
         {children}
       </CardContent>
-      <CardFooter className="px-8 pb-10 pt-2 flex justify-between gap-4">
-        <Button variant="ghost" onClick={onBack} className="rounded-xl h-12 px-6 font-black text-slate-400 hover:text-slate-900 text-sm">Indietro</Button>
-        {!hideNext && (
-          <Button 
-            onClick={onNext} 
-            disabled={loading || nextDisabled}
-            className="rounded-2xl h-14 px-10 bg-slate-950 hover:bg-emerald-800 text-white transition-all font-black text-base shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="animate-spin" size={18} /> : null}
-            <span>{nextLabel}</span>
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        )}
-      </CardFooter>
+      <StepNav onBack={onBack} onNext={onNext} nextLabel={nextLabel} loading={loading} nextDisabled={nextDisabled} hideNext={hideNext} />
     </>
   );
 }
