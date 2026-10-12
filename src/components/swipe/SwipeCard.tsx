@@ -366,10 +366,10 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
                   </div>
                 </div>
 
-                <div className="border-l border-slate-50 pl-10 flex flex-col justify-center">
+                <div className="min-w-0 border-l border-slate-50 pl-10 flex flex-col justify-center">
                   <div className="space-y-1">
                     <div className="text-[11px] font-black uppercase tracking-widest text-emerald-600">{labels.rate}</div>
-                    <div className="text-slate-950 font-display text-5xl font-bold italic tracking-tighter leading-none">
+                    <div className="text-slate-950 font-display text-4xl xl:text-5xl font-bold italic tracking-tighter leading-[1.05] wrap-break-word">
                       {profile.rate}
                     </div>
                     {isJob && (
