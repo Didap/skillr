@@ -13,7 +13,8 @@ import { proposeSlots, confirmSlot } from "@/app/actions/booking";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
-import { CALL_DURATION_MS } from "@/lib/calendar-utils";
+import { BottomActionBar } from "@/components/layout/BottomActionBar";
+import { CALL_DURATION_MS, generateIcsString, joinState } from "@/lib/calendar-utils";
 import { romeDateTimeToDate, formatRomeDate, normalizeMeetingUrl } from "@/lib/rome-time";
 
 // On phones each state is its own card under the profile; from md it sits inside the page's card.
@@ -28,33 +29,16 @@ const SECONDARY_BTN =
 
 const LABEL = "text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 pl-1";
 
+// Every action bar here sits inside a phone card, where BottomActionBar's own spacer would
+// show up as blank card space: each state's wrapper reserves the room on phones instead
+// (pb-24, pb-36 where the bar can wrap to two rows).
+const NO_SPACER = "hidden";
+
 const stepMotion = {
   initial: { opacity: 0, x: 16 },
   animate: { opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } },
   exit: { opacity: 0, x: -16, transition: { duration: duration.feedback, ease: ease.in } },
 };
-
-/**
- * Primary actions for the current step. Phones: pinned above the tab bar, thumb reach.
- * From md: back in the normal flow, wherever the parent places it.
- * The parent adds bottom padding on phones (pb-24, pb-36 when it may wrap to two rows)
- * so content never hides behind it. No transformed ancestor may wrap it, or `fixed`
- * would resolve against that ancestor instead of the viewport.
- */
-function ActionBar({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn(
-        "fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 flex flex-wrap items-stretch gap-2 px-4 py-3",
-        "bg-white/90 backdrop-blur-xl border-t border-slate-100 [&>*]:flex-auto",
-        "md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-0 md:flex-nowrap md:[&>*]:flex-none",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
 
 /** Calendar-leaf tile: day number over the short month, in Italian time. */
 function DateTile({ date, active = false, className }: { date: Date; active?: boolean; className?: string }) {
@@ -75,9 +59,13 @@ function DateTile({ date, active = false, className }: { date: Date; active?: bo
   );
 }
 
-// The meeting button opens 5 minutes early and stays available for an hour, in case the call runs long.
-const JOIN_OPENS_BEFORE_MS = 5 * 60_000;
-const JOIN_AVAILABLE_FOR_MS = 60 * 60_000;
+interface SlotDraft {
+  date: Date | undefined;
+  time: string;
+}
+
+// Drafts are replaced, never mutated, so this one object can seed every new row.
+const EMPTY_SLOT: SlotDraft = { date: undefined, time: "09:00" };
 
 interface Slot {
   id?: string;
@@ -106,9 +94,7 @@ export function BookingSection({
   targetName
 }: BookingSectionProps) {
   const [formStep, setFormStep] = useState(0); 
-  const [newSlots, setNewSlots] = useState<{ date: Date | undefined; time: string }[]>([
-    { date: undefined, time: "09:00" }
-  ]);
+  const [newSlots, setNewSlots] = useState<SlotDraft[]>([EMPTY_SLOT]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [meetingMethod, setMeetingMethod] = useState<"meet" | "custom">("meet");
   const [customMeetingLink, setCustomMeetingLink] = useState("");
@@ -124,9 +110,9 @@ export function BookingSection({
   }, []);
 
   // Slots are entered in Italian time, whatever the browser's timezone.
-  const slotStart = (s: { date: Date | undefined; time: string }) =>
+  const slotStart = (s: SlotDraft) =>
     s.date ? romeDateTimeToDate(s.date, s.time) : null;
-  const isPastSlot = (s: { date: Date | undefined; time: string }, at: number) => {
+  const isPastSlot = (s: SlotDraft, at: number) => {
     const start = slotStart(s);
     return !!start && start.getTime() <= at;
   };
@@ -139,6 +125,9 @@ export function BookingSection({
     if (new Set(starts).size !== starts.length) return "Hai proposto due volte lo stesso orario";
     return null;
   };
+
+  const updateSlot = (idx: number, patch: Partial<SlotDraft>) =>
+    setNewSlots(newSlots.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
 
   const handleProposeSlots = async () => {
     const slotsError = validateNewSlots(Date.now());
@@ -173,7 +162,7 @@ export function BookingSection({
       toast.success("Proposta inviata con successo!");
       setFormStep(0);
       setIsReproposing(false);
-      setNewSlots([{ date: undefined, time: "09:00" }]);
+      setNewSlots([EMPTY_SLOT]);
       setMeetingMethod("meet");
       setCustomMeetingLink("");
       router.refresh();
@@ -202,44 +191,33 @@ export function BookingSection({
     }
   };
 
-  const downloadICS = () => {
-    if (!scheduledAt) return;
-    const start = new Date(scheduledAt);
-    const end = new Date(start.getTime() + 30 * 60000);
-    const format = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Skillr//NONSGML Event//EN
-BEGIN:VEVENT
-UID:${matchId}
-DTSTAMP:${format(new Date())}
-DTSTART:${format(start)}
-DTEND:${format(end)}
-SUMMARY:Colloquio Skillr
-DESCRIPTION:Link Meet: ${meetingLink || 'N/A'}
-LOCATION:${meetingLink || 'Google Meet'}
-END:VEVENT
-END:VCALENDAR`;
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "intervista_skillr.ics");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-
   // 1. CONFIRMED STATE
   if (scheduledAt) {
     const startTime = new Date(scheduledAt);
     // Reviews unlock when the 30-minute call ends, same rule as saveReviewAction.
     const endTime = new Date(startTime.getTime() + CALL_DURATION_MS);
-    const activationTime = new Date(startTime.getTime() - JOIN_OPENS_BEFORE_MS);
-    const joinClosesAt = new Date(startTime.getTime() + JOIN_AVAILABLE_FOR_MS);
-    const isActive = now >= activationTime && now < joinClosesAt;
+    const isActive = joinState(startTime, endTime, now.getTime()) === "open";
     const isCompleted = now >= endTime;
+
+    // Same UID as the emailed invite, so calendars treat both as one event.
+    const downloadICS = () => {
+      const icsContent = generateIcsString({
+        title: "Colloquio Skillr",
+        description: `Link Meet: ${meetingLink || 'N/A'}`,
+        startTime,
+        endTime,
+        location: meetingLink || 'Google Meet',
+        uid: matchId,
+      });
+      const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "intervista_skillr.ics");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
     const showReview = isCompleted && !hasReviewed;
     // Calls that run over can still be rejoined until an hour after the start.
     const showRejoin = isCompleted && !!meetingLink && isActive;
@@ -292,7 +270,7 @@ END:VCALENDAR`;
             </div>
 
             {hasActions && (
-              <ActionBar className="md:flex-col md:gap-3 md:w-auto md:[&>*]:w-full">
+              <BottomActionBar desktop="static" spacerClassName={NO_SPACER} className="md:flex-col md:gap-3 md:w-auto md:[&>*]:w-full">
                 {isCompleted ? (
                   <>
                     {showReview && (
@@ -336,7 +314,7 @@ END:VCALENDAR`;
                     </Button>
                   </>
                 )}
-              </ActionBar>
+              </BottomActionBar>
             )}
           </div>
         </motion.div>
@@ -353,6 +331,9 @@ END:VCALENDAR`;
       </div>
     );
   }
+
+  const isExpired = (slot: Slot) => new Date(slot.startTime) <= now;
+  const allExpired = initialSlots.every(isExpired);
 
   // 2. COMPANY VIEW (PROPOSE SLOTS)
   if (role === "company" && (initialSlots.length === 0 || isReproposing)) {
@@ -374,12 +355,12 @@ END:VCALENDAR`;
                   </p>
                 </div>
               </div>
-              <ActionBar>
+              <BottomActionBar desktop="static" spacerClassName={NO_SPACER}>
                 <Button onClick={() => setFormStep(1)} className={PRIMARY_BTN}>
                   <CalendarRange size={20} />
                   Proponi Slot
                 </Button>
-              </ActionBar>
+              </BottomActionBar>
             </div>
           ) : (
             <div className="space-y-5 md:space-y-8">
@@ -442,11 +423,7 @@ END:VCALENDAR`;
                                 <Label className={LABEL}>Data</Label>
                                 <DatePicker
                                   value={s.date}
-                                  onChange={(date) => {
-                                    const updated = [...newSlots];
-                                    updated[idx].date = date;
-                                    setNewSlots(updated);
-                                  }}
+                                  onChange={(date) => updateSlot(idx, { date })}
                                   disablePast
                                 />
                               </div>
@@ -454,11 +431,7 @@ END:VCALENDAR`;
                                 <Label className={LABEL}>Orario (ora italiana)</Label>
                                 <TimePicker
                                   value={s.time}
-                                  onChange={(time) => {
-                                    const updated = [...newSlots];
-                                    updated[idx].time = time;
-                                    setNewSlots(updated);
-                                  }}
+                                  onChange={(time) => updateSlot(idx, { time })}
                                 />
                                 {/* disablePast only blocks past days: today's earlier hours are caught here. */}
                                 {isPastSlot(s, now.getTime()) && (
@@ -474,12 +447,11 @@ END:VCALENDAR`;
                       {newSlots.length < 3 && (
                         <button
                           type="button"
-                          onClick={() => setNewSlots([...newSlots, { date: undefined, time: "09:00" }])}
+                          onClick={() => setNewSlots([...newSlots, EMPTY_SLOT])}
                           className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-2xl md:rounded-3xl border-2 border-dashed border-slate-200 md:border-slate-100 bg-white md:bg-slate-50/50 hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 group text-slate-700 md:text-slate-500 hover:text-emerald-700"
                         >
                           <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform">
-                             <Plus size={18} className="md:hidden" />
-                             <Plus size={24} className="hidden md:block" />
+                             <Plus className="size-[18px] md:size-6" />
                           </span>
                           <span className="font-bold text-base md:font-display md:italic md:text-lg">Aggiungi slot</span>
                         </button>
@@ -564,7 +536,7 @@ END:VCALENDAR`;
               </AnimatePresence>
 
               {/* Kept outside the animated step: a transformed ancestor would unpin it on phones */}
-              <ActionBar className="md:justify-center md:pt-4">
+              <BottomActionBar desktop="static" spacerClassName={NO_SPACER} className="md:justify-center md:pt-4">
                 {formStep === 1 ? (
                   <Button
                     onClick={() => { const slotsError = validateNewSlots(Date.now()); if (slotsError) { toast.error(slotsError); return; } setFormStep(2); }}
@@ -577,7 +549,7 @@ END:VCALENDAR`;
                     {isPending ? <Loader2 className="animate-spin" /> : "Invia Proposta"}
                   </Button>
                 )}
-              </ActionBar>
+              </BottomActionBar>
             </div>
           )}
         </div>
@@ -585,10 +557,8 @@ END:VCALENDAR`;
     );
   }
 
-  // 3. WAITING STATE (FOR COMPANY)
-  if (role === "company" && initialSlots.length > 0) {
-    const allExpired = initialSlots.every(slot => new Date(slot.startTime) <= now);
-
+  // 3. WAITING STATE (FOR COMPANY, SLOTS PROPOSED)
+  if (role === "company") {
     return (
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-4xl mx-auto md:text-center space-y-5 md:space-y-12")}>
@@ -608,18 +578,18 @@ END:VCALENDAR`;
 
            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 max-w-3xl mx-auto">
              {initialSlots.map((slot, idx) => {
-               const isExpired = new Date(slot.startTime) <= now;
+               const expired = isExpired(slot);
                return (
                  <li
                    key={idx}
                    className={cn(
                      "flex items-center justify-between gap-3 md:block bg-white border border-slate-100 p-4 md:p-6 rounded-2xl md:rounded-3xl md:shadow-sm text-left",
-                     isExpired && "opacity-50"
+                     expired && "opacity-50"
                    )}
                  >
                    <div className="min-w-0">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 md:mb-2">
-                       Opzione {idx + 1}{isExpired && " · Scaduto"}
+                       Opzione {idx + 1}{expired && " · Scaduto"}
                      </p>
                      <p className="text-base md:text-lg font-bold text-slate-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
                    </div>
@@ -629,7 +599,7 @@ END:VCALENDAR`;
              })}
            </ul>
 
-           <ActionBar className="md:justify-center">
+           <BottomActionBar desktop="static" spacerClassName={NO_SPACER} className="md:justify-center">
              <Button
                variant={allExpired ? "default" : "outline"}
                onClick={() => {
@@ -647,7 +617,7 @@ END:VCALENDAR`;
              >
                <CalendarRange size={20} /> {allExpired ? "Proponi nuovi orari" : "Modifica proposta"}
              </Button>
-           </ActionBar>
+           </BottomActionBar>
 
            {meetingLink && (
              <motion.div
@@ -675,9 +645,7 @@ END:VCALENDAR`;
   }
 
   // 4. SELECTION STATE (FOR PROFESSIONAL)
-  if (role === "professional" && initialSlots.length > 0 && !scheduledAt) {
-    const allExpired = initialSlots.every(slot => new Date(slot.startTime) <= now);
-
+  if (initialSlots.length > 0) {
     return (
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-5xl mx-auto space-y-5 md:space-y-16")}>
@@ -699,7 +667,7 @@ END:VCALENDAR`;
 
           <div role="radiogroup" aria-label="Orari proposti" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {initialSlots.map((slot) => {
-              const isExpired = new Date(slot.startTime) <= now;
+              const expired = isExpired(slot);
               const selected = selectedSlotId === slot.id;
               const start = new Date(slot.startTime);
               return (
@@ -708,8 +676,8 @@ END:VCALENDAR`;
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                whileTap={isExpired ? undefined : { scale: 0.98 }}
-                disabled={isExpired}
+                whileTap={expired ? undefined : { scale: 0.98 }}
+                disabled={expired}
                 onClick={() => {
                   setSelectedSlotId(slot.id || null);
                   haptic();
@@ -717,7 +685,7 @@ END:VCALENDAR`;
                 className={cn(
                   "relative w-full min-h-16 flex items-center gap-4 p-3 pr-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 text-left outline-none",
                   "transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
-                  isExpired
+                  expired
                     ? "border-slate-100 bg-white opacity-50 cursor-not-allowed"
                     : selected
                       ? "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-500/15 md:shadow-premium"
@@ -727,7 +695,7 @@ END:VCALENDAR`;
                 <DateTile date={start} active={selected} className="md:w-16 md:h-16" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 truncate">
-                    {formatRomeDate(start, { weekday: 'long' })}{isExpired && " · Scaduto"}
+                    {formatRomeDate(start, { weekday: 'long' })}{expired && " · Scaduto"}
                   </p>
                   <p className="text-lg md:text-2xl font-display italic text-slate-950 truncate">
                     {formatRomeDate(start, { day: 'numeric', month: 'long' })}
@@ -761,10 +729,10 @@ END:VCALENDAR`;
             })}
           </div>
 
-          <ActionBar className="md:justify-center">
+          <BottomActionBar desktop="static" spacerClassName={NO_SPACER} className="md:justify-center">
             <Button
               onClick={handleConfirmSlot}
-              disabled={!selectedSlotId || isPending || initialSlots.some(s => s.id === selectedSlotId && new Date(s.startTime) <= now)}
+              disabled={!selectedSlotId || isPending || initialSlots.some(s => s.id === selectedSlotId && isExpired(s))}
               className={cn(PRIMARY_BTN, "md:h-20 md:rounded-[2rem] md:px-20 md:text-2xl")}
             >
               {isPending ? <Loader2 className="animate-spin" /> : (
@@ -774,30 +742,26 @@ END:VCALENDAR`;
                 </>
               )}
             </Button>
-          </ActionBar>
+          </BottomActionBar>
         </div>
       </div>
     );
   }
 
   // 5. NO SLOTS STATE (FOR PROFESSIONAL)
-  if (role === "professional" && initialSlots.length === 0) {
-    return (
-      <div className="md:p-24">
-        <div className={cn(PHONE_CARD, "py-8 text-center")}>
-          <div className="max-w-md mx-auto space-y-4 md:space-y-6">
-             <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-slate-500">
-                <Calendar size={28} strokeWidth={1.5} />
-             </div>
-             <div className="space-y-2">
-               <h3 className="text-2xl font-display italic text-slate-950">In attesa dell&apos;azienda</h3>
-               <p className="text-[15px] md:text-lg text-slate-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
-             </div>
-          </div>
+  return (
+    <div className="md:p-24">
+      <div className={cn(PHONE_CARD, "py-8 text-center")}>
+        <div className="max-w-md mx-auto space-y-4 md:space-y-6">
+           <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-slate-500">
+              <Calendar size={28} strokeWidth={1.5} />
+           </div>
+           <div className="space-y-2">
+             <h3 className="text-2xl font-display italic text-slate-950">In attesa dell&apos;azienda</h3>
+             <p className="text-[15px] md:text-lg text-slate-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
+           </div>
         </div>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

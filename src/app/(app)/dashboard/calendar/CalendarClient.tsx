@@ -33,6 +33,8 @@ import Image from "next/image";
 import { CustomTooltip } from "@/components/ui/tooltip";
 import { formatRomeDate } from "@/lib/rome-time";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
+import { joinState } from "@/lib/calendar-utils";
 import { duration, ease, haptic } from "@/lib/motion";
 
 interface CalendarEvent {
@@ -107,7 +109,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const viewingToday = isToday(selectedDate) && isSameMonth(currentMonth, new Date());
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
+    <>
       <PageHeader
         title="Calendario"
         subtitle="Gestisci i tuoi appuntamenti"
@@ -128,8 +130,9 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
         }
       />
 
-      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain lg:overflow-hidden pb-tabbar">
-        <div className="px-4 pt-4 pb-8 md:p-8 lg:h-full grid lg:grid-cols-12 gap-6 md:gap-8 lg:gap-6 lg:items-stretch">
+      {/* lg: the page stops scrolling; the month grid fills the height and the agenda scrolls on its own */}
+      <PageBody className="lg:overflow-hidden">
+        <main className="px-4 pt-4 pb-8 md:p-8 lg:h-full grid lg:grid-cols-12 gap-6 md:gap-8 lg:gap-6 lg:items-stretch">
 
           {/* Month grid */}
           <section
@@ -312,13 +315,11 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                           {event.link ? (
                             (() => {
                               const now = new Date();
-                              const startTime = new Date(event.start);
-                              const fiveMinutesBefore = new Date(startTime.getTime() - 5 * 60 * 1000);
-                              // Same rule as the match page: the link stays usable up to an hour after the start.
-                              const joinClosesAt = Math.max(new Date(event.end).getTime(), startTime.getTime() + 60 * 60 * 1000);
-                              const isActive = now >= fiveMinutesBefore && now.getTime() <= joinClosesAt;
+                              const startTime = event.start;
+                              // Same rule as the match page (joinState).
+                              const join = joinState(startTime, event.end, now.getTime());
 
-                              if (isActive) {
+                              if (join === "open") {
                                 return (
                                   <a
                                     href={event.link}
@@ -330,7 +331,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                     <span className="text-sm font-bold">Partecipa</span>
                                   </a>
                                 );
-                              } else if (now.getTime() > joinClosesAt) {
+                              } else if (join === "over") {
                                 return (
                                   <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center gap-2">
                                     <Check size={16} className="shrink-0" />
@@ -382,8 +383,8 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
             </div>
           </section>
 
-        </div>
-      </main>
-    </div>
+        </main>
+      </PageBody>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { Mail, MapPin, ExternalLink, Zap, UserRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
 import { getMatchDetail } from "@/app/actions/matches";
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
@@ -49,7 +50,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   // Independent queries: the skill labels don't wait on the match lookup
   const [res, labelBySlug] = await Promise.all([getMatchDetail(id), getSkillLabelMap()]);
 
-  if (res.error || !res.data) {
+  if ("error" in res || !res.data) {
     notFound();
   }
 
@@ -63,7 +64,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const locationLabel = [location.city, location.remoteOk ? 'Remoto OK' : null].filter(Boolean).join(' · ');
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
+    <>
       <PageHeader
         backHref="/matches"
         title={match.targetName}
@@ -90,7 +91,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
         }
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="custom-scrollbar">
         <main className="max-w-5xl w-full mx-auto px-4 py-5 md:p-8 lg:p-12">
           {/* Phones: two stacked blocks (profile card, then scheduling). Desktop: one card. */}
           <div className="md:bg-white md:rounded-[2.5rem] md:border md:border-border-subtle md:shadow-premium md:overflow-hidden">
@@ -215,7 +216,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             </p>
           </footer>
         </main>
-      </div>
-    </div>
+      </PageBody>
+    </>
   );
 }
