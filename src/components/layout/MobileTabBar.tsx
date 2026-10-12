@@ -22,7 +22,10 @@ export function MobileTabBar() {
   // Five slots at most: the company has one more destination, so the calendar moves to "Tu"
   const items = primaryNav(session.user.role).slice(0, 4);
   const calendarInSheet = session.user.role === "company";
-  const accountActive = pathname.startsWith("/settings") || pathname.startsWith("/profile");
+  const accountActive =
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/profile") ||
+    (calendarInSheet && pathname.startsWith("/dashboard/calendar"));
 
   return (
     <>

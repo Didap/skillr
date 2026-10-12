@@ -8,6 +8,8 @@ import { getMatchDetail } from "@/app/actions/matches";
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { BookingSection } from "@/components/matches/BookingSection";
+import { getSkillLabelMap } from "@/lib/skill-catalog";
+import { skillLabel } from "@/lib/skill-slugs";
 
 interface ProposedSlot {
   id: string;
@@ -51,6 +53,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   }
 
   const match = res.data as MatchDetail;
+  const labelBySlug = await getSkillLabelMap();
   const role = session.user.role as "professional" | "company";
 
   // Companies see where the professional works from; professionals see the job's location.
@@ -141,7 +144,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     <ul className="flex flex-wrap gap-2" aria-label="Competenze">
                       {match.targetSkills.map((skill: string) => (
                         <li key={skill} className="max-w-full px-3 py-1.5 rounded-lg bg-surface-warm text-text-secondary text-xs font-bold border border-border-subtle break-words">
-                          {skill}
+                          {skillLabel(skill, labelBySlug)}
                         </li>
                       ))}
                     </ul>
