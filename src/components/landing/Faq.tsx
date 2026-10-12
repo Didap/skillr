@@ -3,31 +3,31 @@ import { Plus } from "lucide-react";
 const QUESTIONS = [
   {
     q: "Quanto costa Skillr?",
-    a: "Creare il profilo è gratuito, sia per i professionisti sia per le aziende.",
+    a: "Niente. Creare il profilo è gratis, per i professionisti e per le aziende.",
   },
   {
     q: "Perché non c'è una chat?",
-    a: "Perché le chat diventano lunghe trattative che non portano a niente. Su Skillr le informazioni che contano (skill, tariffa, budget) sono già sulla card. Dopo il match si passa direttamente a una call di 30 minuti, che chiarisce più di cento messaggi.",
+    a: "Perché le chat si allungano e raramente arrivano a una decisione. Su Skillr skill, tariffa e budget sono già sulla card, quindi dopo il match si passa a una call di 30 minuti.",
   },
   {
     q: "Chi vede la mia tariffa?",
-    a: "Le aziende registrate, quando il tuo profilo compare nel loro swipe. Allo stesso modo, ogni offerta mostra ai professionisti la sua fascia di budget. La trasparenza vale in entrambe le direzioni.",
+    a: "Le aziende iscritte, quando il tuo profilo compare tra quelli da valutare. Vale anche al contrario: ogni offerta mostra il suo budget ai professionisti.",
   },
   {
     q: "Cosa succede dopo il match?",
-    a: "Entrambi ricevete una email. L'azienda propone fino a 3 orari, il professionista ne sceglie uno e l'invito con il link Google Meet (o Zoom, Teams…) arriva nel calendario di tutti e due, con un promemoria prima dell'incontro.",
+    a: "Vi arriva una email. L'azienda propone fino a 3 orari, il professionista ne sceglie uno e l'invito con il link (Google Meet, Zoom o Teams) entra nel calendario di entrambi. Prima della call arriva anche un promemoria.",
   },
   {
     q: "Come funzionano le recensioni?",
-    a: "Si sbloccano dopo la call. Professionista e azienda si valutano a vicenda con un voto da 1 a 5 stelle e un commento facoltativo. La media resta visibile sul profilo.",
+    a: "Si sbloccano passato l'orario della call. Professionista e azienda si valutano a vicenda da 1 a 5 stelle, con un commento se vogliono. La media compare sul profilo.",
   },
   {
-    q: "Come vengono verificate le aziende?",
-    a: "Per registrarsi un'azienda deve indicare la Partita IVA e dichiarare che i dati forniti sono veritieri. Ogni offerta deve poi indicare una fascia di budget, senza eccezioni.",
+    q: "Come capisco se un'azienda è seria?",
+    a: "Ogni azienda si registra con la Partita IVA e dichiara che i dati sono veri, e nessuna offerta va online senza budget. Il resto lo dicono le recensioni di chi ci ha già fatto una call.",
   },
   {
     q: "Cosa sono gli Smart Interview?",
-    a: "Sessioni organizzate dalle aziende in cui più professionisti prenotano un posto per conoscere il team con call brevi. Sono pensate per farsi notare anche prima di un match.",
+    a: "Sessioni organizzate dalle aziende: più professionisti prenotano un posto e conoscono il team con call brevi. Servono a farsi notare anche senza un match.",
   },
 ];
 

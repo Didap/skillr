@@ -3,23 +3,23 @@ import { BadgeCheck, Building2, Check, Euro, ShieldCheck, Star } from "lucide-re
 const POINTS = [
   {
     icon: Building2,
-    title: "Aziende identificate",
-    body: "Ogni azienda si registra con Partita IVA e si assume la responsabilità dei dati che pubblica.",
+    title: "Partita IVA",
+    body: "Ogni azienda si registra con la Partita IVA e risponde dei dati che pubblica.",
   },
   {
     icon: BadgeCheck,
     title: "Competenze verificate",
-    body: "Portfolio e profilo GitHub vengono controllati: il badge sul profilo significa qualcosa.",
+    body: "Prima di assegnare il badge controlliamo portfolio e profilo GitHub.",
   },
   {
     icon: Euro,
-    title: "Budget sempre visibile",
-    body: "Nessuna offerta va online senza fascia retributiva. Nessuna sorpresa alla prima call.",
+    title: "Budget in chiaro",
+    body: "Un'offerta senza fascia di budget non si può pubblicare.",
   },
   {
     icon: Star,
     title: "Recensioni dopo la call",
-    body: "Si sbloccano solo dopo l'incontro. Entrambe le parti si valutano, e la reputazione resta sul profilo.",
+    body: "Finita la call vi valutate a vicenda, da 1 a 5 stelle. La media resta sul profilo.",
   },
 ];
 
@@ -33,14 +33,14 @@ export function TrustSection() {
         <div className="grid lg:grid-cols-2 gap-20 lg:gap-24 items-center">
           <div className="space-y-10">
             <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
-              <ShieldCheck size={14} /> Trust Framework
+              <ShieldCheck size={14} /> Fiducia
             </div>
             <h2 className="font-display text-5xl md:text-7xl text-white leading-tight">
-              La qualità è un <br />
-              <span className="italic text-emerald-400">obbligo.</span>
+              Sai chi c&apos;è <br />
+              <span className="italic text-emerald-400">dall&apos;altra parte.</span>
             </h2>
             <p className="text-slate-400 text-lg font-medium leading-relaxed">
-              Un match vale solo se dall&apos;altra parte c&apos;è qualcuno di serio. Per questo alcune regole non sono opzionali.
+              Prima di dedicare mezz&apos;ora a una call vuoi sapere con chi parli e se ne vale la pena. Questo è quello che trovi su ogni profilo e ogni offerta.
             </p>
 
             <div className="grid sm:grid-cols-2 gap-8">

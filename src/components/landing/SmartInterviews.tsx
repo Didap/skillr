@@ -6,17 +6,17 @@ const STEPS = [
   {
     icon: CalendarPlus,
     title: "L'azienda apre una sessione",
-    body: "Sceglie data, formato, skill cercate e numero di posti disponibili.",
+    body: "Sceglie data, formato, skill cercate e quanti posti mettere a disposizione.",
   },
   {
     icon: Ticket,
-    title: "Prenoti il tuo posto",
-    body: "Se le skill sono le tue, prenoti in un clic. Il link per collegarti arriva via email.",
+    title: "Prenoti un posto",
+    body: "Se cercano le tue skill, prenoti con un clic. Il link per collegarti arriva via email.",
   },
   {
     icon: Video,
-    title: "Incontri il team",
-    body: "Call brevi e dirette con chi assume, per farti conoscere senza passare da un CV.",
+    title: "Ti colleghi",
+    body: "Una serie di call brevi con le persone del team che assume. Il CV, se serve, arriva dopo.",
   },
 ];
 
@@ -30,18 +30,18 @@ export function SmartInterviews() {
               <Sparkles size={12} /> Eventi
             </div>
             <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight">
-              Smart <span className="italic text-emerald-600">Interviews.</span>
+              Smart <span className="italic text-emerald-600">Interview.</span>
             </h2>
           </div>
           <div className="flex flex-col gap-6 items-start md:items-end">
             <p className="text-slate-500 max-w-md font-medium text-lg md:text-right">
-              Sessioni di speed-dating professionale organizzate dalle aziende: incontri più team in poco tempo.
+              Sessioni organizzate dalle aziende: prenoti un posto e conosci il team, anche senza un match.
             </p>
             <Link
               href="/events"
               className="inline-flex items-center gap-2 h-12 px-8 rounded-full bg-slate-900 hover:bg-emerald-600 text-white font-bold transition-all shadow-xl shadow-slate-200 group"
             >
-              Scopri tutti gli eventi
+              Tutti gli eventi
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

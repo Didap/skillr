@@ -25,45 +25,45 @@ const STEPS: Record<Role, Step[]> = {
   professional: [
     {
       label: "Profilo",
-      title: "Racconta chi sei, con la tua tariffa",
-      body: "Scegli i settori, le tue 3 skill chiave e la tariffa giornaliera, oraria o la RAL che cerchi. Aggiungi CV e portfolio: le competenze vengono verificate e lo mostriamo sul profilo.",
+      title: "Il profilo, con la tua tariffa",
+      body: "Scegli i settori e le 3 skill che ti rappresentano meglio, poi indica quanto chiedi: al giorno, all'ora o come RAL. CV e portfolio sono facoltativi, ma se li carichi verifichiamo le competenze e sul profilo compare il badge.",
     },
     {
       label: "Swipe",
-      title: "Scorri offerte con il budget in chiaro",
-      body: "Vedi solo offerte compatibili con le tue skill, e ognuna mostra la fascia retributiva. Swipe a destra per candidarti, a sinistra per passare. Se un'azienda ti ha già notato, puoi ricambiare.",
+      title: "Swipe sulle offerte, budget in vista",
+      body: "Ti mostriamo solo offerte che cercano almeno una delle tue skill, e ognuna dice quanto paga. Destra per candidarti, sinistra per passare oltre. Se un'azienda ha già messo like al tuo profilo, puoi ricambiare.",
     },
     {
       label: "Match",
-      title: "Il contatto nasce solo se è reciproco",
-      body: "Quando l'azienda accetta la tua candidatura, o tu ricambi il suo interesse, è match. Vi arriva una email e da lì si passa direttamente alla call. Nessun messaggio a freddo.",
+      title: "Il match",
+      body: "C'è match quando l'azienda accetta la tua candidatura, oppure quando ricambi un suo like. Vi arriva una email a testa. Prima di quel momento l'azienda non ha modo di scriverti.",
     },
     {
       label: "Call",
-      title: "Scegli lo slot, il link è già pronto",
-      body: "L'azienda propone fino a 3 slot da 30 minuti. Ne scegli uno e ricevi invito al calendario, link Google Meet e un promemoria prima dell'incontro. Dopo la call vi lasciate una recensione.",
+      title: "Scegli l'orario",
+      body: "L'azienda ti propone fino a 3 orari per una call di 30 minuti. Ne scegli uno e l'invito con il link Meet entra nel calendario di entrambi, poi prima della call ti arriva un promemoria. Finita la call, vi lasciate una recensione a vicenda.",
     },
   ],
   company: [
     {
       label: "Profilo",
-      title: "Registra l'azienda e pubblica l'offerta",
-      body: "Inserisci Partita IVA e logo, e conferma la veridicità dei dati. Poi pubblica un'offerta con le skill richieste e la fascia di budget, che è obbligatoria e compare sulla card.",
+      title: "L'azienda e la prima offerta",
+      body: "Inserisci nome, Partita IVA e logo, e dichiari che i dati sono veri. Poi pubblichi un'offerta con le skill che cerchi e una fascia di budget. Senza budget l'offerta non si pubblica.",
     },
     {
       label: "Swipe",
-      title: "Scopri talenti, non curriculum",
-      body: "Scorri profili con skill, tariffa e bio in una card. Swipe a destra per segnalare interesse. Intanto i professionisti compatibili si candidano alle tue offerte.",
+      title: "Swipe sui profili",
+      body: "Ogni card mostra skill, tariffa e una breve bio, quanto basta per capire se vale una call. Destra se ti interessa. Nel frattempo chi ha le skill giuste si candida alle tue offerte.",
     },
     {
       label: "Match",
-      title: "Accetta chi ti convince",
-      body: "Trovi i candidati di ogni offerta in un'unica lista: accetti o rifiuti con un clic. Se un professionista ricambia il tuo like, il match è immediato. Niente chat da gestire.",
+      title: "Accetti chi ti convince",
+      body: "Ogni offerta ha la sua lista di candidati: accetti o rifiuti. Se accetti è match, e lo stesso succede quando un professionista ricambia un tuo like. Non c'è una casella messaggi da tenere d'occhio.",
     },
     {
       label: "Call",
-      title: "Proponi gli slot, al resto pensa Skillr",
-      body: "Proponi fino a 3 orari da 30 minuti. Skillr genera il link Google Meet, oppure usi il tuo Zoom o Teams. Il professionista sceglie, e l'invito arriva nel calendario di entrambi.",
+      title: "Proponi gli orari",
+      body: "Scegli fino a 3 slot da 30 minuti. Il link Google Meet lo generiamo noi, oppure incolli quello di Zoom o Teams. Quando il candidato sceglie, l'invito arriva a entrambi.",
     },
   ],
 };
@@ -89,7 +89,7 @@ export function HowItWorks() {
             Dal profilo alla call, <span className="italic text-emerald-600">in quattro passi.</span>
           </h2>
           <p className="text-lg text-slate-500 font-medium leading-relaxed">
-            Niente candidature nel vuoto e niente inbox piene. Ogni passo porta al successivo, e una conversazione inizia solo quando entrambe le parti lo vogliono.
+            Il percorso è lo stesso per chi cerca lavoro e per chi assume, cambia solo il lato da cui lo guardi. Scegli il tuo.
           </p>
         </div>
 
@@ -245,10 +245,14 @@ function ProfilePreview() {
 function JobPostPreview() {
   return (
     <div className={mockCard}>
-      <div className="flex items-center gap-2 mb-5">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest">
-          <Check size={12} /> P.IVA registrata
-        </span>
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+          TS
+        </div>
+        <div>
+          <p className="font-bold text-slate-950 text-sm">Tech Solutions S.r.l.</p>
+          <p className="text-xs text-slate-400 font-medium">P.IVA 01234567890</p>
+        </div>
       </div>
       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Nuova offerta</p>
       <p className="text-xl font-bold text-slate-950 mb-4">Senior React Developer</p>
@@ -259,7 +263,7 @@ function JobPostPreview() {
       </div>
       <div className="rounded-2xl bg-slate-50 p-4">
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-          Fascia di budget · obbligatoria
+          Budget · obbligatorio
         </p>
         <p className="font-bold text-slate-950">€45.000 – 55.000 RAL</p>
       </div>
@@ -301,7 +305,7 @@ function JobCardPreview() {
         </div>
         <div className="rounded-2xl bg-emerald-600 text-white p-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 mb-1">
-            Budget proposto
+            Budget
           </p>
           <p className="font-bold text-lg">€300 – 400 / giorno</p>
         </div>

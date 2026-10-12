@@ -30,18 +30,18 @@ const NAV_LINKS = [
 const PILLARS = [
   {
     icon: Eye,
-    title: "Trasparenza Radicale",
-    body: "Ogni offerta mostra la sua fascia di budget, ogni profilo la sua tariffa. Sai subito se vale la pena parlarne, prima ancora dello swipe.",
+    title: "Il budget si vede",
+    body: "Ogni offerta mostra la sua fascia di budget e i professionisti indicano quanto chiedono. Se i numeri non tornano, lo scopri prima di perderci tempo.",
   },
   {
     icon: Zap,
-    title: "Doppio Opt-in",
-    body: "Il contatto si apre solo quando l'interesse è reciproco. Niente messaggi a freddo, niente inbox piene di proposte fuori target.",
+    title: "Il contatto è reciproco",
+    body: "Un'azienda ti contatta solo se anche tu hai detto sì: candidandoti, ricambiando un like o prenotando un evento.",
   },
   {
     icon: Calendar,
-    title: "Zero Chat Loop",
-    body: "Dopo il match non c'è una chat: l'azienda propone gli orari, il professionista sceglie e il link Meet è già pronto. Match → Call → Decisione.",
+    title: "Niente chat",
+    body: "L'abbiamo tolta di proposito. Dopo il match si fissa una call di 30 minuti, che di solito chiarisce più di una settimana di messaggi.",
   },
 ];
 
@@ -101,7 +101,7 @@ export default function LandingPage() {
             >
               <motion.div variants={itemUp} className="mb-10">
                 <span className="px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700 flex items-center gap-2">
-                  <Star size={12} fill="currentColor" /> Il Futuro del Recruiting
+                  <Star size={12} fill="currentColor" /> Recruiting a doppio opt-in
                 </span>
               </motion.div>
 
@@ -117,7 +117,7 @@ export default function LandingPage() {
                 variants={itemUp}
                 className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto mb-16 leading-relaxed font-medium"
               >
-                Crei il profilo con la tua tariffa, fai swipe su offerte con il budget in chiaro e, quando l&apos;interesse è reciproco, la call è già in calendario. Niente chat, niente attese.
+                Ogni offerta dice quanto paga. Fai swipe, e se l&apos;interesse è reciproco l&apos;azienda ti propone fino a tre orari per una call di 30 minuti. Senza chat in mezzo.
               </motion.p>
 
               <motion.div
@@ -144,7 +144,7 @@ export default function LandingPage() {
                   href="#come-funziona"
                   className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors"
                 >
-                  Scopri come funziona <ArrowDown size={16} />
+                  Come funziona <ArrowDown size={16} />
                 </Link>
               </motion.div>
             </motion.div>
@@ -157,7 +157,7 @@ export default function LandingPage() {
         <section className="py-32 border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-6">
             <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight mb-20 max-w-3xl">
-              Tre regole, <span className="italic text-emerald-600">nessuna eccezione.</span>
+              Tre regole <span className="italic text-emerald-600">che non cambiamo.</span>
             </h2>
             <div className="grid md:grid-cols-3 gap-16 md:gap-20">
               {PILLARS.map(({ icon: Icon, title, body }) => (
@@ -189,7 +189,7 @@ export default function LandingPage() {
               href="/onboarding"
               className="inline-flex h-16 md:h-20 items-center justify-center rounded-full bg-slate-950 px-10 md:px-16 text-lg md:text-xl font-bold text-white transition-all hover:scale-105 hover:bg-emerald-900 shadow-2xl shadow-slate-300"
             >
-              Crea il tuo profilo gratuito
+              Crea il profilo, è gratis
             </Link>
           </div>
         </section>
@@ -207,7 +207,7 @@ export default function LandingPage() {
             <Link href="/cookies" className="hover:text-slate-900 transition-colors">Cookies</Link>
           </div>
           <p className="text-sm font-medium text-slate-400">
-            © 2026 Skillr. Built with precision.
+            © 2026 Skillr
           </p>
         </div>
       </footer>
