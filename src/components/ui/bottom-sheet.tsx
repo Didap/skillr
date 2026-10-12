@@ -23,10 +23,16 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
   const dragControls = useDragControls();
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  // Parents often pass an inline onClose; keep it in a ref so a re-render while the
+  // sheet is open doesn't re-run the open effect (which would steal focus back).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCloseRef.current();
     document.addEventListener("keydown", onKey);
     // Lock the page behind the sheet
     const prevOverflow = document.body.style.overflow;
@@ -38,7 +44,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
       document.body.style.overflow = prevOverflow;
       previouslyFocused?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) onClose();
