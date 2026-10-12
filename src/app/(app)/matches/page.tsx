@@ -12,7 +12,8 @@ import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { duration, ease } from "@/lib/motion";
-import { MyApplications } from "@/components/matches/MyApplications";
+import { MyApplications, type MyApplicationsResult } from "@/components/matches/MyApplications";
+import { formatEventDayShort, formatEventTime } from "@/lib/rome-time";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 interface MatchSummary {
@@ -39,9 +40,7 @@ function getCallStatus(match: MatchSummary, role: string | undefined, now: Date)
   if (match.scheduledAt) {
     const when = new Date(match.scheduledAt);
     if (when > now) {
-      const date = when.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-      const time = when.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-      return { label: `Call il ${date} alle ${time}`, tone: "scheduled" };
+      return { label: `Call il ${formatEventDayShort(when)} alle ${formatEventTime(when)}`, tone: "scheduled" };
     }
     return match.hasReviewed
       ? { label: "Completato", tone: "done" }
@@ -75,6 +74,7 @@ export default function MatchesPage() {
   const role = session?.user?.role ?? undefined;
   const router = useRouter();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
+  const [applications, setApplications] = useState<MyApplicationsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -87,10 +87,12 @@ export default function MatchesPage() {
   useEffect(() => {
     async function loadMatches() {
       if (status === "authenticated") {
+        // Matches and (for professionals) applications arrive in one call
         const res = await getMatches();
         if (res.success) {
-           setMatches(res.data as MatchSummary[] || []);
+           setMatches(res.data);
         }
+        if ("applications" in res && res.applications) setApplications(res.applications);
         setLoading(false);
       }
     }
@@ -211,7 +213,7 @@ export default function MatchesPage() {
                             </span>
                             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
                               <Calendar size={12} className="text-emerald-500" aria-hidden="true" />
-                              Match del {match.matchedAt ? new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '—'}
+                              Match del {match.matchedAt ? formatEventDayShort(match.matchedAt) : '—'}
                               {match.targetReviewCount > 0 && (
                                 <>
                                   <span className="w-1 h-1 bg-slate-200 rounded-full" aria-hidden="true" />
@@ -268,7 +270,7 @@ export default function MatchesPage() {
             </aside>
           )}
 
-          {role === "professional" && <MyApplications />}
+          {role === "professional" && applications && <MyApplications result={applications} />}
         </main>
       </div>
     </div>

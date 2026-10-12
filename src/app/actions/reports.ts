@@ -3,18 +3,17 @@
 import { db } from "@/db";
 import { users, matches, interviewBookings, reviews } from "@/db/schema";
 import { and, gte, lte, eq, ne } from "drizzle-orm";
-import { auth } from "@/auth";
 import { publicUserColumns } from "@/db/safe-columns";
+import { requireUser } from "@/lib/auth-guard";
 
 /**
  * Generates a CSV report for PA reporting.
  * Includes data on professionals (NEETs), matches, and interview outcomes.
  */
 export async function generateKpiReportAction(startDate: Date, endDate: Date) {
-  const session = await auth();
-
   // The report contains personal data of every professional: PA admins only.
-  if (session?.user?.role !== "pa_admin") {
+  const user = await requireUser("pa_admin");
+  if ("error" in user) {
     return { success: false as const, error: "Solo gli amministratori PA possono generare il report." };
   }
 

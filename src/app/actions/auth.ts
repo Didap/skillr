@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { verifyTurnstile } from "@/auth";
 import { sendEmail } from "@/lib/mail";
+import { appUrl } from "@/lib/app-url";
+import { AlreadyRegisteredEmail } from "@/emails/AlreadyRegisteredEmail";
 import { generateVerificationCode } from "./verification";
 
 type RegisterResult =
@@ -20,21 +22,11 @@ const SEND_FAILED: RegisterResult = {
 // Sent instead of a code when someone signs up with an email that already has a verified
 // account: the owner learns about it, the person filling the form learns nothing.
 async function sendAlreadyRegisteredNotice(email: string) {
-  const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL;
-  const loginLink = baseUrl
-    ? `<a href="${baseUrl}/login" style="color: #10b981; font-weight: 700;">accedi qui</a>`
-    : "accedi dalla pagina di login";
-
+  const loginUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL ? appUrl("/login") : undefined;
   return sendEmail({
     to: email,
     subject: "Hai già un account Skillr",
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 24px;">
-        <h2 style="color: #020617; font-style: italic; font-weight: 800; font-size: 24px; margin-bottom: 24px;">Hai già un account Skillr</h2>
-        <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">Qualcuno ha provato a registrarsi su Skillr con questo indirizzo email, ma esiste già un account. Se eri tu, ${loginLink}: se non ricordi la password puoi usare il Magic Link.</p>
-        <p style="color: #94a3b8; font-size: 12px; font-style: italic;">Se non sei stato tu, ignora questa email: il tuo account non è stato modificato.</p>
-      </div>
-    `,
+    react: AlreadyRegisteredEmail({ loginUrl }),
   });
 }
 

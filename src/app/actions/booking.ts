@@ -1,17 +1,22 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { matches, proposedSlots } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, isNotNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { sendEmail } from "@/lib/mail";
+import { sendEmail, sendInBackground } from "@/lib/mail";
 import { BookingEmail } from "@/emails/BookingEmail";
 import { ConfirmationEmail } from "@/emails/ConfirmationEmail";
 import { createMeetEvent, deleteMeetEvent, isGoogleCalendarConfigured } from "@/lib/google-calendar";
-import { generateIcsString, CALL_DURATION_MINUTES, CALL_DURATION_MS } from "@/lib/calendar-utils";
+import { generateIcsString, CALL_DURATION_MINUTES, CALL_DURATION_MS, smartEventEnd } from "@/lib/calendar-utils";
 import { formatRomeDate, normalizeMeetingUrl } from "@/lib/rome-time";
-import { publicUserColumns } from "@/db/safe-columns";
+import { companyWithProfile, professionalWithProfile } from "@/db/safe-columns";
+import { requireUser } from "@/lib/auth-guard";
+import { appUrl } from "@/lib/app-url";
+import { companyDisplayName, professionalDisplayName } from "@/lib/display-name";
+
+// Both sides of a match, with the profiles that hold their display names.
+const matchParties = { professional: professionalWithProfile, company: companyWithProfile } as const;
 
 // Clock skew tolerated between the browser that built the slot and the server.
 const CLOCK_SKEW_MS = 60_000;
@@ -20,8 +25,8 @@ const MAX_SLOTS = 3;
 class BookingConflictError extends Error {}
 
 export async function proposeSlots(matchId: string, slots: { startTime: Date, endTime: Date }[], meetingLink?: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') return { error: "Non autorizzato" };
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
 
   // 1. Validate the slots: 1..3, in the future, 30 minutes each, no duplicates
   if (!Array.isArray(slots) || slots.length === 0) return { error: "Proponi almeno uno slot" };
@@ -52,19 +57,16 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
 
   try {
     const match = await db.query.matches.findFirst({
-      where: and(eq(matches.id, matchId), eq(matches.companyId, session.user.id)),
-      with: {
-        professional: { columns: publicUserColumns, with: { professionalProfile: true } },
-        company: { columns: publicUserColumns, with: { companyProfile: true } }
-      }
+      where: and(eq(matches.id, matchId), eq(matches.companyId, user.id)),
+      with: matchParties,
     });
 
     if (!match) return { error: "Match non trovato" };
     if (match.companyStatus !== 'liked' || match.professionalStatus !== 'liked') return { error: "Il match non è ancora reciproco" };
     if (match.scheduledAt) return { error: "L'incontro è già stato confermato" };
 
-    const profName = `${match.professional.professionalProfile?.firstName || ''} ${match.professional.professionalProfile?.lastName || ''}`.trim() || match.professional.name || "Professionista";
-    const compName = match.company.companyProfile?.companyName || match.company.name || "Azienda";
+    const profName = professionalDisplayName(match.professional);
+    const compName = companyDisplayName(match.company);
 
     // The Meet event is created only when the professional confirms a slot (confirmSlot):
     // here we just store the slots, plus the link when the company brought its own.
@@ -90,22 +92,24 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
       );
     });
 
-    // Events created at proposal time by the previous flow are no longer valid.
-    if (match.googleEventId) {
-      await deleteMeetEvent(match.googleEventId);
+    // After the response: drop the Meet event created at proposal time by the previous flow
+    // (no longer valid) and send the Booking Email to the professional.
+    const previousEventId = match.googleEventId;
+    if (previousEventId) {
+      sendInBackground(`old Meet event cleanup, match ${matchId}`, [() => deleteMeetEvent(previousEventId)]);
     }
-
-    // Send Booking Email to professional
-    await sendEmail({
-      to: match.professional.email,
-      subject: `Proposta colloquio da ${compName}`,
-      react: BookingEmail({
-        userName: profName,
-        companyName: compName,
-        companyLogo: match.company.companyProfile?.logoUrl || undefined,
-        bookingUrl: `${process.env.NEXTAUTH_URL}/matches/${matchId}`,
-      })
-    });
+    sendInBackground(`slot proposal, match ${matchId}`, [
+      () => sendEmail({
+        to: match.professional.email,
+        subject: `Proposta colloquio da ${compName}`,
+        react: BookingEmail({
+          userName: profName,
+          companyName: compName,
+          companyLogo: match.company.companyProfile?.logoUrl || undefined,
+          bookingUrl: appUrl(`/matches/${matchId}`),
+        })
+      }),
+    ]);
 
     revalidatePath(`/matches/${matchId}`);
     return { success: true };
@@ -117,24 +121,20 @@ export async function proposeSlots(matchId: string, slots: { startTime: Date, en
 }
 
 export async function confirmSlot(slotId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'professional') return { error: "Non autorizzato" };
+  const user = await requireUser("professional");
+  if ("error" in user) return { error: user.error };
 
   try {
     const slot = await db.query.proposedSlots.findFirst({
       where: eq(proposedSlots.id, slotId),
       with: {
         match: {
-          with: {
-            professional: { columns: publicUserColumns, with: { professionalProfile: true } },
-            company: { columns: publicUserColumns, with: { companyProfile: true } },
-            proposedSlots: true,
-          }
+          with: { ...matchParties, proposedSlots: true },
         }
       }
     });
 
-    if (!slot || slot.match.professionalId !== session.user.id) {
+    if (!slot || slot.match.professionalId !== user.id) {
       return { error: "Slot non trovato o non autorizzato" };
     }
     if (slot.match.scheduledAt || slot.match.proposedSlots.some(s => s.isAccepted)) {
@@ -144,8 +144,8 @@ export async function confirmSlot(slotId: string) {
       return { error: "Questo orario è già passato. Scegline un altro o attendi una nuova proposta." };
     }
 
-    const profName = `${slot.match.professional.professionalProfile?.firstName || ''} ${slot.match.professional.professionalProfile?.lastName || ''}`.trim() || slot.match.professional.name || "Professionista";
-    const compName = slot.match.company.companyProfile?.companyName || slot.match.company.name || "Azienda";
+    const profName = professionalDisplayName(slot.match.professional);
+    const compName = companyDisplayName(slot.match.company);
 
     // 1. Determine Meeting Method. No stored link means the company chose Google Meet;
     // a stored googleEventId comes from the old flow that created the event at proposal time.
@@ -203,9 +203,9 @@ export async function confirmSlot(slotId: string) {
       throw error;
     }
 
-    // The new event exists: only now drop the one created by the old flow.
+    // The new event exists: only now drop the one created by the old flow (after the response).
     if (previousEventId) {
-      await deleteMeetEvent(previousEventId);
+      sendInBackground(`old Meet event cleanup, match ${slot.match.id}`, [() => deleteMeetEvent(previousEventId)]);
     }
 
     // 3. Send Confirmation Emails
@@ -227,8 +227,8 @@ export async function confirmSlot(slotId: string) {
       content: Buffer.from(icsContent)
     }];
 
-    await Promise.all([
-      sendEmail({
+    sendInBackground(`call confirmed, match ${slot.match.id}`, [
+      () => sendEmail({
         to: slot.match.professional.email,
         subject: "Colloquio confermato!",
         react: ConfirmationEmail({
@@ -239,7 +239,7 @@ export async function confirmSlot(slotId: string) {
         }),
         attachments
       }),
-      sendEmail({
+      () => sendEmail({
         to: slot.match.company.email,
         subject: "Colloquio confermato!",
         react: ConfirmationEmail({
@@ -261,31 +261,28 @@ export async function confirmSlot(slotId: string) {
 }
 
 export async function getCalendarEventsAction() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
-  const userId = session.user.id;
-  const role = session.user.role;
+  const userId = user.id;
+  const role = user.role;
 
   try {
-    // 1. Fetch Matches (1-to-1 interviews)
+    // 1. Fetch Matches (1-to-1 interviews): only confirmed calls make it to the calendar
+    const scheduled = and(eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked'), isNotNull(matches.scheduledAt));
     const userMatches = await db.query.matches.findMany({
-      where: role === 'company' 
-        ? and(eq(matches.companyId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked'))
-        : and(eq(matches.professionalId, userId), eq(matches.companyStatus, 'liked'), eq(matches.professionalStatus, 'liked')),
-      with: {
-        professional: { columns: publicUserColumns, with: { professionalProfile: true } },
-        company: { columns: publicUserColumns, with: { companyProfile: true } }
-      }
+      where: role === 'company'
+        ? and(eq(matches.companyId, userId), scheduled)
+        : and(eq(matches.professionalId, userId), scheduled),
+      with: matchParties,
     });
 
     const scheduledMatches = userMatches
-      .filter(m => m.scheduledAt)
       .map(m => {
-        const targetName = role === 'company' 
-          ? `${m.professional.professionalProfile?.firstName || ''} ${m.professional.professionalProfile?.lastName || ''}`.trim() || m.professional.name
-          : m.company.companyProfile?.companyName || m.company.name;
-        
+        const targetName = role === 'company'
+          ? professionalDisplayName(m.professional)
+          : companyDisplayName(m.company);
+
         return {
           id: m.id,
           title: `Intervista con ${targetName}`,
@@ -309,7 +306,7 @@ export async function getCalendarEventsAction() {
         title: e.title,
         start: e.date,
         // Events created before end times were saved fall back to one hour
-        end: e.endTime ?? new Date(new Date(e.date).getTime() + 60 * 60000),
+        end: smartEventEnd(e),
         type: 'smart' as const,
         link: e.meetingLink,
         description: e.description || "Sessione Smart Interview",
@@ -321,9 +318,7 @@ export async function getCalendarEventsAction() {
         where: (bookings, { eq, and }) => and(eq(bookings.professionalId, userId), eq(bookings.status, 'booked')),
         with: {
           event: {
-            with: {
-              company: { columns: publicUserColumns, with: { companyProfile: true } }
-            }
+            with: { company: companyWithProfile }
           }
         }
       });
@@ -331,10 +326,10 @@ export async function getCalendarEventsAction() {
         id: b.event.id,
         title: b.event.title,
         start: b.event.date,
-        end: b.event.endTime ?? new Date(new Date(b.event.date).getTime() + 60 * 60000),
+        end: smartEventEnd(b.event),
         type: 'smart' as const,
         link: b.event.meetingLink,
-        description: b.event.description || `Ospitato da ${b.event.company.companyProfile?.companyName || b.event.company.name}`,
+        description: b.event.description || `Ospitato da ${companyDisplayName(b.event.company)}`,
         image: b.event.company.companyProfile?.logoUrl
       }));
     }

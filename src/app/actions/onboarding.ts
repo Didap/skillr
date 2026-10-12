@@ -1,11 +1,11 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { users, professionalProfiles, companyProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { validateItalianVAT } from "@/lib/vat";
+import { requireUser } from "@/lib/auth-guard";
 
 export interface OnboardingData {
   role: "professional" | "company";
@@ -50,12 +50,12 @@ function validate(data: OnboardingData): string | null {
 }
 
 export async function completeOnboardingAction(data: OnboardingData) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await requireUser();
+  if ("error" in user) {
     return { error: "Non autorizzato. Effettua il login." };
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
   const { role } = data;
 
   if (role !== "professional" && role !== "company") {

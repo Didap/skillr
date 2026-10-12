@@ -1,21 +1,21 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, companyProfiles, skills as skillsTable } from "@/db/schema";
+import { users, professionalProfiles, companyProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { publicUserColumns } from "@/db/safe-columns";
 import { normalizeSkills } from "@/lib/skill-slugs";
+import { getSkillCatalog } from "@/lib/skill-catalog";
+import { requireUser } from "@/lib/auth-guard";
+import { professionalDisplayName } from "@/lib/display-name";
 
 export async function updateUserImageAction(url: string) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Non autorizzato" };
-  }
+  const authUser = await requireUser();
+  if ("error" in authUser) return { error: authUser.error };
 
-  const userId = session.user.id;
-  const role = session.user.role;
+  const userId = authUser.id;
+  const role = authUser.role;
 
   try {
     // Update main user table
@@ -44,12 +44,10 @@ export async function updateUserImageAction(url: string) {
 }
 
 export async function getUserSettingsAction() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Non autorizzato" };
-  }
+  const authUser = await requireUser();
+  if ("error" in authUser) return { error: authUser.error };
 
-  const userId = session.user.id;
+  const userId = authUser.id;
   
   try {
     const user = await db.query.users.findFirst({
@@ -63,13 +61,11 @@ export async function getUserSettingsAction() {
 
     if (!user) return { error: "Utente non trovato" };
 
-    // Credentials users have users.name NULL: for professionals the name lives on the profile.
-    const profileName = `${user.professionalProfile?.firstName || ""} ${user.professionalProfile?.lastName || ""}`.trim();
-
     return {
       success: true,
       data: {
-        name: (user.role === "professional" ? profileName : "") || user.name || "",
+        // Credentials users have users.name NULL: for professionals the name lives on the profile.
+        name: user.role === "professional" ? professionalDisplayName(user, "") : user.name || "",
         email: user.email,
         image: user.image || "",
         role: user.role,
@@ -101,13 +97,11 @@ export async function updateUserSettingsAction(data: {
   companyName?: string;
   skills?: string[];
 }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Non autorizzato" };
-  }
+  const authUser = await requireUser();
+  if ("error" in authUser) return { error: authUser.error };
 
-  const userId = session.user.id;
-  const role = session.user.role;
+  const userId = authUser.id;
+  const role = authUser.role;
 
   try {
     // An empty name field never overwrites a stored name.
@@ -129,8 +123,7 @@ export async function updateUserSettingsAction(data: {
       // Stored as slugs, like onboarding and jobs (discovery overlaps slug arrays).
       // Catalog labels map to their slug, free text is slugified the same way.
       if (data.skills) {
-        const catalog = await db.select({ slug: skillsTable.slug, label: skillsTable.label }).from(skillsTable);
-        savedSkills = normalizeSkills(data.skills, catalog);
+        savedSkills = normalizeSkills(data.skills, await getSkillCatalog());
       }
 
       await db.update(professionalProfiles)

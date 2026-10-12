@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
 export const rateTypeEnum = pgEnum('rate_type', ['ral_annual', 'daily', 'hourly']);
@@ -137,6 +137,8 @@ export const jobApplications = pgTable("job_applications", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [
   unique("job_applications_job_professional_unique").on(t.jobId, t.professionalId),
+  // The feed and "my applications" look rows up by professional alone
+  index("job_applications_professional_idx").on(t.professionalId),
 ]);
 
 export const matches = pgTable("matches", {
@@ -154,8 +156,12 @@ export const matches = pgTable("matches", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (t) => [
-  // One row per pair and job; swipe rows have a null job_id, so NULLs must count as equal.
-  unique("matches_pair_job_unique").on(t.professionalId, t.companyId, t.jobId).nullsNotDistinct(),
+  // One row per pair and job (accepted applications)
+  unique("matches_pair_job_unique").on(t.professionalId, t.companyId, t.jobId),
+  // Swipe rows have no job: one per pair. A plain unique key treats NULL job_ids as
+  // distinct, and drizzle-kit can't introspect NULLS NOT DISTINCT (every push would try
+  // to recreate the constraint), hence a partial index.
+  uniqueIndex("matches_pair_swipe_unique").on(t.professionalId, t.companyId).where(sql`${t.jobId} is null`),
 ]);
 
 export const proposedSlots = pgTable("proposed_slots", {
@@ -265,8 +271,12 @@ export const reviews = pgTable("reviews", {
   text: text("text"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [
-  unique("reviews_author_match_unique").on(t.authorId, t.matchId),
-  unique("reviews_author_booking_unique").on(t.authorId, t.interviewBookingId),
+  // Columns in table order: drizzle-kit introspects unique keys that way, and any other
+  // order makes every db:push drop and recreate the constraint
+  unique("reviews_author_match_unique").on(t.matchId, t.authorId),
+  unique("reviews_author_booking_unique").on(t.interviewBookingId, t.authorId),
+  // Rating aggregates are recomputed per target after every review.
+  index("reviews_target_idx").on(t.targetId),
 ]);
 
 // RELATIONS

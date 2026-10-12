@@ -1,17 +1,15 @@
 "use server";
 
 import { cloudinary } from "@/lib/cloudinary";
-import { auth } from "@/auth";
+import { requireUser } from "@/lib/auth-guard";
 
 /**
  * Uploads any file to Cloudinary (PDF, Image, etc.)
  * Suitable for CVs and Portfolios.
  */
 export async function uploadFileAction(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Non autorizzato" };
-  }
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   const file = formData.get("file") as File;
   if (!file) {
@@ -38,7 +36,7 @@ export async function uploadFileAction(formData: FormData) {
       cloudinary.uploader.upload_stream(
         {
           folder: "skillr/documents",
-          public_id: `doc_${session.user.id}_${Date.now()}`,
+          public_id: `doc_${user.id}_${Date.now()}`,
           resource_type: "auto", // Automatically detect file type (pdf, image, etc.)
         },
         (error, res) => {

@@ -1,19 +1,20 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
-import { interviewEvents, interviewBookings, companyProfiles } from "@/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { interviewEvents, interviewBookings, users } from "@/db/schema";
+import { eq, and, count, sql, type AnyColumn } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { InterviewEvent } from "@/types/interview";
-import { sendEmail } from "@/lib/mail";
+import { sendEmail, sendInBackground } from "@/lib/mail";
 import { InterviewLinkEmail } from "@/emails/InterviewLinkEmail";
 import { InterviewEventChangeEmail } from "@/emails/InterviewEventChangeEmail";
-import { formatEventDateTime, isSafeHttpUrl } from "@/lib/rome-time";
+import { formatEventDateTime, isSafeHttpUrl, normalizeMeetingUrl } from "@/lib/rome-time";
 import React from "react";
 import crypto from "crypto";
-import { publicUserColumns } from "@/db/safe-columns";
+import { requireUser } from "@/lib/auth-guard";
+import { appUrl } from "@/lib/app-url";
+import { companyDisplayName, professionalDisplayName } from "@/lib/display-name";
+import { isUniqueViolation } from "@/db/errors";
 
 type EventInput = Partial<Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">>;
 type EventRow = typeof interviewEvents.$inferSelect;
@@ -21,17 +22,15 @@ type EventValues = Partial<typeof interviewEvents.$inferInsert>;
 
 // Only active bookings take a seat: cancelled ones stay in the table (unique on event +
 // professional) and are re-activated if the professional books again.
-const bookedOnly = {
-  where: eq(interviewBookings.status, "booked"),
-  columns: { professionalId: true },
+const activeBooking = eq(interviewBookings.status, "booked");
+
+// The company fields an event card shows.
+const companyCard = {
+  columns: { name: true, image: true },
+  with: { companyProfile: { columns: { companyName: true, logoUrl: true, description: true, websiteUrl: true } } },
 } as const;
 
-const companyWithProfile = {
-  columns: publicUserColumns,
-  with: { companyProfile: true },
-} as const;
-
-type CompanyWithProfile = {
+type CompanyCard = {
   name: string | null;
   image: string | null;
   companyProfile: {
@@ -40,12 +39,34 @@ type CompanyWithProfile = {
     description: string | null;
     websiteUrl: string | null;
   } | null;
-} | null;
+};
+
+/**
+ * Computed columns for event queries: the seats taken (counted in SQL, no booking rows are
+ * loaded) and whether the viewer holds one of them.
+ */
+function eventExtras(viewerId?: string) {
+  return (events: { id: AnyColumn }) => ({
+    bookingCount: sql<number>`${db
+      .select({ n: count() })
+      .from(interviewBookings)
+      .where(and(eq(interviewBookings.eventId, events.id), activeBooking))}`
+      .mapWith(Number)
+      .as("booking_count"),
+    isBooked: (viewerId
+      ? sql<boolean>`exists ${db
+          .select({ id: interviewBookings.id })
+          .from(interviewBookings)
+          .where(and(eq(interviewBookings.eventId, events.id), activeBooking, eq(interviewBookings.professionalId, viewerId)))}`
+      : sql<boolean>`false`
+    ).as("is_booked"),
+  });
+}
 
 // Shape sent to the client. The meeting link is only for the organizer and for booked
 // professionals; the booking rows themselves (who booked) never leave the server.
 function presentEvent(
-  event: EventRow & { bookings: { professionalId: string }[]; company?: CompanyWithProfile },
+  event: EventRow & { bookingCount: number; company?: CompanyCard },
   includeMeetingLink: boolean
 ) {
   const profile = event.company?.companyProfile;
@@ -65,12 +86,23 @@ function presentEvent(
     format: event.format,
     meetingLink: includeMeetingLink ? event.meetingLink : null,
     createdAt: event.createdAt,
-    bookingCount: event.bookings.length,
-    companyName: profile?.companyName || event.company?.name || "Azienda Partner",
+    bookingCount: event.bookingCount,
+    companyName: event.company ? companyDisplayName(event.company, "Azienda Partner") : "Azienda Partner",
     companyImage: profile?.logoUrl || event.company?.image || null,
     companyDescription: profile?.description || null,
     companyWebsite: isSafeHttpUrl(profile?.websiteUrl) ? profile.websiteUrl : null,
   };
+}
+
+// Upcoming events, soonest first (the public list, the landing teaser and the professional's list).
+function findUpcomingEvents({ viewerId, limit }: { viewerId?: string; limit?: number } = {}) {
+  return db.query.interviewEvents.findMany({
+    where: (events, { gte }) => gte(events.date, new Date()),
+    extras: eventExtras(viewerId),
+    with: { company: companyCard },
+    orderBy: (events, { asc }) => [asc(events.date)],
+    limit,
+  });
 }
 
 // Validates and normalizes form input. With `partial`, missing keys are left untouched.
@@ -103,8 +135,9 @@ function normalizeEventInput(data: EventInput, partial: boolean): { error: strin
     values.maxSlots = slots;
   }
   if (has("meetingLink")) {
-    const link = text(data.meetingLink);
-    if (link && !isSafeHttpUrl(link)) return { error: "Il link del meeting deve iniziare con https:// o http://." };
+    const raw = text(data.meetingLink);
+    const link = raw ? normalizeMeetingUrl(raw) : null;
+    if (raw && !link) return { error: "Il link del meeting deve iniziare con https:// o http://." };
     values.meetingLink = link;
   }
   if (has("description")) values.description = text(data.description);
@@ -121,27 +154,35 @@ function normalizeEventInput(data: EventInput, partial: boolean): { error: strin
   return { values };
 }
 
-async function getCompanyDisplayName(companyId: string, fallback?: string | null) {
-  const profile = await db.query.companyProfiles.findFirst({
-    where: eq(companyProfiles.userId, companyId),
-    columns: { companyName: true },
+async function getCompanyDisplayName(companyId: string) {
+  const company = await db.query.users.findFirst({
+    where: eq(users.id, companyId),
+    columns: { name: true },
+    with: { companyProfile: { columns: { companyName: true } } },
   });
-  return profile?.companyName?.trim() || fallback?.trim() || "Azienda Partner";
+  return company ? companyDisplayName(company, "Azienda Partner") : "Azienda Partner";
 }
 
-// Sends emails after the response is sent. A failed email is logged and never fails the action.
-function sendInBackground(label: string, sends: (() => Promise<{ success: boolean }>)[]) {
-  if (sends.length === 0) return;
-  const run = async () => {
-    const results = await Promise.allSettled(sends.map((send) => send()));
-    const failures = results.filter((r) => r.status === "rejected" || !r.value.success).length;
-    if (failures > 0) console.error(`${failures}/${sends.length} emails failed to send (${label})`);
-  };
-  try {
-    after(run);
-  } catch {
-    void run();
-  }
+// Professionals with an active booking on the event, i.e. who to notify about it.
+function bookedProfessionals(eventId: string, tx: { query: typeof db.query } = db) {
+  return tx.query.interviewBookings.findMany({
+    where: and(eq(interviewBookings.eventId, eventId), activeBooking),
+    columns: { id: true },
+    with: { professional: { columns: { name: true, email: true } } },
+  });
+}
+
+type BookedProfessional = Awaited<ReturnType<typeof bookedProfessionals>>[number]["professional"];
+
+// One email per booked professional, sent after the response.
+function notifyBooked(
+  label: string,
+  bookings: { professional: BookedProfessional }[],
+  email: (professional: BookedProfessional) => { subject: string; react: React.ReactElement }
+) {
+  sendInBackground(label, bookings
+    .filter(booking => booking.professional?.email)
+    .map(({ professional }) => () => sendEmail({ to: professional.email, ...email(professional) })));
 }
 
 // Drizzle wraps driver errors (DrizzleQueryError), the Postgres code is on `cause`
@@ -150,14 +191,10 @@ function pgErrorCode(error: unknown): string | undefined {
   return err?.code ?? err?.cause?.code;
 }
 
-function eventUrl(eventId: string) {
-  return process.env.NEXTAUTH_URL ? `${process.env.NEXTAUTH_URL}/dashboard/events/${eventId}` : undefined;
-}
-
 export async function createInterviewEventAction(data: Omit<InterviewEvent, "id" | "companyId" | "createdAt" | "bookingCount">) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') {
-    console.error("AUTH_FAILURE: User not logged in or not a company", session?.user);
+  const user = await requireUser("company");
+  if ("error" in user) {
+    console.error("AUTH_FAILURE: User not logged in or not a company");
     return { error: "Sessione non valida o permessi insufficienti." };
   }
 
@@ -179,7 +216,7 @@ export async function createInterviewEventAction(data: Omit<InterviewEvent, "id"
       .values({
         ...values,
         id: crypto.randomUUID(),
-        companyId: session.user.id,
+        companyId: user.id,
         title: values.title!,
         date: values.date,
         maxSlots: values.maxSlots!,
@@ -204,7 +241,7 @@ export async function createInterviewEventAction(data: Omit<InterviewEvent, "id"
     });
 
     // Friendly error mapping
-    if (code === '23505') return { error: "Esiste già un evento con questo ID." };
+    if (isUniqueViolation(error)) return { error: "Esiste già un evento con questo ID." };
     if (code === '23503') return { error: "Errore di riferimento: utente non trovato nel database." };
     if (code === '23502') return { error: "Errore: mancano dati obbligatori richiesti dal database." };
     if (code === '42P01') return { error: "Configurazione errata: tabella eventi non trovata." };
@@ -214,15 +251,13 @@ export async function createInterviewEventAction(data: Omit<InterviewEvent, "id"
 }
 
 export async function getCompanyEvents() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     const results = await db.query.interviewEvents.findMany({
-      where: (events, { eq }) => eq(events.companyId, session.user.id),
-      with: {
-        bookings: bookedOnly
-      },
+      where: (events, { eq }) => eq(events.companyId, user.id),
+      extras: eventExtras(),
       orderBy: (events, { desc }) => [desc(events.date)],
     });
 
@@ -236,13 +271,11 @@ export async function getCompanyEvents() {
 }
 
 export async function updateMeetingLinkAction(eventId: string, meetingLink: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') {
-    return { error: "Non autorizzato" };
-  }
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
 
-  const link = meetingLink?.trim();
-  if (!isSafeHttpUrl(link)) {
+  const link = normalizeMeetingUrl(meetingLink ?? "");
+  if (!link) {
     return { error: "Inserisci un link valido che inizi con https:// o http://." };
   }
 
@@ -250,42 +283,34 @@ export async function updateMeetingLinkAction(eventId: string, meetingLink: stri
     // 1. Update the link and fetch event info
     const [updatedEvent] = await db.update(interviewEvents)
       .set({ meetingLink: link })
-      .where(and(eq(interviewEvents.id, eventId), eq(interviewEvents.companyId, session.user.id)))
+      .where(and(eq(interviewEvents.id, eventId), eq(interviewEvents.companyId, user.id)))
       .returning();
 
     if (!updatedEvent) {
       return { error: "Evento non trovato" };
     }
 
-    // 2. Fetch the professionals still booked
-    const bookings = await db.query.interviewBookings.findMany({
-      where: and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")),
-      with: {
-        professional: { columns: publicUserColumns },
-      }
-    });
-
-    // 3. Fan-out notifications (Transactional Emails)
-    const companyName = await getCompanyDisplayName(session.user.id, session.user.name);
+    // 2. Fetch the professionals still booked, 3. fan-out notifications (Transactional Emails)
+    const [bookings, companyName] = await Promise.all([
+      bookedProfessionals(eventId),
+      getCompanyDisplayName(user.id),
+    ]);
     const eventDateStr = formatEventDateTime(updatedEvent.date);
 
-    sendInBackground(`meeting link, event ${eventId}`, bookings
-      .filter(booking => booking.professional?.email)
-      .map(booking => () => sendEmail({
-        to: booking.professional.email,
-        subject: `Link Meeting Disponibile: ${updatedEvent.title}`,
-        react: React.createElement(InterviewLinkEmail, {
-          userName: booking.professional.name || "Professionista",
-          eventTitle: updatedEvent.title,
-          companyName,
-          meetingLink: link,
-          eventDate: eventDateStr,
-        }) as React.ReactElement
-      })));
+    notifyBooked(`meeting link, event ${eventId}`, bookings, professional => ({
+      subject: `Link Meeting Disponibile: ${updatedEvent.title}`,
+      react: React.createElement(InterviewLinkEmail, {
+        userName: professionalDisplayName(professional),
+        eventTitle: updatedEvent.title,
+        companyName,
+        meetingLink: link,
+        eventDate: eventDateStr,
+      }) as React.ReactElement
+    }));
 
     revalidatePath("/dashboard/events");
     revalidatePath(`/dashboard/events/${eventId}`);
-    return { success: true };
+    return { success: true, meetingLink: link };
   } catch (error) {
     console.error("Error updating meeting link and notifying candidates:", error);
     return { error: "Errore durante l'aggiornamento del link" };
@@ -294,20 +319,20 @@ export async function updateMeetingLinkAction(eventId: string, meetingLink: stri
 
 export async function getEventByIdAction(eventId: string) {
   try {
-    const session = await auth();
+    // Public page: the viewer is optional
+    const viewer = await requireUser();
+    const viewerId = "error" in viewer ? undefined : viewer.id;
+
     const event = await db.query.interviewEvents.findFirst({
       where: eq(interviewEvents.id, eventId),
-      with: {
-        company: companyWithProfile,
-        bookings: bookedOnly
-      }
+      extras: eventExtras(viewerId),
+      with: { company: companyCard },
     });
 
     if (!event) return { error: "Evento non trovato" };
 
-    const viewerId = session?.user?.id;
     const isOwner = !!viewerId && viewerId === event.companyId;
-    const isBooked = !!viewerId && event.bookings.some(b => b.professionalId === viewerId);
+    const isBooked = !!viewerId && event.isBooked;
 
     return {
       success: true,
@@ -324,17 +349,10 @@ export async function getEventByIdAction(eventId: string) {
   }
 }
 
-export async function getPublicEventsAction() {
+/** Upcoming events for everyone; `limit` caps the list (the landing page shows a few). */
+export async function getPublicEventsAction({ limit }: { limit?: number } = {}) {
   try {
-    const results = await db.query.interviewEvents.findMany({
-      where: (events, { gte }) => gte(events.date, new Date()),
-      with: {
-        company: companyWithProfile,
-        bookings: bookedOnly
-      },
-      orderBy: (events, { asc }) => [asc(events.date)],
-    });
-
+    const results = await findUpcomingEvents({ limit });
     const data = results.map(event => presentEvent(event, false));
 
     return { success: true, data };
@@ -345,32 +363,30 @@ export async function getPublicEventsAction() {
 }
 
 export async function getEventParticipantsAction(eventId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') {
-    return { error: "Non autorizzato" };
-  }
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
 
   try {
-    // Only the organizer can see who booked
+    // Only the organizer can see who booked: ownership is part of the query
     const event = await db.query.interviewEvents.findFirst({
-      where: and(eq(interviewEvents.id, eventId), eq(interviewEvents.companyId, session.user.id)),
+      where: and(eq(interviewEvents.id, eventId), eq(interviewEvents.companyId, user.id)),
       columns: { id: true },
+      with: {
+        bookings: {
+          where: activeBooking,
+          columns: { id: true },
+          with: {
+            professional: {
+              columns: { id: true, name: true, email: true, image: true },
+              with: { professionalProfile: { columns: { title: true, photoUrl: true } } },
+            },
+          },
+        },
+      },
     });
     if (!event) return { error: "Evento non trovato o non sei l'organizzatore." };
 
-    const bookings = await db.query.interviewBookings.findMany({
-      where: and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")),
-      with: {
-        professional: {
-          columns: publicUserColumns,
-          with: {
-            professionalProfile: true
-          }
-        }
-      }
-    });
-
-    const participants = bookings.map(b => ({
+    const participants = event.bookings.map(b => ({
       id: b.professional.id,
       name: b.professional.name,
       email: b.professional.email,
@@ -387,22 +403,15 @@ export async function getEventParticipantsAction(eventId: string) {
 }
 
 export async function getAvailableEventsAction() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
-    const results = await db.query.interviewEvents.findMany({
-      where: (events, { gte }) => gte(events.date, new Date()),
-      with: {
-        company: companyWithProfile,
-        bookings: bookedOnly
-      },
-      orderBy: (events, { asc }) => [asc(events.date)],
-    });
+    const results = await findUpcomingEvents({ viewerId: user.id });
 
     const dataWithStatus = results.map(event => ({
       ...presentEvent(event, false),
-      isBooked: event.bookings.some(b => b.professionalId === session.user.id)
+      isBooked: event.isBooked,
     }));
 
     return { success: true, data: dataWithStatus };
@@ -413,11 +422,9 @@ export async function getAvailableEventsAction() {
 }
 
 export async function bookInterviewAction(eventId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'professional') {
-    return { error: "Solo i professionisti possono prenotare" };
-  }
-  const professionalId = session.user.id;
+  const user = await requireUser("professional");
+  if ("error" in user) return { error: "Solo i professionisti possono prenotare" };
+  const professionalId = user.id;
 
   try {
     // Check and write in one transaction, with the event row locked: concurrent bookings for
@@ -444,7 +451,7 @@ export async function bookInterviewAction(eventId: string) {
       const [{ value: booked }] = await tx
         .select({ value: count() })
         .from(interviewBookings)
-        .where(and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")));
+        .where(and(eq(interviewBookings.eventId, eventId), activeBooking));
 
       if (booked >= event.maxSlots) return { error: "Posti esauriti per questo evento." };
 
@@ -470,18 +477,16 @@ export async function bookInterviewAction(eventId: string) {
     revalidatePath(`/dashboard/events/${eventId}`);
     return { success: true, meetingLink: result.meetingLink };
   } catch (error) {
-    if (pgErrorCode(error) === "23505") return { error: "Hai già prenotato questo evento." };
+    if (isUniqueViolation(error)) return { error: "Hai già prenotato questo evento." };
     console.error("Error booking interview:", error);
     return { error: "Errore durante la prenotazione" };
   }
 }
 
 export async function cancelInterviewBookingAction(eventId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'professional') {
-    return { error: "Non autorizzato" };
-  }
-  const professionalId = session.user.id;
+  const user = await requireUser("professional");
+  if ("error" in user) return { error: user.error };
+  const professionalId = user.id;
 
   try {
     const result = await db.transaction(async (tx) => {
@@ -501,7 +506,7 @@ export async function cancelInterviewBookingAction(eventId: string) {
         .where(and(
           eq(interviewBookings.eventId, eventId),
           eq(interviewBookings.professionalId, professionalId),
-          eq(interviewBookings.status, "booked")
+          activeBooking
         ))
         .returning({ id: interviewBookings.id });
 
@@ -521,11 +526,9 @@ export async function cancelInterviewBookingAction(eventId: string) {
 }
 
 export async function updateInterviewEventAction(eventId: string, data: Partial<Omit<InterviewEvent, "id" | "companyId" | "createdAt">>) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') {
-    return { error: "Non autorizzato" };
-  }
-  const companyId = session.user.id;
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
+  const companyId = user.id;
 
   // 1. Validate: only known fields are written (never id/companyId from the client)
   const parsed = normalizeEventInput(data, true);
@@ -560,7 +563,7 @@ export async function updateInterviewEventAction(eventId: string, data: Partial<
         const [{ value: booked }] = await tx
           .select({ value: count() })
           .from(interviewBookings)
-          .where(and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")));
+          .where(and(eq(interviewBookings.eventId, eventId), activeBooking));
         if (values.maxSlots < booked) {
           return { error: `Ci sono già ${booked} iscritti: i posti non possono essere meno di ${booked}.` };
         }
@@ -589,30 +592,27 @@ export async function updateInterviewEventAction(eventId: string, data: Partial<
     if ((updated.meetingLink || null) !== (existing.meetingLink || null)) changes.push("link del meeting");
 
     if (changes.length > 0 && updated.date.getTime() > Date.now()) {
-      const bookings = await db.query.interviewBookings.findMany({
-        where: and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")),
-        with: { professional: { columns: publicUserColumns } },
-      });
-      const companyName = await getCompanyDisplayName(companyId, session.user.name);
+      const [bookings, companyName] = await Promise.all([
+        bookedProfessionals(eventId),
+        getCompanyDisplayName(companyId),
+      ]);
       const eventDate = formatEventDateTime(updated.date);
+      const eventUrl = appUrl(`/dashboard/events/${eventId}`);
 
-      sendInBackground(`event update, event ${eventId}`, bookings
-        .filter(booking => booking.professional?.email)
-        .map(booking => () => sendEmail({
-          to: booking.professional.email,
-          subject: `Smart Interview aggiornata: ${updated.title}`,
-          react: React.createElement(InterviewEventChangeEmail, {
-            kind: "updated",
-            userName: booking.professional.name || "Professionista",
-            eventTitle: updated.title,
-            companyName,
-            eventDate,
-            location: updated.location,
-            meetingLink: updated.meetingLink,
-            changes,
-            eventUrl: eventUrl(eventId),
-          }) as React.ReactElement
-        })));
+      notifyBooked(`event update, event ${eventId}`, bookings, professional => ({
+        subject: `Smart Interview aggiornata: ${updated.title}`,
+        react: React.createElement(InterviewEventChangeEmail, {
+          kind: "updated",
+          userName: professionalDisplayName(professional),
+          eventTitle: updated.title,
+          companyName,
+          eventDate,
+          location: updated.location,
+          meetingLink: updated.meetingLink,
+          changes,
+          eventUrl,
+        }) as React.ReactElement
+      }));
     }
 
     revalidatePath("/dashboard/events");
@@ -626,11 +626,9 @@ export async function updateInterviewEventAction(eventId: string, data: Partial<
 }
 
 export async function deleteInterviewEventAction(eventId: string) {
-  const session = await auth();
-  if (!session?.user?.id || session.user.role !== 'company') {
-    return { error: "Non autorizzato" };
-  }
-  const companyId = session.user.id;
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
+  const companyId = user.id;
 
   try {
     // Bookings cascade with the event, so collect who to notify before deleting
@@ -643,12 +641,7 @@ export async function deleteInterviewEventAction(eventId: string) {
 
       if (!event) return { error: "Evento non trovato o non sei l'organizzatore." };
 
-      const bookings = event.date.getTime() > Date.now()
-        ? await tx.query.interviewBookings.findMany({
-            where: and(eq(interviewBookings.eventId, eventId), eq(interviewBookings.status, "booked")),
-            with: { professional: { columns: publicUserColumns } },
-          })
-        : [];
+      const bookings = event.date.getTime() > Date.now() ? await bookedProfessionals(eventId, tx) : [];
 
       await tx.delete(interviewEvents).where(eq(interviewEvents.id, eventId));
       return { event, bookings };
@@ -658,22 +651,19 @@ export async function deleteInterviewEventAction(eventId: string) {
     const { event, bookings } = result;
 
     if (bookings.length > 0) {
-      const companyName = await getCompanyDisplayName(companyId, session.user.name);
+      const companyName = await getCompanyDisplayName(companyId);
       const eventDate = formatEventDateTime(event.date);
 
-      sendInBackground(`event cancelled, event ${eventId}`, bookings
-        .filter(booking => booking.professional?.email)
-        .map(booking => () => sendEmail({
-          to: booking.professional.email,
-          subject: `Smart Interview annullata: ${event.title}`,
-          react: React.createElement(InterviewEventChangeEmail, {
-            kind: "cancelled",
-            userName: booking.professional.name || "Professionista",
-            eventTitle: event.title,
-            companyName,
-            eventDate,
-          }) as React.ReactElement
-        })));
+      notifyBooked(`event cancelled, event ${eventId}`, bookings, professional => ({
+        subject: `Smart Interview annullata: ${event.title}`,
+        react: React.createElement(InterviewEventChangeEmail, {
+          kind: "cancelled",
+          userName: professionalDisplayName(professional),
+          eventTitle: event.title,
+          companyName,
+          eventDate,
+        }) as React.ReactElement
+      }));
     }
 
     revalidatePath("/dashboard/events");

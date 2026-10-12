@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Briefcase, Clock, XCircle } from "lucide-react";
-import { getMyApplications } from "@/app/actions/applications";
 import { cn } from "@/lib/utils";
+import { formatEventDayShort } from "@/lib/rome-time";
 
-interface MyApplication {
+export interface MyApplication {
   id: string;
   status: "pending" | "rejected";
   createdAt: Date | string | null;
@@ -16,25 +15,14 @@ interface MyApplication {
   companyLogo: string | null;
 }
 
+// Loaded by the page together with the matches (getMatches), so both arrive in one call.
+export type MyApplicationsResult = { success: true; data: MyApplication[] } | { success?: undefined; error: string };
+
 // Professional side of /matches: applications still waiting for the company, or turned down.
 // Accepted applications are not here, they are already in the match list.
-export function MyApplications() {
-  const [applications, setApplications] = useState<MyApplication[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      const res = await getMyApplications();
-      if (res.success) {
-        setApplications(res.data || []);
-      } else {
-        setError(res.error || "Errore durante il caricamento delle candidature");
-      }
-    }
-    load();
-  }, []);
-
-  if (!applications && !error) return null;
+export function MyApplications({ result }: { result: MyApplicationsResult }) {
+  const applications = result.success ? result.data : null;
+  const error = result.success ? null : result.error || "Errore durante il caricamento delle candidature";
 
   return (
     <section className="mt-10 md:mt-16 pt-8 md:pt-12 border-t border-slate-100" aria-labelledby="my-applications-title">
@@ -89,7 +77,7 @@ export function MyApplications() {
                     </span>
                     {app.createdAt && (
                       <span className="text-xs font-semibold text-slate-400">
-                        Inviata il {new Date(app.createdAt).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}
+                        Inviata il {formatEventDayShort(app.createdAt)}
                       </span>
                     )}
                   </div>

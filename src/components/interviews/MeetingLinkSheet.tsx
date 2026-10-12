@@ -43,7 +43,8 @@ function MeetingLinkForm({
     setLoading(true);
     const res = await updateMeetingLinkAction(event.id, newLink);
     if (res.success) {
-      onSaved(newLink.trim(), event.id);
+      // The server stores the normalized link (https:// added if missing): show that one
+      onSaved(("meetingLink" in res && res.meetingLink) || newLink.trim(), event.id);
       onClose();
       toast.success("Link aggiornato con successo!");
     } else {
