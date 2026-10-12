@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
@@ -8,7 +8,8 @@ export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesig
 export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
 export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['booked', 'cancelled', 'completed']);
 export const paSubscriberStatusEnum = pgEnum('pa_subscriber_status', ['pending', 'active', 'unsubscribed']);
-export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected']);
+// 'passed' = the professional swiped left on the job (kept so the job doesn't come back in the feed)
+export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected', 'passed']);
 
 
 export const users = pgTable("user", {
@@ -70,6 +71,7 @@ export const verificationCodes = pgTable("verification_codes", {
   email: text("email").notNull(),
   code: text("code").notNull(),
   expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  attempts: integer("attempts").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -133,7 +135,9 @@ export const jobApplications = pgTable("job_applications", {
   professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   status: jobApplicationStatusEnum("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("job_applications_job_professional_unique").on(t.jobId, t.professionalId),
+]);
 
 export const matches = pgTable("matches", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -149,7 +153,10 @@ export const matches = pgTable("matches", {
   callDuration: integer("call_duration"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  // One row per pair and job; swipe rows have a null job_id, so NULLs must count as equal.
+  unique("matches_pair_job_unique").on(t.professionalId, t.companyId, t.jobId).nullsNotDistinct(),
+]);
 
 export const proposedSlots = pgTable("proposed_slots", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -244,7 +251,9 @@ export const interviewBookings = pgTable("interview_bookings", {
   professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   status: interviewBookingStatusEnum("status").default("booked"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("interview_bookings_event_professional_unique").on(t.eventId, t.professionalId),
+]);
 
 export const reviews = pgTable("reviews", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -255,7 +264,10 @@ export const reviews = pgTable("reviews", {
   stars: integer("stars").notNull(),
   text: text("text"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("reviews_author_match_unique").on(t.authorId, t.matchId),
+  unique("reviews_author_booking_unique").on(t.authorId, t.interviewBookingId),
+]);
 
 // RELATIONS
 export const usersRelations = relations(users, ({ one, many }) => ({
