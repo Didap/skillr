@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Profile } from "@/types/profile";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { SwipeStack } from "@/components/swipe/SwipeStack";
+import { SwipeStack, SwipeStackSkeleton } from "@/components/swipe/SwipeStack";
 import { getPotentialMatches } from "@/app/actions/matches";
-import { Zap, User, Star, AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { User, Star, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -56,76 +58,75 @@ export default function DashboardPage() {
     setReloading(false);
   };
 
-  if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-           <Zap className="text-emerald-500 animate-pulse" size={48} />
-           <p className="font-display italic font-bold text-slate-400">Caricamento...</p>
-        </div>
-      </div>
-    );
-  }
+  const role = session?.user?.role;
+  const title = role === "company" ? "Scopri Talenti" : role ? "Nuove Opportunità" : "Scopri";
+  const roleLabel = role === "company" ? "Azienda" : role === "professional" ? "Professionista" : role;
+  const isLoading = status === "loading" || loading;
 
-  if (!session?.user) return null;
+  if (!isLoading && !session?.user) return null;
+
+  const user = session?.user;
+  const avatar = (
+    <Link
+      href="/profile"
+      aria-label="Il tuo profilo"
+      className="pressable flex items-center gap-4 rounded-full md:rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100"
+    >
+      {user && (
+        <span className="text-right hidden md:block">
+          <span className="block text-sm font-bold text-slate-950">{user.name}</span>
+          <span className="block text-[11px] text-emerald-600 font-black uppercase tracking-widest">{roleLabel}</span>
+        </span>
+      )}
+      <span className="block w-11 h-11 md:w-12 md:h-12 rounded-full md:rounded-2xl bg-slate-100 border-2 border-white shadow-card overflow-hidden md:ring-4 md:ring-slate-50">
+        {user?.image ? (
+          <Image src={user.image} alt="" width={48} height={48} className="w-full h-full object-cover" />
+        ) : (
+          <span className="w-full h-full flex items-center justify-center text-slate-400">
+            <User size={22} />
+          </span>
+        )}
+      </span>
+    </Link>
+  );
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <header className="h-24 border-b border-slate-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-10 shrink-0 sticky top-0 z-40">
-        <div>
-          <h1 className="text-2xl font-display italic font-bold text-slate-950 tracking-tight">
-            {session.user.role === 'company' ? 'Scopri Talenti' : 'Nuove Opportunità'}
-          </h1>
-          <p className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mt-0.5">
-            Basato sul tuo profilo
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-slate-950">{session.user.name}</p>
-            <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest">{session.user.role}</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-card overflow-hidden ring-4 ring-slate-50">
-             {session.user.image ? (
-               <Image src={session.user.image} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" />
-             ) : (
-               <div className="w-full h-full flex items-center justify-center text-slate-300">
-                  <User size={24} />
-               </div>
-             )}
-          </div>
-        </div>
-      </header>
+      <PageHeader title={title} subtitle="Basato sul tuo profilo" actions={avatar} />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <section className="min-h-full flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[radial-gradient(circle_at_center,var(--color-slate-50)_0%,transparent_100%)]">
-          {/* Background Decorative Elements */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
-          
-          <div className="w-full max-w-5xl relative">
-            {feedError ? (
-              <div role="alert" className="text-center py-20 bg-white rounded-[2.5rem] border border-rose-100 shadow-premium p-10">
-                 <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-8">
-                    <AlertTriangle size={40} />
+      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+        <section className="relative isolate flex-1 min-h-0 lg:min-h-fit flex flex-col items-center lg:justify-center px-4 pt-3 pb-3 md:px-6 md:py-6">
+          {/* Background glow, clipped to its own layer so it never widens the page */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_center,var(--color-slate-50)_0%,transparent_100%)]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] max-w-[150%] bg-emerald-500/5 blur-[120px] rounded-full" />
+          </div>
+
+          <div className="w-full max-w-5xl flex-1 min-h-0 flex flex-col lg:flex-none">
+            {isLoading || !user ? (
+              <SwipeStackSkeleton />
+            ) : feedError ? (
+              <div role="alert" className="m-auto w-full max-w-md lg:max-w-2xl text-center bg-white rounded-3xl lg:rounded-[2.5rem] border border-rose-100 shadow-premium px-6 py-10 lg:p-16">
+                 <div className="w-16 h-16 lg:w-20 lg:h-20 bg-rose-50 rounded-2xl lg:rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-6 lg:mb-8">
+                    <AlertTriangle size={32} />
                  </div>
-                 <h2 className="text-3xl font-display font-bold italic text-slate-950 mb-4">Feed non disponibile</h2>
-                 <p className="text-slate-500 font-medium mb-8">{feedError}</p>
+                 <h2 className="text-3xl font-display italic text-slate-950 mb-3">Feed non disponibile</h2>
+                 <p className="text-base text-slate-500 font-medium mb-8">{feedError}</p>
                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                    {feedError === "Profilo non trovato" && (
-                     <Link href="/onboarding">
-                       <Button className="rounded-full h-12 px-8 bg-slate-950 hover:bg-emerald-600 font-bold w-full sm:w-auto">
-                         Completa il profilo
-                       </Button>
+                     <Link
+                       href="/onboarding"
+                       className={cn(buttonVariants(), "pressable rounded-full h-12 px-8 bg-slate-950 hover:bg-emerald-600 font-bold w-full sm:w-auto")}
+                     >
+                       Completa il profilo
                      </Link>
                    )}
-                   <Button 
-                     variant="outline" 
+                   <Button
+                     variant="outline"
                      onClick={reloadFeed}
                      disabled={reloading}
-                     className="rounded-full h-12 px-8 border-slate-200 font-bold hover:bg-slate-50 gap-2"
+                     className="pressable rounded-full h-12 px-8 border-slate-200 font-bold hover:bg-slate-50 gap-2 w-full sm:w-auto"
                    >
-                     <RefreshCw size={16} className={reloading ? "animate-spin" : undefined} /> Riprova
+                     <RefreshCw size={16} className={reloading ? "animate-spin motion-reduce:animate-none" : undefined} /> Riprova
                    </Button>
                  </div>
               </div>
@@ -133,23 +134,23 @@ export default function DashboardPage() {
               <SwipeStack
                 key={feedVersion}
                 initialProfiles={profiles}
-                userRole={session.user.role as "professional" | "company"}
+                userRole={user.role as "professional" | "company"}
                 onReload={loadProfiles}
               />
             ) : (
-              <div className="text-center py-20 bg-white rounded-[2.5rem] border border-slate-100 shadow-premium p-10">
-                 <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 mx-auto mb-8 animate-bounce">
-                    <Star size={40} fill="currentColor" />
+              <div className="m-auto w-full max-w-md lg:max-w-2xl text-center bg-white rounded-3xl lg:rounded-[2.5rem] border border-slate-100 shadow-premium px-6 py-10 lg:p-16">
+                 <div className="w-16 h-16 lg:w-20 lg:h-20 bg-emerald-50 rounded-2xl lg:rounded-3xl flex items-center justify-center text-emerald-600 mx-auto mb-6 lg:mb-8">
+                    <Star size={32} fill="currentColor" />
                  </div>
-                 <h2 className="text-3xl font-display font-bold italic text-slate-950 mb-4">Ottimo lavoro!</h2>
-                 <p className="text-slate-500 font-medium mb-8">Hai visualizzato tutti i profili disponibili per oggi. Torna più tardi per nuove scoperte.</p>
-                 <Button 
-                   variant="outline" 
+                 <h2 className="text-3xl font-display italic text-slate-950 mb-3">Ottimo lavoro!</h2>
+                 <p className="text-base text-slate-500 font-medium mb-8">Hai visualizzato tutti i profili disponibili per oggi. Torna più tardi per nuove scoperte.</p>
+                 <Button
+                   variant="outline"
                    onClick={reloadFeed}
                    disabled={reloading}
-                   className="rounded-full h-12 px-8 border-slate-200 font-bold hover:bg-slate-50 gap-2"
+                   className="pressable rounded-full h-12 px-8 border-slate-200 font-bold hover:bg-slate-50 gap-2 w-full sm:w-auto"
                  >
-                   <RefreshCw size={16} className={reloading ? "animate-spin" : undefined} /> Aggiorna Feed
+                   <RefreshCw size={16} className={reloading ? "animate-spin motion-reduce:animate-none" : undefined} /> Aggiorna Feed
                  </Button>
               </div>
             )}
