@@ -28,6 +28,10 @@ interface MatchDetail {
   scheduledAt: Date | null;
   meetingLink: string | null;
   hasReviewed: boolean;
+  // Spread from the match row by getMatchDetail, used for the location badge.
+  professional?: { professionalProfile?: { city: string | null; remoteOk: boolean | null } | null } | null;
+  company?: { companyProfile?: { city: string | null } | null } | null;
+  job?: { location: string | null; remoteOk: boolean | null } | null;
 }
 
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,6 +50,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
 
   const match = res.data as MatchDetail;
   const role = session.user.role as "professional" | "company";
+
+  // Companies see where the professional works from; professionals see the job's location.
+  const location = role === 'company'
+    ? { city: match.professional?.professionalProfile?.city, remoteOk: match.professional?.professionalProfile?.remoteOk }
+    : { city: match.job?.location || match.company?.companyProfile?.city, remoteOk: match.job?.remoteOk };
+  const locationLabel = [location.city, location.remoteOk ? 'Remoto OK' : null].filter(Boolean).join(' · ');
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -115,10 +125,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                       )}
 
                       <div className="flex flex-wrap gap-3">
-                        <div className="flex items-center gap-2 bg-surface-warm/50 px-4 py-2 rounded-2xl text-sm font-semibold text-text-secondary border border-border-subtle">
-                          <MapPin size={16} className="text-primary" /> 
-                          {role === 'company' ? 'Remote / Disponibile' : 'Remote OK'}
-                        </div>
+                        {locationLabel && (
+                          <div className="flex items-center gap-2 bg-surface-warm/50 px-4 py-2 rounded-2xl text-sm font-semibold text-text-secondary border border-border-subtle">
+                            <MapPin size={16} className="text-primary" />
+                            {locationLabel}
+                          </div>
+                        )}
                         {match.targetRate && (
                           <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl text-sm font-bold border border-emerald-100 shadow-sm">
                              <Zap size={16} fill="currentColor" className="text-emerald-500" /> 
@@ -173,7 +185,6 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                 scheduledAt={match.scheduledAt}
                 meetingLink={match.meetingLink}
                 hasReviewed={match.hasReviewed}
-                targetId={match.targetId}
                 targetName={match.targetName}
               />
             </div>

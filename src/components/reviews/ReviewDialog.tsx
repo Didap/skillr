@@ -9,7 +9,6 @@ interface ReviewDialogProps {
   onClose: () => void;
   matchId?: string;
   interviewBookingId?: string;
-  targetId: string;
   targetName: string;
 }
 
@@ -18,7 +17,6 @@ export function ReviewDialog({
   onClose,
   matchId,
   interviewBookingId,
-  targetId,
   targetName
 }: ReviewDialogProps) {
   return (
@@ -49,7 +47,6 @@ export function ReviewDialog({
               <ReviewForm
                 matchId={matchId}
                 interviewBookingId={interviewBookingId}
-                targetId={targetId}
                 targetName={targetName}
                 onSuccess={onClose}
               />

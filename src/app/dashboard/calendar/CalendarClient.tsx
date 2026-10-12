@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CustomTooltip } from "@/components/ui/tooltip";
+import { formatRomeDate } from "@/lib/calendar-utils";
 
 interface CalendarEvent {
   id: string;
@@ -220,7 +221,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                           </Badge>
                                           <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100/50">
                                             <Clock size={10} className="text-slate-300" />
-                                            {format(event.start, "HH:mm")}
+                                            {formatRomeDate(event.start, { hour: '2-digit', minute: '2-digit' })}
                                           </div>
                                         </div>
                                         <h4 className="font-display font-bold italic text-slate-950 text-base leading-tight group-hover:text-emerald-600 transition-colors">
@@ -240,7 +241,9 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                         const now = new Date();
                                         const startTime = new Date(event.start);
                                         const fiveMinutesBefore = new Date(startTime.getTime() - 5 * 60 * 1000);
-                                        const isActive = now >= fiveMinutesBefore && now <= new Date(event.end);
+                                        // Same rule as the match page: the link stays usable up to an hour after the start.
+                                        const joinClosesAt = Math.max(new Date(event.end).getTime(), startTime.getTime() + 60 * 60 * 1000);
+                                        const isActive = now >= fiveMinutesBefore && now.getTime() <= joinClosesAt;
                                         
                                         if (isActive) {
                                           return (
@@ -261,7 +264,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                           if (daysUntil > 0) {
                                             label = `Tra ${daysUntil} ${daysUntil === 1 ? 'giorno' : 'giorni'}`;
                                           } else if (isSameDay(now, startTime)) {
-                                            label = `Oggi alle ${format(startTime, "HH:mm")}`;
+                                            label = `Oggi alle ${formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}`;
                                           }
 
                                           return (

@@ -11,7 +11,6 @@ import { MessageSquare, Sparkles } from "lucide-react";
 interface ReviewFormProps {
   matchId?: string;
   interviewBookingId?: string;
-  targetId: string;
   targetName: string;
   onSuccess?: () => void;
 }
@@ -19,7 +18,6 @@ interface ReviewFormProps {
 export function ReviewForm({ 
   matchId, 
   interviewBookingId, 
-  targetId, 
   targetName,
   onSuccess 
 }: ReviewFormProps) {
@@ -37,7 +35,6 @@ export function ReviewForm({
     const res = await saveReviewAction({
       matchId,
       interviewBookingId,
-      targetId,
       stars,
       text
     });
