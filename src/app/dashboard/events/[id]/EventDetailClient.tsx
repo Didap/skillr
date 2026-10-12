@@ -566,7 +566,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
         </main>
 
         {/* Phone action bar: sticks just above the tab bar */}
-        <div className="md:hidden sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-slate-100 bg-white/90 backdrop-blur-xl px-4 py-3">
+        <div className="md:hidden sticky bottom-0 z-30 border-t border-slate-100 bg-white/90 backdrop-blur-xl px-4 py-3">
           {isOwner ? (
             <div className="flex gap-2">
               <button

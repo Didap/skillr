@@ -11,6 +11,9 @@ import { publicUserColumns } from "@/db/safe-columns";
 import { getSkillLabelMap } from "@/lib/skill-catalog";
 import { skillLabel } from "@/lib/skill-slugs";
 
+// Thousands separator for amounts on cards: 80000 -> "80.000"
+const eur = (n: number | null | undefined) => (n ?? 0).toLocaleString("it-IT");
+
 // Job ids the professional must not see again in the feed: any application row
 // (pending/accepted/rejected/passed) and any existing match tied to the job.
 async function getSeenJobIds(professionalId: string): Promise<string[]> {
@@ -135,7 +138,7 @@ export async function getPotentialMatches() {
           id: p.userId,
           name: p.firstName ? `${p.firstName} ${p.lastName}` : p.user?.name || "Professionista",
           title: p.title || "Esperto IT",
-          rate: p.rateAmountEur ? `€${p.rateAmountEur}/${p.rateType === 'ral_annual' ? 'anno' : p.rateType === 'daily' ? 'gg' : 'ora'}` : "Tariffa non indicata",
+          rate: p.rateAmountEur ? `€${eur(p.rateAmountEur)}/${p.rateType === 'ral_annual' ? 'anno' : p.rateType === 'daily' ? 'gg' : 'ora'}` : "Tariffa non indicata",
           location: p.city || "Remote",
           skills: (p.topSkills || []).map(s => skillLabel(s, labelBySlug)),
           image: p.photoUrl || p.user?.image,
@@ -190,8 +193,8 @@ export async function getPotentialMatches() {
           name: j.title,
           title: j.company?.companyProfile?.companyName || "Azienda IT",
           rate: j.rateType === 'ral_annual' 
-            ? `€${j.budgetMinEur}-${j.budgetMaxEur} RAL` 
-            : `€${j.budgetMinEur}-${j.budgetMaxEur}/${j.rateType === 'daily' ? 'gg' : 'ora'}`,
+            ? `€${eur(j.budgetMinEur)}–${eur(j.budgetMaxEur)} RAL` 
+            : `€${eur(j.budgetMinEur)}–${eur(j.budgetMaxEur)}/${j.rateType === 'daily' ? 'gg' : 'ora'}`,
           location: j.location || "Remote",
           skills: (j.skills || []).map(s => skillLabel(s, labelBySlug)),
           image: j.company?.companyProfile?.logoUrl || j.company?.image,

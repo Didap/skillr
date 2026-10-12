@@ -315,7 +315,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
       </div>
 
       {/* Phones: sticky action bar above the tab bar. From md: in-flow centred button */}
-      <div className="sticky z-20 bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
+      <div className="sticky z-20 bottom-0 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
         <Button 
           type="submit" 
           disabled={loading} 

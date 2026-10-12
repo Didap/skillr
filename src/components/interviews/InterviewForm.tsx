@@ -375,7 +375,7 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
         className={cn(
           "sticky z-30 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100",
           "md:static md:mx-0 md:px-0 md:py-0 md:pt-8 md:bg-transparent md:backdrop-blur-none md:border-0 md:flex md:justify-end",
-          stickyBar === "tabbar" ? "bottom-[calc(4rem+env(safe-area-inset-bottom))]" : "bottom-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-0"
+          stickyBar === "tabbar" ? "bottom-0" : "bottom-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-0"
         )}
       >
         <Button

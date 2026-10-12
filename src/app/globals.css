@@ -138,9 +138,11 @@
     transform: scale(0.97);
   }
 
-  /* Height of the mobile tab bar plus the home-indicator inset */
+  /* Exactly the mobile tab bar plus the home-indicator inset. Sticky bars inside a
+     container with this padding use bottom-0: sticky offsets start at the padding edge,
+     so they then sit right on top of the tab bar. */
   .pb-tabbar {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
   @media (min-width: 768px) {
     .pb-tabbar {

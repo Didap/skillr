@@ -135,7 +135,7 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
         )}
       </AnimatePresence>
 
-      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">
+      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest px-1">
         Premi Invio o scegli un suggerimento
       </p>
     </div>
