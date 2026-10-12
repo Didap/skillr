@@ -82,8 +82,11 @@ export function FileCardUpload({ value, onChange, label, description, accept = "
 
           {value && !isUploading && (
             <button 
+              type="button"
               onClick={removeFile}
-              className="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors rounded-xl"
+              aria-label="Rimuovi documento"
+              // Above the invisible file input, otherwise tapping it opens the file picker
+              className="pressable relative z-10 w-11 h-11 flex items-center justify-center hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors rounded-xl"
             >
               <X size={18} />
             </button>
