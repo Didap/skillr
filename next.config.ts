@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // CV/portfolio uploads go through server actions and are capped at 5MB in
+      // uploadFileAction; the 1MB default rejected them before that check ran.
+      bodySizeLimit: "6mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
