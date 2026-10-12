@@ -32,7 +32,7 @@ async function seed() {
         rateAmountEur: 55,
         bioShort: "Appassionato di React, Next.js e architetture scalabili.",
         bioLong: "Sviluppatore con oltre 8 anni di esperienza nella creazione di applicazioni web moderne. Esperto in TypeScript, Node.js e cloud computing.",
-        topSkills: ["react", "next-js", "typescript", "node-js"],
+        topSkills: ["react", "nextjs", "typescript", "nodejs"],
         clusters: ["developer"],
       }
     },
@@ -108,7 +108,7 @@ async function seed() {
         rateAmountEur: 80000,
         bioShort: "Costruisco e gestisco team di vendita ad alte prestazioni.",
         bioLong: "Specializzata in B2B Sales e Account Management internazionale. Passione per la negoziazione e lo sviluppo del business.",
-        topSkills: ["lead-generation", "b2b-sales", "negotiation", "crm-management"],
+        topSkills: ["lead-generation", "b2b-sales", "negotiation", "crm"],
         clusters: ["sales"],
       }
     }
@@ -230,7 +230,7 @@ async function seed() {
       companyId: techSolutionsId,
       title: "Senior React Developer",
       description: "Cerchiamo un talento React per scalare la nostra piattaforma di core banking.",
-      skills: ["react", "next-js", "typescript"],
+      skills: ["react", "nextjs", "typescript"],
       budgetMinEur: 45000,
       budgetMaxEur: 60000,
       rateType: "ral_annual" as const,
@@ -252,7 +252,7 @@ async function seed() {
       companyId: techSolutionsId,
       title: "Junior QA Engineer",
       description: "Aiutaci a garantire la massima qualità del codice tramite test automatizzati.",
-      skills: ["typescript", "testing", "agile"],
+      skills: ["typescript", "testing", "agile-scrum"],
       budgetMinEur: 28000,
       budgetMaxEur: 35000,
       rateType: "ral_annual" as const,

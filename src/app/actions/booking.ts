@@ -313,7 +313,8 @@ export async function getCalendarEventsAction() {
         id: e.id,
         title: e.title,
         start: e.date,
-        end: new Date(new Date(e.date).getTime() + 60 * 60000), // Assuming 1 hour for smart interviews
+        // Events created before end times were saved fall back to one hour
+        end: e.endTime ?? new Date(new Date(e.date).getTime() + 60 * 60000),
         type: 'smart' as const,
         link: e.meetingLink,
         description: e.description || "Sessione Smart Interview",
@@ -335,7 +336,7 @@ export async function getCalendarEventsAction() {
         id: b.event.id,
         title: b.event.title,
         start: b.event.date,
-        end: new Date(new Date(b.event.date).getTime() + 60 * 60000),
+        end: b.event.endTime ?? new Date(new Date(b.event.date).getTime() + 60 * 60000),
         type: 'smart' as const,
         link: b.event.meetingLink,
         description: b.event.description || `Ospitato da ${b.event.company.companyProfile?.companyName || b.event.company.name}`,

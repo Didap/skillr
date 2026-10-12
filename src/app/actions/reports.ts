@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, matches, interviewBookings, reviews } from "@/db/schema";
-import { and, gte, lte, eq } from "drizzle-orm";
+import { and, gte, lte, eq, ne } from "drizzle-orm";
 import { auth } from "@/auth";
 import { publicUserColumns } from "@/db/safe-columns";
 
@@ -43,7 +43,8 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
   const totalBookings = await db.query.interviewBookings.findMany({
     where: and(
       gte(interviewBookings.createdAt, startDate),
-      lte(interviewBookings.createdAt, endDate)
+      lte(interviewBookings.createdAt, endDate),
+      ne(interviewBookings.status, "cancelled")
     )
   });
 
