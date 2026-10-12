@@ -78,6 +78,38 @@
   .font-display {
     @apply italic;
   }
+
+  /* Touch: no grey flash on tap, no double-tap zoom delay on controls */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  a, button, [role="button"], input, select, textarea, label, summary {
+    touch-action: manipulation;
+  }
+
+  /* iOS zooms into inputs under 16px: keep form text at 16px on touch screens */
+  @media (pointer: coarse) {
+    input, select, textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: oklch(0.92 0.06 160);
+    color: oklch(0.25 0.08 160);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.88 0.02 240) transparent;
+  }
 }
 
 /* Custom Utilities for Premium UI */
@@ -92,5 +124,42 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  /* Press feedback for anything tappable: a quick, shallow scale on touch */
+  .pressable {
+    transition: transform 120ms var(--ease-out-expo), opacity 120ms var(--ease-out-expo);
+  }
+  .pressable:active {
+    transform: scale(0.97);
+  }
+
+  /* Height of the mobile tab bar plus the home-indicator inset */
+  .pb-tabbar {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 768px) {
+    .pb-tabbar {
+      padding-bottom: 0;
+    }
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active {
+    transform: none;
+    opacity: 0.7;
   }
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -16,9 +16,23 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Skillr | Transparent Professional Matching",
   description: "The Tinder for work: transparent rates, quick matches, zero friction.",
+  appleWebApp: {
+    capable: true,
+    title: "Skillr",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Draw under the notch / home indicator; layouts pad with env(safe-area-inset-*)
+  viewportFit: "cover",
+  themeColor: "#FDFDFC",
 };
 
 import { SessionProvider } from "@/components/providers/session-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -29,12 +43,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="it"
       className={cn("h-full", "antialiased", instrumentSerif.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col font-sans text-slate-900 bg-[#FDFDFC]">
         <SessionProvider>
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </SessionProvider>
         <Toaster />
       </body>
