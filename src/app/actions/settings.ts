@@ -2,10 +2,11 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, companyProfiles } from "@/db/schema";
+import { users, professionalProfiles, companyProfiles, skills as skillsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { publicUserColumns } from "@/db/safe-columns";
+import { normalizeSkills } from "@/lib/skill-slugs";
 
 export async function updateUserImageAction(url: string) {
   const session = await auth();
@@ -62,10 +63,13 @@ export async function getUserSettingsAction() {
 
     if (!user) return { error: "Utente non trovato" };
 
+    // Credentials users have users.name NULL: for professionals the name lives on the profile.
+    const profileName = `${user.professionalProfile?.firstName || ""} ${user.professionalProfile?.lastName || ""}`.trim();
+
     return {
       success: true,
       data: {
-        name: user.name || "",
+        name: (user.role === "professional" ? profileName : "") || user.name || "",
         email: user.email,
         image: user.image || "",
         role: user.role,
@@ -78,6 +82,7 @@ export async function getUserSettingsAction() {
         companyName: user.role === "company" 
           ? user.companyProfile?.companyName || "" 
           : "",
+        // Slugs; the page shows them through the catalog labels
         skills: user.role === "professional"
           ? [...(user.professionalProfile?.topSkills || []), ...(user.professionalProfile?.secondarySkills || [])]
           : [],
@@ -105,26 +110,35 @@ export async function updateUserSettingsAction(data: {
   const role = session.user.role;
 
   try {
+    // An empty name field never overwrites a stored name.
+    const name = data.name?.trim().replace(/\s+/g, " ") || "";
+
     // 1. Update user name
-    if (data.name) {
+    if (name) {
       await db.update(users)
-        .set({ name: data.name })
+        .set({ name })
         .where(eq(users.id, userId));
     }
 
     // 2. Update role-specific profile
+    let savedSkills: string[] | undefined;
     if (role === "professional") {
-      const topSkills = data.skills?.slice(0, 3) || [];
-      const secondarySkills = data.skills?.slice(3) || [];
+      const [firstName, ...rest] = name.split(" ");
+      const lastName = rest.join(" ");
+
+      // Stored as slugs, like onboarding and jobs (discovery overlaps slug arrays).
+      // Catalog labels map to their slug, free text is slugified the same way.
+      if (data.skills) {
+        const catalog = await db.select({ slug: skillsTable.slug, label: skillsTable.label }).from(skillsTable);
+        savedSkills = normalizeSkills(data.skills, catalog);
+      }
 
       await db.update(professionalProfiles)
         .set({ 
           bioLong: data.bio,
           title: data.title,
-          firstName: data.name?.split(' ')[0] || "",
-          lastName: data.name?.split(' ').slice(1).join(' ') || "",
-          topSkills: topSkills,
-          secondarySkills: secondarySkills,
+          ...(name ? { firstName, lastName: lastName || null } : {}),
+          ...(savedSkills ? { topSkills: savedSkills.slice(0, 3), secondarySkills: savedSkills.slice(3) } : {}),
         })
         .where(eq(professionalProfiles.userId, userId));
     } else if (role === "company") {
@@ -138,7 +152,7 @@ export async function updateUserSettingsAction(data: {
 
     revalidatePath("/settings");
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, skills: savedSkills };
   } catch (error) {
     console.error("Update User Settings Error:", error);
     return { error: "Errore durante l'aggiornamento delle impostazioni" };

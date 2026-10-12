@@ -8,14 +8,28 @@ import { revalidatePath } from "next/cache";
 
 import { JobData } from "@/types/job";
 
+// Only the editable fields: the payload comes from the client and must not set companyId, id, isActive...
+function jobFields(data: JobData): JobData {
+  return {
+    title: data.title,
+    description: data.description,
+    skills: data.skills,
+    budgetMinEur: data.budgetMinEur,
+    budgetMaxEur: data.budgetMaxEur,
+    rateType: data.rateType,
+    location: data.location,
+    remoteOk: data.remoteOk,
+  };
+}
+
 export async function createJob(data: JobData) {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  if (!session?.user?.id || session.user.role !== "company") return { error: "Non autorizzato" };
 
   try {
     const [newJob] = await db.insert(jobs).values({
+      ...jobFields(data),
       companyId: session.user.id,
-      ...data,
     }).returning();
 
     revalidatePath("/jobs");
@@ -45,6 +59,7 @@ export async function getCompanyJobs() {
           eq(matches.companyStatus, 'liked')
         ));
       
+      // Only pending applications count as "nuovi candidati" ('passed' = left swipe, never counted)
       const applicationResults = await db.select()
         .from(jobApplications)
         .where(and(
@@ -106,7 +121,7 @@ export async function updateJob(jobId: string, data: JobData) {
   try {
     const [updatedJob] = await db.update(jobs)
       .set({
-        ...data,
+        ...jobFields(data),
         updatedAt: new Date(),
       })
       .where(and(eq(jobs.id, jobId), eq(jobs.companyId, session.user.id)))

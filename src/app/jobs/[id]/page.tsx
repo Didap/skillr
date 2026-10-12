@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { getJobById } from "@/app/actions/jobs";
 import { getJobApplicants } from "@/app/actions/applications";
 import { JobDetailClient } from "./JobDetailClient";
+import { getSkillLabelMap } from "@/lib/skill-catalog";
 
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,9 +13,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     redirect("/dashboard");
   }
 
-  const [jobRes, applicantsRes] = await Promise.all([
+  const [jobRes, applicantsRes, labelBySlug] = await Promise.all([
     getJobById(id),
     getJobApplicants(id),
+    getSkillLabelMap(),
   ]);
 
   if (jobRes.error || !jobRes.data) {
@@ -25,6 +27,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     <JobDetailClient 
       job={jobRes.data} 
       initialApplicants={applicantsRes.data || []} 
+      skillLabels={Object.fromEntries(labelBySlug)}
     />
   );
 }

@@ -11,6 +11,8 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { MyApplications } from "@/components/matches/MyApplications";
 
 interface MatchSummary {
   id: string;
@@ -21,10 +23,51 @@ interface MatchSummary {
   targetRating: string;
   targetReviewCount: number;
   status: string;
+  proposedSlotCount: number;
+  scheduledAt: Date | string | null;
+  hasReviewed: boolean;
 }
 
+type CallTone = "action" | "waiting" | "scheduled" | "done";
+
+// What happens next on the call, from the viewer's side.
+// The company proposes slots, the professional picks one, then both review after the call.
+function getCallStatus(match: MatchSummary, role: string | undefined, now: Date): { label: string; tone: CallTone } {
+  const isCompany = role === "company";
+
+  if (match.scheduledAt) {
+    const when = new Date(match.scheduledAt);
+    if (when > now) {
+      const date = when.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+      const time = when.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      return { label: `Call il ${date} alle ${time}`, tone: "scheduled" };
+    }
+    return match.hasReviewed
+      ? { label: "Completato", tone: "done" }
+      : { label: "Lascia feedback", tone: "action" };
+  }
+
+  if (match.proposedSlotCount === 0) {
+    return isCompany
+      ? { label: "Proponi gli orari", tone: "action" }
+      : { label: "In attesa degli orari", tone: "waiting" };
+  }
+
+  return isCompany
+    ? { label: "In attesa di conferma", tone: "waiting" }
+    : { label: "Scegli l'orario", tone: "action" };
+}
+
+const TONE_CLASSES: Record<CallTone, string> = {
+  action: "bg-emerald-600 text-white border-emerald-600",
+  waiting: "bg-slate-50 text-slate-500 border-slate-100",
+  scheduled: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  done: "bg-slate-50 text-slate-400 border-slate-100",
+};
+
 export default function MatchesPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const role = session?.user?.role ?? undefined;
   const router = useRouter();
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +92,7 @@ export default function MatchesPage() {
     loadMatches();
   }, [status]);
 
+  const now = new Date();
   const filteredMatches = matches.filter(m => 
     m.targetName.toLowerCase().includes(search.toLowerCase()) ||
     m.targetTitle?.toLowerCase().includes(search.toLowerCase())
@@ -109,7 +153,9 @@ export default function MatchesPage() {
         {/* Matches Grid */}
         <div className="grid gap-4">
           {filteredMatches.length > 0 ? (
-            filteredMatches.map((match, idx) => (
+            filteredMatches.map((match, idx) => {
+              const callStatus = getCallStatus(match, role, now);
+              return (
               <motion.div
                 key={match.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -143,8 +189,8 @@ export default function MatchesPage() {
                             </div>
                           )}
                         </div>
-                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-1">
-                          Nuovo Match
+                        <Badge variant="secondary" className={cn("rounded-lg text-[10px] font-black uppercase tracking-widest px-2 py-1 shrink-0", TONE_CLASSES[callStatus.tone])}>
+                          {callStatus.label}
                         </Badge>
                       </div>
                       <p className="text-sm text-emerald-600 font-bold italic truncate mb-3">{match.targetTitle}</p>
@@ -152,10 +198,8 @@ export default function MatchesPage() {
                       <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
                         <div className="flex items-center gap-1.5">
                           <Calendar size={12} className="text-emerald-500" />
-                          <span>Fissa la call</span>
+                          <span>Match del {match.matchedAt ? new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '—'}</span>
                         </div>
-                        <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                        <span>{match.matchedAt ? new Date(match.matchedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : 'Da definire'}</span>
                         {match.targetReviewCount > 0 && (
                           <>
                             <div className="w-1 h-1 bg-slate-200 rounded-full" />
@@ -171,7 +215,8 @@ export default function MatchesPage() {
                   </div>
                 </Link>
               </motion.div>
-            ))
+              );
+            })
           ) : (
             <div className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-slate-200">
                <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
@@ -187,6 +232,8 @@ export default function MatchesPage() {
             </div>
           )}
         </div>
+
+        {role === "professional" && <MyApplications />}
       </main>
       </div>
     </div>

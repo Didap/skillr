@@ -3,11 +3,29 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { users, professionalProfiles, matches, jobs, jobApplications } from "@/db/schema";
-import { eq, and, notInArray, desc, sql } from "drizzle-orm";
+import { eq, and, notInArray, desc, sql, isNull, isNotNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
 import { publicUserColumns } from "@/db/safe-columns";
+import { getSkillLabelMap } from "@/lib/skill-catalog";
+import { skillLabel } from "@/lib/skill-slugs";
+
+// Job ids the professional must not see again in the feed: any application row
+// (pending/accepted/rejected/passed) and any existing match tied to the job.
+async function getSeenJobIds(professionalId: string): Promise<string[]> {
+  const [applied, matched] = await Promise.all([
+    db.query.jobApplications.findMany({
+      where: eq(jobApplications.professionalId, professionalId),
+      columns: { jobId: true },
+    }),
+    db.query.matches.findMany({
+      where: and(eq(matches.professionalId, professionalId), isNotNull(matches.jobId)),
+      columns: { jobId: true },
+    }),
+  ]);
+  return [...new Set([...applied.map((a) => a.jobId), ...matched.map((m) => m.jobId!)])];
+}
 
 export async function getMatches() {
   const session = await auth();
@@ -31,6 +49,8 @@ export async function getMatches() {
           with: { companyProfile: true }
         },
         job: true,
+        proposedSlots: { columns: { id: true } },
+        reviews: { columns: { authorId: true } },
       },
       orderBy: [desc(matches.matchedAt)],
     });
@@ -62,6 +82,10 @@ export async function getMatches() {
           targetRating: targetProfile?.averageRating || "0.0",
           targetReviewCount: targetProfile?.reviewCount || 0,
           status: "Match confermato",
+          // Call state, used by the list to say what happens next
+          proposedSlotCount: m.proposedSlots.length,
+          scheduledAt: m.scheduledAt,
+          hasReviewed: m.reviews.some(r => r.authorId === userId),
         };
       })
     };
@@ -82,21 +106,28 @@ export async function getPotentialMatches() {
 
   try {
     if (role === "company") {
-      // Get IDs of professionals already interacted with
+      // Professionals this company already has any match row with (swipe or job match)
       const interacted = await db.query.matches.findMany({
         where: eq(matches.companyId, userId),
         columns: { professionalId: true }
       });
-      const excludedIds = interacted.map(i => i.professionalId);
+      const excludedIds = [...new Set(interacted.map(i => i.professionalId))];
 
-      // Fetch random professionals
-      const potentialProfessionals = await db.query.professionalProfiles.findMany({
-        where: excludedIds.length > 0 ? notInArray(professionalProfiles.userId, excludedIds) : undefined,
-        with: {
-          user: { columns: publicUserColumns }
-        },
-        limit: 20,
-      });
+      const [potentialProfessionals, labelBySlug] = await Promise.all([
+        db.query.professionalProfiles.findMany({
+          where: excludedIds.length > 0 ? notInArray(professionalProfiles.userId, excludedIds) : undefined,
+          with: {
+            user: { columns: publicUserColumns }
+          },
+          // Newest members first. Raw alias: the relational query renames the root table.
+          orderBy: (p, { desc, asc }) => [
+            desc(sql`(select "u"."created_at" from "user" "u" where "u"."id" = ${p.userId})`),
+            asc(p.userId),
+          ],
+          limit: 20,
+        }),
+        getSkillLabelMap(),
+      ]);
 
       return {
         success: true,
@@ -106,7 +137,7 @@ export async function getPotentialMatches() {
           title: p.title || "Esperto IT",
           rate: p.rateAmountEur ? `€${p.rateAmountEur}/${p.rateType === 'ral_annual' ? 'anno' : p.rateType === 'daily' ? 'gg' : 'ora'}` : "Tariffa non indicata",
           location: p.city || "Remote",
-          skills: p.topSkills || [],
+          skills: (p.topSkills || []).map(s => skillLabel(s, labelBySlug)),
           image: p.photoUrl || p.user?.image,
           bioShort: p.bioShort || "",
           type: "professional" as const,
@@ -127,30 +158,30 @@ export async function getPotentialMatches() {
         ...(profile.secondarySkills || [])
       ];
 
-      // Get IDs of jobs already applied to or skipped (skipped logic not fully implemented yet, but excluding applied)
-      const applied = await db.query.jobApplications.findMany({
-        where: eq(jobApplications.professionalId, userId),
-        columns: { jobId: true }
-      });
-      const excludedJobIds = applied.map(a => a.jobId);
+      // Jobs already applied to, passed on (left swipe) or matched
+      const excludedJobIds = await getSeenJobIds(userId);
 
       // Fetch jobs matching skills
-      const potentialJobs = await db.query.jobs.findMany({
-        where: and(
-          eq(jobs.isActive, true),
-          excludedJobIds.length > 0 ? notInArray(jobs.id, excludedJobIds) : undefined,
-          userSkills.length > 0 
-            ? sql`${jobs.skills} && ARRAY[${sql.join(userSkills.map(s => sql`${s}`), sql`, `)}]::text[]` 
-            : undefined
-        ),
-        with: {
-          company: {
-            columns: publicUserColumns,
-            with: { companyProfile: true }
-          }
-        },
-        limit: 20,
-      });
+      const [potentialJobs, labelBySlug] = await Promise.all([
+        db.query.jobs.findMany({
+          where: and(
+            eq(jobs.isActive, true),
+            excludedJobIds.length > 0 ? notInArray(jobs.id, excludedJobIds) : undefined,
+            userSkills.length > 0
+              ? sql`${jobs.skills} && ARRAY[${sql.join(userSkills.map(s => sql`${s}`), sql`, `)}]::text[]`
+              : undefined
+          ),
+          with: {
+            company: {
+              columns: publicUserColumns,
+              with: { companyProfile: true }
+            }
+          },
+          orderBy: (j, { desc }) => [desc(j.createdAt), desc(j.id)],
+          limit: 20,
+        }),
+        getSkillLabelMap(),
+      ]);
 
       return {
         success: true,
@@ -162,7 +193,7 @@ export async function getPotentialMatches() {
             ? `€${j.budgetMinEur}-${j.budgetMaxEur} RAL` 
             : `€${j.budgetMinEur}-${j.budgetMaxEur}/${j.rateType === 'daily' ? 'gg' : 'ora'}`,
           location: j.location || "Remote",
-          skills: j.skills || [],
+          skills: (j.skills || []).map(s => skillLabel(s, labelBySlug)),
           image: j.company?.companyProfile?.logoUrl || j.company?.image,
           bioShort: j.description || "",
           type: "job" as const,
@@ -187,9 +218,10 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
   const status = direction === "right" ? "liked" : "passed";
 
   try {
-    const filter = role === 'company' 
-      ? and(eq(matches.companyId, userId), eq(matches.professionalId, targetId))
-      : and(eq(matches.professionalId, userId), eq(matches.companyId, targetId));
+    // Swipe rows are the ones without a job; job matches are created by acceptApplicant.
+    const filter = role === 'company'
+      ? and(eq(matches.companyId, userId), eq(matches.professionalId, targetId), isNull(matches.jobId))
+      : and(eq(matches.professionalId, userId), eq(matches.companyId, targetId), isNull(matches.jobId));
     
     const existingMatch = await db.query.matches.findFirst({ where: filter });
 
@@ -263,12 +295,19 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
       revalidatePath("/matches");
       return { success: true, isMatch, matchId: existingMatch.id };
     } else {
+      const ownStatus = status as "liked" | "passed";
+      // A concurrent swipe on the same pair lands on the unique key: keep this side's choice.
       const newMatch = await db.insert(matches).values({
         companyId: role === 'company' ? userId : targetId,
         professionalId: role === 'professional' ? userId : targetId,
-        companyStatus: role === 'company' ? status as "liked" | "passed" : 'pending',
-        professionalStatus: role === 'professional' ? status as "liked" | "passed" : 'pending',
-      }).returning({ id: matches.id });
+        companyStatus: role === 'company' ? ownStatus : 'pending',
+        professionalStatus: role === 'professional' ? ownStatus : 'pending',
+      })
+        .onConflictDoUpdate({
+          target: [matches.professionalId, matches.companyId, matches.jobId],
+          set: role === 'company' ? { companyStatus: ownStatus } : { professionalStatus: ownStatus },
+        })
+        .returning({ id: matches.id });
       
       return { success: true, isMatch: false, matchId: newMatch[0].id };
     }

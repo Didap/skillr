@@ -1,22 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { SwipeCard } from "./SwipeCard";
+import { SwipeCard, type SwipeCardHandle } from "./SwipeCard";
 import { MatchOverlay } from "./MatchOverlay";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Zap } from "lucide-react";
+import { Heart, RefreshCw, X, Zap } from "lucide-react";
 import { recordSwipe } from "@/app/actions/matches";
-import { applyToJob } from "@/app/actions/applications";
-import { useRouter } from "next/navigation";
+import { applyToJob, passJob } from "@/app/actions/applications";
 import { Profile } from "@/types/profile";
 import { toast } from "sonner";
 
-export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Profile[], userRole: "professional" | "company" }) {
+interface SwipeStackProps {
+  initialProfiles: Profile[];
+  userRole: "professional" | "company";
+  // Refetches the feed; the parent remounts the stack with the new profiles
+  onReload: () => Promise<void>;
+}
+
+export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackProps) {
   const [profiles] = useState<Profile[]>(initialProfiles);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matchData, setMatchData] = useState<{ name: string, image: string | null, matchId: string } | null>(null);
-  const router = useRouter();
+  const [reloading, setReloading] = useState(false);
+  const frontCardRef = useRef<SwipeCardHandle>(null);
+
+  const isStackEmpty = currentIndex >= profiles.length;
 
   const handleSwipe = async (direction: "left" | "right") => {
     const swipedProfile = profiles[currentIndex];
@@ -33,14 +42,20 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
         } else {
           toast.error(res.error || "Errore durante la candidatura");
         }
+      } else {
+        // Recorded so the job doesn't come back in the feed
+        const res = await passJob(swipedProfile.id);
+        if (res.error) toast.error(res.error);
       }
       return;
     }
 
     const targetType = userRole === "company" ? "professional" : "company";
     const res = await recordSwipe(swipedProfile.id, targetType, direction);
-    
-    if (res.isMatch) {
+
+    if (res.error) {
+      toast.error(res.error);
+    } else if (res.isMatch) {
       setMatchData({
         name: swipedProfile.name,
         image: swipedProfile.image,
@@ -49,11 +64,26 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
     }
   };
 
-  const resetStack = () => {
-    router.refresh(); 
+  // Arrow keys do what the buttons do, unless focus is in a text field or the match overlay is open
+  useEffect(() => {
+    if (isStackEmpty || matchData) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (e.key === "ArrowLeft") frontCardRef.current?.swipe("left");
+      if (e.key === "ArrowRight") frontCardRef.current?.swipe("right");
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isStackEmpty, matchData]);
+
+  const resetStack = async () => {
+    setReloading(true);
+    await onReload();
+    setReloading(false);
   };
 
-  const isStackEmpty = currentIndex >= profiles.length;
+  const likeLabel = userRole === "professional" ? "Candidati" : "Mi interessa";
 
   return (
     <>
@@ -63,24 +93,47 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
             <div className="relative w-full h-full">
               {/* Background Card (Preview) */}
               {currentIndex + 1 < profiles.length && (
-                <SwipeCard 
+                <SwipeCard
                   key={profiles[currentIndex + 1].id}
-                  profile={profiles[currentIndex + 1]} 
-                  onSwipe={() => {}} 
+                  profile={profiles[currentIndex + 1]}
+                  onSwipe={() => {}}
                   isFront={false}
                 />
               )}
-              
+
               {/* Front Card */}
-              <SwipeCard 
+              <SwipeCard
                 key={profiles[currentIndex].id}
-                profile={profiles[currentIndex]} 
-                onSwipe={handleSwipe} 
+                ref={frontCardRef}
+                profile={profiles[currentIndex]}
+                onSwipe={handleSwipe}
                 isFront={true}
               />
+
+              {/* Same action as dragging, for mouse, touch and keyboard users */}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex justify-center gap-6 z-50">
+                <button
+                  type="button"
+                  onClick={() => frontCardRef.current?.swipe("left")}
+                  aria-label="Passa"
+                  title="Passa (freccia sinistra)"
+                  className="w-14 h-14 rounded-full bg-white shadow-card flex items-center justify-center text-slate-400 hover:text-slate-950 hover:scale-105 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-200"
+                >
+                  <X size={24} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => frontCardRef.current?.swipe("right")}
+                  aria-label={likeLabel}
+                  title={`${likeLabel} (freccia destra)`}
+                  className="w-14 h-14 rounded-full bg-emerald-600 shadow-lg shadow-emerald-200 flex items-center justify-center text-white hover:bg-emerald-700 hover:scale-105 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                >
+                  <Heart size={24} fill="currentColor" />
+                </button>
+              </div>
             </div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center gap-6 text-center"
@@ -96,8 +149,8 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
                   {userRole === 'professional' ? 'Torna più tardi per nuove opportunità.' : 'Torna più tardi per nuovi match.'}
                 </p>
               </div>
-              <Button variant="outline" onClick={resetStack} className="rounded-full gap-2 border-border-strong">
-                <RefreshCw size={18} /> Cerca Nuovi
+              <Button variant="outline" onClick={resetStack} disabled={reloading} className="rounded-full gap-2 border-border-strong">
+                <RefreshCw size={18} className={reloading ? "animate-spin" : undefined} /> Cerca Nuovi
               </Button>
             </motion.div>
           )}
@@ -106,7 +159,7 @@ export function SwipeStack({ initialProfiles, userRole }: { initialProfiles: Pro
 
       <AnimatePresence>
         {matchData && (
-          <MatchOverlay 
+          <MatchOverlay
             profileName={matchData.name}
             profileImage={matchData.image || undefined}
             matchId={matchData.matchId}

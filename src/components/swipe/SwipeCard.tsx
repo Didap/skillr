@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence, type PanInfo } from "framer-motion";
-import { useState } from "react";
+import { useImperativeHandle, useRef, useState, type Ref } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,24 @@ import { MapPin, Zap, X, Heart } from "lucide-react";
 
 import { Profile } from "@/types/profile";
 
+export interface SwipeCardHandle {
+  swipe: (direction: "left" | "right") => void;
+}
+
 interface SwipeCardProps {
   profile: Profile;
   onSwipe: (direction: "left" | "right") => void;
   isFront?: boolean;
+  ref?: Ref<SwipeCardHandle>;
 }
 
-export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps) {
+// A job card and a talent card share the layout, not the wording.
+const LABELS = {
+  job: { badge: "Opportunità esclusiva", section: "Dettagli posizione", skills: "Requisiti fondamentali", rate: "Budget proposto" },
+  person: { badge: "Professionista", section: "Profilo", skills: "Competenze", rate: "Tariffa" },
+} as const;
+
+export function SwipeCard({ profile, onSwipe, isFront = false, ref }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
@@ -23,14 +34,32 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
   const controls = useAnimation();
 
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  // Guards against a drag and a button press (or two presses) firing the same card twice
+  const leavingRef = useRef(false);
+  const isJob = profile.type === "job";
+  const labels = isJob ? LABELS.job : LABELS.person;
+
+  const flyOut = async (direction: "left" | "right") => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    await controls.start({ x: direction === "right" ? 600 : -600, opacity: 0, transition: { duration: 0.4, ease: [0.32, 0, 0.67, 0] } });
+    onSwipe(direction);
+  };
+
+  // Buttons and arrow keys: same exit animation as a drag, with the feedback overlay shown
+  useImperativeHandle(ref, () => ({
+    swipe: (direction) => {
+      if (leavingRef.current) return;
+      setSwipeDirection(direction);
+      flyOut(direction);
+    },
+  }));
 
   const handleDragEnd = async (_: unknown, info: PanInfo) => {
     if (info.offset.x > 100) {
-      await controls.start({ x: 600, opacity: 0, transition: { duration: 0.4, ease: [0.32, 0, 0.67, 0] } });
-      onSwipe("right");
+      await flyOut("right");
     } else if (info.offset.x < -100) {
-      await controls.start({ x: -600, opacity: 0, transition: { duration: 0.4, ease: [0.32, 0, 0.67, 0] } });
-      onSwipe("left");
+      await flyOut("left");
     } else {
       controls.start({ x: 0, rotate: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 20 } });
     }
@@ -119,7 +148,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600 font-display text-6xl font-bold italic">
-                    {profile.title[0]}
+                    {(isJob ? profile.title : profile.name)[0]}
                   </div>
                 )}
               </div>
@@ -130,7 +159,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
 
             <div className="space-y-4">
               <Badge className="bg-white/10 backdrop-blur-md text-white border-white/10 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
-                {profile.type === 'job' ? "Opportunità Esclusiva" : "Membro Verificato"}
+                {labels.badge}
               </Badge>
               <h2 className="text-white text-4xl font-display font-bold italic tracking-tight leading-tight">{profile.title}</h2>
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
@@ -145,7 +174,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
         <div className="flex-1 bg-white p-12 flex flex-col gap-10 relative">
           {/* Header */}
           <div className="space-y-2">
-            <div className="text-[12px] font-black uppercase tracking-[0.4em] text-emerald-600">Dettagli Posizione</div>
+            <div className="text-[12px] font-black uppercase tracking-[0.4em] text-emerald-600">{labels.section}</div>
             <h3 className="text-5xl font-display font-bold italic text-slate-950 tracking-tight leading-[0.9]">
               {profile.name}
             </h3>
@@ -167,7 +196,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
             <div className="grid grid-cols-2 gap-10">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Requisiti Fondamentali</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{labels.skills}</div>
                   <div className="flex flex-wrap gap-2">
                     {profile.skills.slice(0, 6).map((s) => (
                       <Badge key={s} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold rounded-xl px-3 py-1.5 text-[12px]">
@@ -180,11 +209,13 @@ export function SwipeCard({ profile, onSwipe, isFront = false }: SwipeCardProps)
 
               <div className="border-l border-slate-50 pl-10 flex flex-col justify-center">
                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Budget Proposto</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600">{labels.rate}</div>
                     <div className="text-slate-950 font-display text-5xl font-bold italic tracking-tighter leading-none">
                       {profile.rate}
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-3">Trattabile in base all&apos;esperienza</p>
+                    {isJob && (
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-3">Trattabile in base all&apos;esperienza</p>
+                    )}
                  </div>
               </div>
             </div>

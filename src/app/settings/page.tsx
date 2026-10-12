@@ -38,6 +38,9 @@ import { uploadImageAction } from "@/app/actions/upload";
 import { updateUserImageAction, getUserSettingsAction, updateUserSettingsAction } from "@/app/actions/settings";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import { toast } from "sonner";
+import { skillLabel, slugifySkill } from "@/lib/skill-slugs";
+
+type CatalogCluster = { id: string; label: string; skills: { id: string; slug: string; label: string }[] };
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -51,17 +54,20 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
   const [title, setTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
+  // Skill slugs, shown through the catalog labels
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [catalog, setCatalog] = useState<{ id: string; label: string; skills: { id: string; label: string; value?: string }[] }[]>([]);
+  const [catalog, setCatalog] = useState<CatalogCluster[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Derive filtered skills during render to avoid setState in effect
   const allSkills = catalog.flatMap(c => c.skills || []);
+  const labelBySlug = new Map(allSkills.map(s => [s.slug, s.label]));
+  const labelOf = (slug: string) => skillLabel(slug, labelBySlug);
   const filteredSkills = newSkill.length >= 1 
     ? allSkills.filter(s => 
         s.label.toLowerCase().includes(newSkill.toLowerCase()) && 
-        !skills.includes(s.label)
+        !skills.includes(s.slug)
       ).slice(0, 8)
     : [];
 
@@ -83,7 +89,7 @@ export default function SettingsPage() {
     async function fetchCatalog() {
       const res = await getMetadataCatalog();
       if (res.success) {
-        setCatalog(res.data as { id: string; label: string; skills: { id: string; label: string; value?: string }[] }[]);
+        setCatalog(res.data as CatalogCluster[]);
       }
     }
     fetchCatalog();
@@ -102,6 +108,7 @@ export default function SettingsPage() {
         skills,
       });
       if (settingsResult.error) throw new Error(settingsResult.error);
+      if (settingsResult.skills) setSkills(settingsResult.skills);
 
       // 2. If image changed and is new (base64), upload it
       if (hasImageChanged && profileImage && profileImage.startsWith('data:')) {
@@ -162,20 +169,24 @@ export default function SettingsPage() {
     setHasImageChanged(true);
   };
 
+  // Free text: a catalog label becomes its slug, anything else is slugified like the catalog
   const addSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
+    const text = newSkill.trim();
+    if (!text) return;
+    const slug = allSkills.find(s => s.label.toLowerCase() === text.toLowerCase())?.slug ?? slugifySkill(text);
+    if (slug && !skills.includes(slug)) {
+      setSkills([...skills, slug]);
     }
+    setNewSkill("");
   };
 
   const removeSkill = (skillToRemove: string) => {
     setSkills(skills.filter(s => s !== skillToRemove));
   };
 
-  const selectSkill = (skillLabel: string) => {
-    if (!skills.includes(skillLabel)) {
-      setSkills([...skills, skillLabel]);
+  const selectSkill = (slug: string) => {
+    if (!skills.includes(slug)) {
+      setSkills([...skills, slug]);
       setNewSkill("");
     }
   };
@@ -412,7 +423,7 @@ export default function SettingsPage() {
                                 >
                                   <Badge className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold px-4 py-2 rounded-xl gap-2 shadow-sm group transition-all">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    {skill}
+                                    {labelOf(skill)}
                                     <button 
                                       onClick={() => removeSkill(skill)}
                                       className="ml-1 text-slate-300 hover:text-red-500 transition-colors p-0.5 hover:bg-red-50 rounded-md"
@@ -464,8 +475,8 @@ export default function SettingsPage() {
                               </div>
                               {filteredSkills.map((s) => (
                                 <button 
-                                  key={s.value}
-                                  onClick={() => selectSkill(s.label)}
+                                  key={s.slug}
+                                  onClick={() => selectSkill(s.slug)}
                                   className="w-full text-left px-5 py-4 hover:bg-emerald-50 font-bold text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group"
                                 >
                                   <div className="flex items-center gap-3">
@@ -526,10 +537,10 @@ export default function SettingsPage() {
                           <div key={skill} className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 bg-slate-50/30 group hover:bg-white hover:shadow-premium transition-all">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-all font-bold text-xs">
-                                {skill.substring(0, 2).toUpperCase()}
+                                {labelOf(skill).substring(0, 2).toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-sm font-bold text-slate-900">{skill}</p>
+                                <p className="text-sm font-bold text-slate-900">{labelOf(skill)}</p>
                                 <div className="flex items-center gap-2 mt-1">
                                   <div className="w-32 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                     <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${80 - (i * 15)}%` }} />

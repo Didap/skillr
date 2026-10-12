@@ -21,10 +21,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { acceptApplicant, rejectApplicant } from "@/app/actions/applications";
 import { toast } from "sonner";
+import { skillLabel } from "@/lib/skill-slugs";
 
 interface Applicant {
   id: string;
-  status: string;
+  status: "pending" | "accepted" | "rejected" | "passed" | null;
   professional: {
     id: string;
     name: string | null;
@@ -57,8 +58,9 @@ interface Job {
   description: string | null;
 }
 
-export function JobDetailClient({ job, initialApplicants }: { job: Job, initialApplicants: Applicant[] }) {
+export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: Job, initialApplicants: Applicant[], skillLabels: Record<string, string> }) {
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants);
+  const labelBySlug = new Map(Object.entries(skillLabels));
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const handleAccept = async (appId: string) => {
@@ -158,7 +160,7 @@ export function JobDetailClient({ job, initialApplicants }: { job: Job, initialA
               <div className="flex flex-wrap gap-2 items-start md:justify-end max-w-sm">
                 {job.skills?.map((s: string) => (
                   <Badge key={s} className="bg-white/5 border-white/10 text-white/70 rounded-lg hover:bg-white/10 transition-colors uppercase text-[10px] font-black tracking-widest px-3">
-                    {s}
+                    {skillLabel(s, labelBySlug)}
                   </Badge>
                 ))}
               </div>
@@ -230,7 +232,7 @@ export function JobDetailClient({ job, initialApplicants }: { job: Job, initialA
                               <div className="flex flex-wrap gap-2">
                                 {profile?.topSkills?.slice(0, 4).map(s => (
                                   <Badge key={s} variant="secondary" className="bg-slate-50 text-slate-600 border-slate-100 font-bold rounded-lg h-7">
-                                    {s}
+                                    {skillLabel(s, labelBySlug)}
                                   </Badge>
                                 ))}
                               </div>
