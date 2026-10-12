@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { skillLabel } from "@/lib/skill-slugs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { duration, ease, haptic, spring } from "@/lib/motion";
-import { cn, formatEur } from "@/lib/utils";
+import { cn, formatRate, type RateType } from "@/lib/utils";
 
 interface Applicant {
   id: string;
@@ -36,7 +36,7 @@ interface Applicant {
       title: string | null;
       photoUrl: string | null;
       city: string | null;
-      rateType: string | null;
+      rateType: RateType | null;
       rateAmountEur: number | null;
       topSkills: string[] | null;
       averageRating: string | null;
@@ -53,7 +53,7 @@ interface Job {
   remoteOk: boolean | null;
   budgetMinEur: number | null;
   budgetMaxEur: number | null;
-  rateType: string | null;
+  rateType: RateType | null;
   skills: string[] | null;
   description: string | null;
 }
@@ -133,7 +133,6 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
 
   const pendingApplicants = applicants.filter(a => a.status === 'pending');
   const acceptedApplicants = applicants.filter(a => a.status === 'accepted');
-  const rateLabel = job.rateType === 'ral_annual' ? ' RAL' : job.rateType === 'daily' ? '/gg' : '/ora';
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#FDFDFC]">
@@ -176,7 +175,7 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
                   </div>
                   <div className="flex items-center gap-1.5 tabular-nums">
                     <Zap size={16} className="text-emerald-500 shrink-0" />
-                    <span>{formatEur(job.budgetMinEur)}–{formatEur(job.budgetMaxEur)} €{rateLabel}</span>
+                    <span>{formatRate(job.rateType, job.budgetMinEur, job.budgetMaxEur)}</span>
                   </div>
                 </div>
 
@@ -270,7 +269,7 @@ export function JobDetailClient({ job, initialApplicants, skillLabels }: { job: 
                                 </span>
                                 <span className="inline-flex items-center gap-1 tabular-nums">
                                   <Zap size={13} className="text-emerald-500 shrink-0" />
-                                  €{profile?.rateAmountEur}/{profile?.rateType === 'ral_annual' ? 'anno' : profile?.rateType === 'daily' ? 'giorno' : 'ora'}
+                                  {formatRate(profile?.rateType, profile?.rateAmountEur)}
                                 </span>
                               </div>
 

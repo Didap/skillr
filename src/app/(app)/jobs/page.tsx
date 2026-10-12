@@ -20,17 +20,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getCompanyJobs, deleteJob, toggleJobStatus } from "@/app/actions/jobs";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { JobData } from "@/types/job";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { duration, ease, haptic, spring } from "@/lib/motion";
-import { cn, formatEur } from "@/lib/utils";
+import { cn, formatRate } from "@/lib/utils";
 
 interface JobWithStats extends JobData {
   id: string;
@@ -38,9 +40,6 @@ interface JobWithStats extends JobData {
   matchCount: number;
   applicationCount: number;
 }
-
-const rateSuffix = (rateType: string | null | undefined) =>
-  rateType === "ral_annual" ? "anno" : rateType === "daily" ? "giorno" : "ora";
 
 const iconButton =
   "pressable shrink-0 w-11 h-11 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40";
@@ -53,18 +52,16 @@ export default function JobsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  // Phone-only "Altro" sheet (edit / delete) for the job with this id
+  // Phone-only "Altro" sheet (edit / delete) for the job with this id. Closing clears it:
+  // the sheet's exit animation keeps rendering the last title and actions.
   const [menuId, setMenuId] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // State for Search & Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [showOnlyActive, setShowOnlyActive] = useState(false);
 
   async function loadJobs() {
-    console.log("[JobsPage] Loading jobs...");
     const res = await getCompanyJobs();
-    console.log("[JobsPage] Load jobs result:", res);
     if (res.success) {
       setJobs((res.data || []) as JobWithStats[]);
     }
@@ -74,8 +71,6 @@ export default function JobsPage() {
   useEffect(() => {
     Promise.resolve().then(() => loadJobs());
   }, []);
-
-  const closeDelete = useCallback(() => setDeleteId(null), []);
 
   const confirmDelete = async () => {
     if (!deleteId) return;
@@ -161,7 +156,7 @@ export default function JobsPage() {
         }
       />
 
-      <main className="flex-1 overflow-y-auto overscroll-contain bg-white pb-tabbar">
+      <PageBody className="bg-white">
         <div className="max-w-4xl mx-auto px-4 pt-5 pb-8 md:p-12">
           <div className="hidden md:block mb-12">
             <h2 className="text-3xl font-display italic font-bold text-slate-950">I tuoi annunci</h2>
@@ -244,7 +239,7 @@ export default function JobsPage() {
                               <span className="truncate">{job.location || "Sede centrale"}</span>
                             </span>
                             <span className="tabular-nums whitespace-nowrap">
-                              {formatEur(job.budgetMinEur)}–{formatEur(job.budgetMaxEur)} € / {rateSuffix(job.rateType)}
+                              {formatRate(job.rateType, job.budgetMinEur, job.budgetMaxEur)}
                             </span>
                           </p>
 
@@ -338,10 +333,7 @@ export default function JobsPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            setMenuId(job.id);
-                            setMenuOpen(true);
-                          }}
+                          onClick={() => setMenuId(job.id)}
                           aria-label="Altre azioni"
                           aria-haspopup="dialog"
                           className={cn(iconButton, "md:hidden")}
@@ -398,21 +390,21 @@ export default function JobsPage() {
             {loading && (
               <div className="space-y-4" aria-busy="true" aria-label="Caricamento ricerche">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="h-44 md:h-28 bg-slate-50/50 animate-pulse motion-reduce:animate-none rounded-3xl border border-slate-100" />
+                  <Skeleton key={i} className="h-44 md:h-28 bg-slate-50/50 rounded-3xl border border-slate-100" />
                 ))}
               </div>
             )}
           </div>
         </div>
-      </main>
+      </PageBody>
 
       {/* Phone: secondary actions for a job */}
-      <BottomSheet open={menuOpen && !!menuJob} onClose={() => setMenuOpen(false)} title={menuJob?.title}>
+      <BottomSheet open={!!menuJob} onClose={() => setMenuId(null)} title={menuJob?.title}>
         {menuJob && (
           <div className="flex flex-col gap-2 pt-1">
             <Link
               href={`/jobs/${menuJob.id}/edit`}
-              onClick={() => setMenuOpen(false)}
+              onClick={() => setMenuId(null)}
               className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-slate-50 text-slate-900 font-semibold"
             >
               <Pencil size={20} className="text-slate-500" />
@@ -421,7 +413,7 @@ export default function JobsPage() {
             <button
               type="button"
               onClick={() => {
-                setMenuOpen(false);
+                setMenuId(null);
                 setDeleteId(menuJob.id);
               }}
               className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-red-50 text-red-600 font-semibold text-left"
@@ -436,7 +428,7 @@ export default function JobsPage() {
       {/* Delete confirmation: bottom sheet on phones, centred dialog from md */}
       <ConfirmSheet
         open={!!deleteId}
-        onClose={closeDelete}
+        onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         loading={isDeleting}
         title="Elimina ricerca"

@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { SwipeCard, type SwipeCardHandle } from "./SwipeCard";
 import { MatchOverlay } from "./MatchOverlay";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, RefreshCw, X, Zap } from "lucide-react";
 import { recordSwipe } from "@/app/actions/matches";
 import { applyToJob, passJob } from "@/app/actions/applications";
@@ -206,14 +207,13 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
 
 /** Loading state in the shape of the real stack, so nothing jumps when the feed arrives. */
 export function SwipeStackSkeleton() {
-  const pulse = "animate-pulse motion-reduce:animate-none";
   return (
     <div className={frameClass} aria-busy="true" aria-label="Caricamento profili">
       <div className={cardAreaClass}>
         <div className="absolute inset-0 rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-slate-100 shadow-premium bg-white flex flex-col lg:flex-row">
           {/* Phone: band + details */}
           <div className="lg:hidden flex flex-col h-full">
-            <div className={cn("shrink-0 bg-slate-100 p-5 space-y-5", pulse)}>
+            <Skeleton className="shrink-0 rounded-none p-5 space-y-5">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-slate-200" />
                 <div className="flex-1 space-y-2">
@@ -222,8 +222,8 @@ export function SwipeStackSkeleton() {
                 </div>
               </div>
               <div className="h-8 w-2/5 rounded-full bg-slate-200" />
-            </div>
-            <div className={cn("p-5 space-y-3", pulse)}>
+            </Skeleton>
+            <Skeleton className="rounded-none bg-transparent p-5 space-y-3">
               <div className="h-4 w-full rounded-full bg-slate-100" />
               <div className="h-4 w-11/12 rounded-full bg-slate-100" />
               <div className="h-4 w-2/3 rounded-full bg-slate-100" />
@@ -232,18 +232,18 @@ export function SwipeStackSkeleton() {
                 <div className="h-8 w-24 rounded-xl bg-slate-100" />
                 <div className="h-8 w-16 rounded-xl bg-slate-100" />
               </div>
-            </div>
+            </Skeleton>
           </div>
           {/* Desktop: two panels */}
-          <div className={cn("hidden lg:flex w-[40%] shrink-0 bg-slate-100 items-center justify-center", pulse)}>
+          <Skeleton className="hidden lg:flex w-[40%] shrink-0 rounded-none items-center justify-center">
             <div className="w-40 h-40 rounded-[2.5rem] bg-slate-200" />
-          </div>
-          <div className={cn("hidden lg:flex flex-1 flex-col gap-6 p-12", pulse)}>
+          </Skeleton>
+          <Skeleton className="hidden lg:flex flex-1 flex-col gap-6 rounded-none bg-transparent p-12">
             <div className="h-12 w-2/3 rounded-full bg-slate-100" />
             <div className="h-5 w-full rounded-full bg-slate-100" />
             <div className="h-5 w-5/6 rounded-full bg-slate-100" />
             <div className="h-5 w-1/2 rounded-full bg-slate-100" />
-          </div>
+          </Skeleton>
         </div>
       </div>
       <div className={actionRowClass} aria-hidden>

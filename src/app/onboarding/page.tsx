@@ -241,17 +241,20 @@ export default function OnboardingPage() {
     <StepNavSlot.Provider value={navSlot}>
     <div className="min-h-dvh bg-[#FDFDFC] flex flex-col items-center justify-start md:justify-center px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:p-6 selection:bg-emerald-100 selection:text-emerald-900">
       <div className="max-w-lg w-full">
-        {/* Phones: compact header with a segmented progress strip */}
-        <div className="md:hidden mb-5">
-          <div className="flex items-baseline justify-between gap-4 mb-3">
-            <h1 className="font-display text-3xl italic font-bold text-slate-950 tracking-tight">
+        {/* Header: compact with a segmented progress strip on phones, centred with a step badge from md up */}
+        <div className="mb-5 md:mb-8 md:text-center">
+          <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-[0.15em] mb-4">
+            <Zap size={10} fill="currentColor" /> Step {step + 1} di {totalSteps}
+          </div>
+          <div className="flex items-baseline justify-between gap-4 mb-3 md:mb-0 md:block">
+            <h1 className="font-display text-3xl md:text-4xl italic font-bold text-slate-950 tracking-tight">
               Configura Profilo
             </h1>
-            <span className="text-sm font-bold text-slate-500 tabular-nums shrink-0" aria-label={`Step ${step + 1} di ${totalSteps}`}>
+            <span className="md:hidden text-sm font-bold text-slate-500 tabular-nums shrink-0" aria-label={`Step ${step + 1} di ${totalSteps}`}>
               {step + 1}/{totalSteps}
             </span>
           </div>
-          <div className="flex gap-1.5" aria-hidden="true">
+          <div className="flex md:hidden gap-1.5" aria-hidden="true">
             {Array.from({ length: totalSteps }, (_, i) => (
               <span key={i} className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
                 <span
@@ -263,16 +266,6 @@ export default function OnboardingPage() {
               </span>
             ))}
           </div>
-        </div>
-
-        {/* Progress Header */}
-        <div className="hidden md:block mb-8 text-center">
-           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-[0.15em] mb-4">
-              <Zap size={10} fill="currentColor" /> Step {step + 1} di {totalSteps}
-           </div>
-           <h1 className="font-display text-4xl italic font-bold text-slate-950 tracking-tight">
-              Configura Profilo
-           </h1>
         </div>
 
         {/* Progress Bar */}
@@ -929,7 +922,16 @@ function RoleOption({ id, value, icon, label, description, isSelected }: { id: s
   );
 }
 
-function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: { onBack?: () => void, onNext: () => void, nextLabel?: string, loading?: boolean, nextDisabled?: boolean, hideNext?: boolean }) {
+type StepNavProps = {
+  onBack?: () => void;
+  onNext: () => void;
+  nextLabel?: string;
+  loading?: boolean;
+  nextDisabled?: boolean;
+  hideNext?: boolean;
+};
+
+function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: StepNavProps) {
   const slot = useContext(StepNavSlot);
   // While a step animates out its buttons stay on screen (the phone bar sits in the same
   // spot for every step): ignore taps on them, or a quick double tap would skip a step.
@@ -1000,7 +1002,7 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
   );
 }
 
-function StepLayout({ title, description, children, onBack, onNext, nextLabel = "Continua", loading = false, nextDisabled = false, hideNext = false }: { title: string, description: string, children: React.ReactNode, onBack: () => void, onNext: () => void, nextLabel?: string, loading?: boolean, nextDisabled?: boolean, hideNext?: boolean }) {
+function StepLayout({ title, description, children, ...nav }: StepNavProps & { title: string, description: string, children: React.ReactNode, onBack: () => void }) {
   return (
     <>
       <CardHeader className="px-5 md:px-8 pt-6 md:pt-8 pb-2 md:pb-4">
@@ -1010,7 +1012,7 @@ function StepLayout({ title, description, children, onBack, onNext, nextLabel = 
       <CardContent className="px-5 md:px-8 pb-6 md:pb-8 pt-2 space-y-4">
         {children}
       </CardContent>
-      <StepNav onBack={onBack} onNext={onNext} nextLabel={nextLabel} loading={loading} nextDisabled={nextDisabled} hideNext={hideNext} />
+      <StepNav {...nav} />
     </>
   );
 }

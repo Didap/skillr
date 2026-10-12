@@ -35,11 +35,13 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import ImageCropperModal from "@/components/ImageCropperModal";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
+import { BottomActionBar } from "@/components/layout/BottomActionBar";
 import { uploadImageAction } from "@/app/actions/upload";
 import { updateUserImageAction, getUserSettingsAction, updateUserSettingsAction } from "@/app/actions/settings";
 import { getMetadataCatalog } from "@/app/actions/metadata";
 import { toast } from "sonner";
-import { skillLabel, slugifySkill } from "@/lib/skill-slugs";
+import { normalizeSkills, skillLabel } from "@/lib/skill-slugs";
 import { cn } from "@/lib/utils";
 import { duration, ease, spring } from "@/lib/motion";
 
@@ -196,9 +198,8 @@ export default function SettingsPage() {
 
   // Free text: a catalog label becomes its slug, anything else is slugified like the catalog
   const addSkill = () => {
-    const text = newSkill.trim();
-    if (!text) return;
-    const slug = allSkills.find(s => s.label.toLowerCase() === text.toLowerCase())?.slug ?? slugifySkill(text);
+    if (!newSkill.trim()) return;
+    const [slug] = normalizeSkills([newSkill], allSkills);
     if (slug && !skills.includes(slug)) {
       setSkills([...skills, slug]);
     }
@@ -322,8 +323,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Section content: the page's own scroll container */}
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-white">
-          <div className="max-w-3xl mx-auto px-4 pt-6 md:p-12 pb-tabbar">
+        <PageBody className="min-h-0 bg-white">
+          <div className="max-w-3xl mx-auto px-4 pt-6 md:p-12 md:pb-0">
             {/* Profile Section */}
             <TabsContent value="profile" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
               <div className="space-y-6 md:space-y-8">
@@ -708,41 +709,34 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
 
-            {/* Room for the phone save bar so it never covers the last field */}
-            {isDirty && <div aria-hidden="true" className="h-20 md:hidden" />}
+            {/* Phones: thumb-reach save bar above the tab bar, only while there is something to save.
+                It reserves its own room at the end of the content so it never covers the last field. */}
+            <AnimatePresence>
+              {isDirty && (
+                <BottomActionBar variant="floating" desktop="hidden">
+                  <div className="flex items-center gap-3 rounded-2xl bg-slate-950 text-white p-2 pl-4 shadow-premium">
+                    <p className="flex-1 min-w-0 text-sm font-semibold truncate">Modifiche non salvate</p>
+                    <Button
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className={cn(
+                        "pressable h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm gap-2 transition-colors",
+                        isSaving && "text-white"
+                      )}
+                    >
+                      {saveLabel ?? (
+                        <>
+                          <Save size={16} /> Salva
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  </BottomActionBar>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </PageBody>
       </Tabs>
-
-      {/* Phones: thumb-reach save bar above the tab bar, only while there is something to save */}
-      <AnimatePresence>
-        {isDirty && (
-          <motion.div
-            initial={{ y: 24, opacity: 0 }}
-            animate={{ y: 0, opacity: 1, transition: spring.snappy }}
-            exit={{ y: 24, opacity: 0, transition: { duration: duration.feedback, ease: ease.in } }}
-            className="md:hidden fixed inset-x-0 z-40 px-4 pb-3 bottom-[calc(4rem+env(safe-area-inset-bottom))]"
-          >
-            <div className="flex items-center gap-3 rounded-2xl bg-slate-950 text-white p-2 pl-4 shadow-premium">
-              <p className="flex-1 min-w-0 text-sm font-semibold truncate">Modifiche non salvate</p>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className={cn(
-                  "pressable h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm gap-2 transition-colors",
-                  isSaving && "text-white"
-                )}
-              >
-                {saveLabel ?? (
-                  <>
-                    <Save size={16} /> Salva
-                  </>
-                )}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {imageToCrop && (

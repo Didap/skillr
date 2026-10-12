@@ -11,6 +11,7 @@ import { User, Star, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageBody } from "@/components/layout/PageBody";
 import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
@@ -94,7 +95,7 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <PageHeader title={title} subtitle="Basato sul tuo profilo" actions={avatar} />
 
-      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
+      <PageBody className="min-h-0 flex flex-col custom-scrollbar">
         <section className="relative isolate flex-1 min-h-0 lg:min-h-fit flex flex-col items-center lg:justify-center px-4 pt-3 pb-3 md:px-6 md:py-6">
           {/* Background glow, clipped to its own layer so it never widens the page */}
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[radial-gradient(circle_at_center,var(--color-slate-50)_0%,transparent_100%)]">
@@ -156,7 +157,7 @@ export default function DashboardPage() {
             )}
           </div>
         </section>
-      </div>
+      </PageBody>
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, DollarSign, Zap, Star, FileText, Layout } from "lucide-react";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
-import { cn } from "@/lib/utils";
+import { cn, formatRate, type RateType } from "@/lib/utils";
+import { BottomActionBar } from "@/components/layout/BottomActionBar";
 import Image from "next/image";
 
 import { toast } from "sonner";
@@ -30,7 +31,7 @@ interface ProfessionalProfileProps {
     photoUrl: string | null;
     city: string | null;
     rateAmountEur: number | null;
-    rateType: string | null;
+    rateType: RateType | null;
     bioShort: string | null;
     bioLong: string | null;
     topSkills: string[] | null;
@@ -50,7 +51,6 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
   const [isBooking, setIsBooking] = useState(false);
   const router = useRouter();
   const fullName = `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() || "Professionista Anonimo";
-  const displayRateType = profile.rateType === "daily" ? "Giorno" : profile.rateType === "hourly" ? "Ora" : "Anno";
 
   const handleBooking = async () => {
     if (viewerRole !== "company") {
@@ -164,7 +164,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
             </div>
             <div className="flex items-center gap-2 h-9 md:h-auto px-3 md:px-0 rounded-full bg-slate-50 md:bg-transparent border border-slate-100 md:border-0">
               <DollarSign size={16} className="text-emerald-500 shrink-0" />
-              €{profile.rateAmountEur || 0} / {displayRateType}
+              {formatRate(profile.rateType, profile.rateAmountEur || 0)}
             </div>
           </div>
 
@@ -300,8 +300,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       </section>
 
       {/* Phones: primary action in thumb reach, above the tab bar */}
-      <div aria-hidden="true" className="h-20 md:hidden" />
-      <div className="md:hidden fixed inset-x-0 z-40 px-4 pb-3 bottom-[calc(4rem+env(safe-area-inset-bottom))]">
+      <BottomActionBar variant="floating" desktop="hidden">
         <div className="flex items-center gap-2 rounded-[1.25rem] bg-white/90 backdrop-blur-xl border border-slate-100 p-2 shadow-premium">
           <Button
             onClick={handleBooking}
@@ -313,7 +312,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
           {cvLink}
           {portfolioLink}
         </div>
-      </div>
+      </BottomActionBar>
     </div>
   );
 }

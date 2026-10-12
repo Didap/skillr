@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Globe, Star, Briefcase, Building2, ExternalLink, DollarSign } from "lucide-react";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
-import { cn } from "@/lib/utils";
+import { cn, formatRate, type RateType } from "@/lib/utils";
+import { BottomActionBar } from "@/components/layout/BottomActionBar";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,7 +12,7 @@ interface Job {
   title: string;
   location: string | null;
   budgetMaxEur: number | null;
-  rateType: string | null;
+  rateType: RateType | null;
 }
 
 interface Review {
@@ -152,7 +153,7 @@ export function CompanyProfileView({ profile, jobs, reviews }: CompanyProfilePro
                       <h4 className="text-base md:text-lg font-black text-slate-950 group-hover:text-blue-600 transition-colors wrap-break-word">{job.title}</h4>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-500 uppercase tracking-wider md:tracking-widest">
                         <span className="flex items-center gap-1 min-w-0"><MapPin size={12} className="shrink-0" /> <span className="truncate">{job.location || "Remoto"}</span></span>
-                        <span className="flex items-center gap-1 whitespace-nowrap"><DollarSign size={12} className="shrink-0" /> Fino a €{job.budgetMaxEur}</span>
+                        <span className="flex items-center gap-1 whitespace-nowrap"><DollarSign size={12} className="shrink-0" /> Fino a {formatRate(job.rateType, job.budgetMaxEur)}</span>
                       </div>
                     </div>
                     <div className="w-10 h-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
@@ -250,15 +251,14 @@ export function CompanyProfileView({ profile, jobs, reviews }: CompanyProfilePro
       </section>
 
       {/* Phones: primary action in thumb reach, above the tab bar */}
-      <div aria-hidden="true" className="h-20 md:hidden" />
-      <div className="md:hidden fixed inset-x-0 z-40 px-4 pb-3 bottom-[calc(4rem+env(safe-area-inset-bottom))]">
+      <BottomActionBar variant="floating" desktop="hidden">
         <div className="flex items-center gap-2 rounded-[1.25rem] bg-white/90 backdrop-blur-xl border border-slate-100 p-2 shadow-premium">
           <Button className="pressable flex-1 min-w-0 rounded-2xl h-12 text-base font-black bg-blue-600 hover:bg-blue-700 text-white transition-colors">
             Invia Candidatura
           </Button>
           {websiteButton}
         </div>
-      </div>
+      </BottomActionBar>
     </div>
   );
 }
