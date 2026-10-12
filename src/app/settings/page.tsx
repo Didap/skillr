@@ -482,7 +482,7 @@ export default function SettingsPage() {
                                     type="button"
                                     onClick={() => removeSkill(skill)}
                                     aria-label={`Rimuovi ${labelOf(skill)}`}
-                                    className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg"
+                                    className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg"
                                   >
                                     <X size={14} />
                                   </button>
