@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { render } from '@react-email/components';
 import { ReactElement } from 'react';
 
 let client: Resend | null = null;
@@ -31,11 +32,14 @@ export async function sendEmail({ to, subject, react, html, text, attachments }:
   }
 
   try {
+    // Render React templates here: Resend's own `react` option imports @react-email/render,
+    // which is only installed nested under @react-email/components, so it always failed.
+    const body = react ? await render(react) : html || '';
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'Skillr <onboarding@resend.dev>',
       to,
       subject,
-      ...(react ? { react } : { html: html || '' }),
+      html: body,
       text: text || '',
       attachments,
     });

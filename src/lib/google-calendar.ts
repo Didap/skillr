@@ -17,7 +17,9 @@ const calendar = google.calendar({ version: "v3", auth });
 // Without the service account credentials every call fails: callers check this
 // up front so a company that picks Google Meet gets an error instead of no link.
 export function isGoogleCalendarConfigured() {
-  return Boolean(clientEmail && privateKey);
+  // A real service-account key is a PEM block; .env.example ships placeholder text,
+  // which would otherwise pass here and only fail when the professional confirms.
+  return Boolean(clientEmail && privateKey?.includes("-----BEGIN PRIVATE KEY-----"));
 }
 
 export async function createMeetEvent(
