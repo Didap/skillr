@@ -2,17 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { 
-  Zap, 
-  Calendar as CalendarIcon, 
-  CalendarRange, 
-  User, 
-  Settings, 
-  LogOut, 
-  Briefcase 
-} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Zap, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
+import { signOutAndClearDraft } from "@/lib/sign-out";
 
 export function DashboardSidebar() {
   const { data: session } = useSession();
@@ -21,69 +15,33 @@ export function DashboardSidebar() {
   if (!session?.user) return null;
 
   return (
-    <aside className="w-24 md:w-72 border-r border-slate-100 bg-slate-50/40 backdrop-blur-xl flex flex-col p-6 z-40 shrink-0">
+    <aside className="hidden md:flex w-24 lg:w-72 border-r border-slate-100 bg-slate-50/40 backdrop-blur-xl flex-col p-6 z-40 shrink-0">
       <div className="flex items-center gap-3 px-3 mb-12">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
             <Zap size={20} fill="currentColor" />
           </div>
-          <span className="hidden md:block font-display text-2xl italic font-black tracking-tight text-slate-950">
+          <span className="hidden lg:block font-display text-2xl italic font-black tracking-tight text-slate-950">
             Skillr<span className="text-emerald-600">.</span>
           </span>
         </Link>
       </div>
       
       <nav className="flex-1 flex flex-col gap-2">
-        <SidebarLink 
-          href="/dashboard" 
-          icon={<Zap size={20} />} 
-          label="Match" 
-          active={pathname === "/dashboard"} 
-        />
-        <SidebarLink 
-          href="/matches" 
-          icon={<CalendarIcon size={20} />} 
-          label="I miei Match" 
-          active={pathname.startsWith("/matches")}
-        />
-        <SidebarLink 
-          href="/dashboard/calendar" 
-          icon={<CalendarRange size={20} />} 
-          label="Calendario" 
-          active={pathname === "/dashboard/calendar"}
-        />
-        
-        {session.user.role === 'professional' && (
-          <SidebarLink 
-            href="/dashboard/smart-interviews" 
-            icon={<Zap size={20} />} 
-            label="Smart Interviews" 
-            active={pathname.startsWith("/dashboard/smart-interviews")}
+        {primaryNav(session.user.role).map((item) => (
+          <SidebarLink
+            key={item.href}
+            href={item.href}
+            icon={<item.icon size={20} />}
+            label={item.label}
+            active={item.isActive(pathname)}
           />
-        )}
-        
-        {session.user.role === 'company' && (
-          <>
-            <SidebarLink 
-              href="/jobs" 
-              icon={<Briefcase size={20} />} 
-              label="Ricerche Attive" 
-              active={pathname.startsWith("/jobs")}
-            />
-            <SidebarLink 
-              href="/dashboard/events" 
-              icon={<Zap size={20} />} 
-              label="Smart Interviews" 
-              active={pathname.startsWith("/dashboard/events")}
-            />
-          </>
-        )}
-        
+        ))}
         <SidebarLink 
           href="/profile" 
           icon={<User size={20} />} 
           label="Profilo" 
-          active={pathname === "/profile"}
+          active={isOwnProfile(pathname, session.user.id)}
         />
       </nav>
 
@@ -92,21 +50,21 @@ export function DashboardSidebar() {
           href="/settings" 
           icon={<Settings size={20} />} 
           label="Impostazioni" 
-          active={pathname === "/settings"}
+          active={pathname.startsWith("/settings")}
         />
         <button 
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOutAndClearDraft()}
           className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all font-bold text-sm group"
         >
           <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-          <span className="hidden md:block">Esci</span>
+          <span className="hidden lg:block">Esci</span>
         </button>
       </div>
 
-      <div className="mt-auto pt-8 px-4 hidden md:flex flex-wrap gap-x-4 gap-y-2 opacity-30 hover:opacity-100 transition-opacity">
-        <Link href="/privacy" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Privacy</Link>
-        <Link href="/terms" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Termini</Link>
-        <Link href="/cookies" className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Cookies</Link>
+      <div className="mt-auto pt-8 px-4 hidden lg:flex flex-wrap gap-x-4 gap-y-2 opacity-30 hover:opacity-100 transition-opacity">
+        {LEGAL_LINKS.map(({ href, label }) => (
+          <Link key={href} href={href} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">{label}</Link>
+        ))}
       </div>
     </aside>
   );
@@ -126,7 +84,7 @@ function SidebarLink({ href, icon, label, active = false }: { href: string, icon
       <span className={cn("transition-transform group-hover:scale-110", active ? "text-emerald-400" : "")}>
         {icon}
       </span>
-      <span className="hidden md:block">{label}</span>
+      <span className="hidden lg:block">{label}</span>
     </Link>
   );
 }

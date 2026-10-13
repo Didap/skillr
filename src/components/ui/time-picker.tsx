@@ -44,7 +44,7 @@ export function TimePicker({
     )}>
       <div className="flex-1">
         <Select value={hours} onValueChange={handleHourChange} disabled={disabled}>
-          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full px-0 focus:ring-0">
+          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full min-w-11 px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">
@@ -61,7 +61,7 @@ export function TimePicker({
       
       <div className="flex-1 pl-4">
         <Select value={minutes} onValueChange={handleMinuteChange} disabled={disabled}>
-          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full px-0 focus:ring-0">
+          <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full min-w-11 px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">

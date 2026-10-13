@@ -78,6 +78,43 @@
   .font-display {
     @apply italic;
   }
+
+  :root {
+    /* Mobile bottom tab bar height (MobileTabBar, pb-tabbar, bottom-tabbar) */
+    --tabbar-h: 4rem;
+  }
+
+  /* Touch: no grey flash on tap, no double-tap zoom delay on controls */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  a, button, [role="button"], input, select, textarea, label, summary {
+    touch-action: manipulation;
+  }
+
+  /* iOS zooms into inputs under 16px: keep form text at 16px on touch screens */
+  @media (pointer: coarse) {
+    input, select, textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: oklch(0.92 0.06 160);
+    color: oklch(0.25 0.08 160);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.88 0.02 240) transparent;
+  }
 }
 
 /* Custom Utilities for Premium UI */
@@ -92,5 +129,54 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  /* Exactly the mobile tab bar plus the home-indicator inset. Sticky bars inside a
+     container with this padding use bottom-0: sticky offsets start at the padding edge,
+     so they then sit right on top of the tab bar. */
+  .pb-tabbar {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  /* Fixed bars that must sit right above the tab bar */
+  .bottom-tabbar {
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 768px) {
+    .pb-tabbar {
+      padding-bottom: 0;
+    }
+    .bottom-tabbar {
+      bottom: 0;
+    }
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Press feedback for anything tappable. Uses the `scale` property (not transform) and a
+   transition list that still includes colors, so it composes with transition-colors /
+   transition-all on the same element instead of silently overriding them. */
+@utility pressable {
+  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, scale;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-expo);
+  &:active {
+    scale: 0.97;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      scale: none;
+      opacity: 0.7;
+    }
   }
 }

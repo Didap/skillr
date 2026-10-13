@@ -45,7 +45,7 @@ export function ReviewCard({ authorName, authorImage, stars, text, createdAt }: 
             </p>
           </div>
         </div>
-        <StarRating value={stars} onChange={() => {}} readonly size={18} />
+        <StarRating value={stars} readonly size={18} />
       </div>
       
       {text && (

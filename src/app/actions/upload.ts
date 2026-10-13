@@ -1,13 +1,11 @@
 "use server";
 
 import { cloudinary } from "@/lib/cloudinary";
-import { auth } from "@/auth";
+import { requireUser } from "@/lib/auth-guard";
 
 export async function uploadImageAction(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Non autorizzato" };
-  }
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   const file = formData.get("file") as File;
   if (!file) {
@@ -22,7 +20,7 @@ export async function uploadImageAction(formData: FormData) {
       cloudinary.uploader.upload_stream(
         {
           folder: "skillr",
-          public_id: `user_${session.user.id}_${Date.now()}`,
+          public_id: `user_${user.id}_${Date.now()}`,
           transformation: [
             { width: 500, height: 500, crop: "fill", gravity: "face" }
           ]

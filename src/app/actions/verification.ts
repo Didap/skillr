@@ -1,31 +1,55 @@
 "use server";
 
+import { randomInt, timingSafeEqual } from "crypto";
 import { db } from "@/db";
 import { verificationCodes, users } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { Resend } from "resend";
+import { eq, and, lt, sql } from "drizzle-orm";
+import { sendEmail } from "@/lib/mail";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const RESEND_COOLDOWN_MS = 60 * 1000;
+const MAX_ATTEMPTS = 5;
 
-export async function generateVerificationCode(email: string) {
-  // Generate 6 digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+type CodeResult =
+  | { success: true }
+  | { success: false; reason: "cooldown" | "send_failed" | "error"; error: string };
 
+// Exported as a server action (the "resend code" button calls it directly), so it must be
+// safe to call with any email: it only ever sends to existing, unverified accounts and
+// answers the same way otherwise.
+export async function generateVerificationCode(email: string): Promise<CodeResult> {
   try {
-    // Delete old codes for this email
-    await db.delete(verificationCodes).where(eq(verificationCodes.email, email));
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+      columns: { emailVerified: true },
+    });
+    if (!user || user.emailVerified) return { success: true };
 
-    // Insert new code
-    await db.insert(verificationCodes).values({
+    // One code per minute: each new code resets the attempt counter, so without a cooldown
+    // the 5-attempt limit could be sidestepped by requesting codes in a loop.
+    const existing = await db.query.verificationCodes.findFirst({
+      where: eq(verificationCodes.email, email),
+    });
+    if (existing?.createdAt && Date.now() - existing.createdAt.getTime() < RESEND_COOLDOWN_MS) {
+      return {
+        success: false,
+        reason: "cooldown",
+        error: "Ti abbiamo appena inviato un codice. Attendi un minuto prima di richiederne un altro.",
+      };
+    }
+
+    const code = randomInt(100000, 1000000).toString();
+    const now = new Date();
+
+    await db.delete(verificationCodes).where(eq(verificationCodes.email, email));
+    const [inserted] = await db.insert(verificationCodes).values({
       email,
       code,
-      expiresAt,
-    });
+      expiresAt: new Date(now.getTime() + CODE_TTL_MS),
+      createdAt: now,
+    }).returning({ id: verificationCodes.id });
 
-    // Send email via Resend
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM || "Skillr <onboarding@resend.dev>",
+    const sent = await sendEmail({
       to: email,
       subject: `${code} è il tuo codice di verifica Skillr`,
       html: `
@@ -40,37 +64,78 @@ export async function generateVerificationCode(email: string) {
       `,
     });
 
+    if (!sent.success) {
+      // Drop the code nobody received, so the user can retry without waiting for the cooldown.
+      await db.delete(verificationCodes).where(eq(verificationCodes.id, inserted.id));
+      return {
+        success: false,
+        reason: "send_failed",
+        error: "Non siamo riusciti a inviare il codice di verifica. Riprova tra qualche istante.",
+      };
+    }
+
     return { success: true };
   } catch (error) {
     console.error("Error generating/sending code:", error);
-    return { success: false, error: "Impossibile inviare il codice di verifica." };
+    return { success: false, reason: "error", error: "Impossibile inviare il codice di verifica." };
   }
 }
 
+function codesMatch(expected: string, received: string) {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(received);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export async function verifyEmailCodeAction(email: string, code: string) {
+  const submitted = code.trim();
+  if (!/^\d{6}$/.test(submitted)) {
+    return { success: false, error: "Codice non valido." };
+  }
+
   try {
     const record = await db.query.verificationCodes.findFirst({
-      where: and(
-        eq(verificationCodes.email, email),
-        eq(verificationCodes.code, code)
-      ),
+      where: eq(verificationCodes.email, email),
     });
 
     if (!record) {
-      return { success: false, error: "Codice non valido." };
+      return { success: false, error: "Codice non valido o scaduto. Richiedine uno nuovo." };
     }
 
     if (new Date() > record.expiresAt) {
       return { success: false, error: "Codice scaduto. Richiedine uno nuovo." };
     }
 
-    // Mark user as verified
-    await db.update(users)
-      .set({ emailVerified: new Date() })
-      .where(eq(users.email, email));
+    // Count the attempt before comparing, in a single conditional update, so parallel
+    // requests can't squeeze in more than MAX_ATTEMPTS guesses.
+    const [counted] = await db.update(verificationCodes)
+      .set({ attempts: sql`${verificationCodes.attempts} + 1` })
+      .where(and(eq(verificationCodes.id, record.id), lt(verificationCodes.attempts, MAX_ATTEMPTS)))
+      .returning({ attempts: verificationCodes.attempts });
 
-    // Delete the code
-    await db.delete(verificationCodes).where(eq(verificationCodes.id, record.id));
+    // An exhausted code stays in the table (unusable) until the next resend, so the resend
+    // cooldown keeps applying to it.
+    if (!counted) {
+      return { success: false, error: "Troppi tentativi errati. Richiedi un nuovo codice." };
+    }
+
+    if (!codesMatch(record.code, submitted)) {
+      const remaining = MAX_ATTEMPTS - counted.attempts;
+      if (remaining <= 0) {
+        return { success: false, error: "Troppi tentativi errati. Richiedi un nuovo codice." };
+      }
+      return {
+        success: false,
+        error: `Codice non valido. ${remaining === 1 ? "Ti resta 1 tentativo." : `Ti restano ${remaining} tentativi.`}`,
+      };
+    }
+
+    await db.transaction(async (tx) => {
+      await tx.update(users)
+        .set({ emailVerified: new Date() })
+        .where(eq(users.email, email));
+      await tx.delete(verificationCodes).where(eq(verificationCodes.id, record.id));
+    });
 
     return { success: true };
   } catch (error) {

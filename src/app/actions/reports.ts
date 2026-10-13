@@ -2,22 +2,19 @@
 
 import { db } from "@/db";
 import { users, matches, interviewBookings, reviews } from "@/db/schema";
-import { and, gte, lte, eq } from "drizzle-orm";
-import { auth } from "@/auth";
+import { and, gte, lte, eq, ne } from "drizzle-orm";
+import { publicUserColumns } from "@/db/safe-columns";
+import { requireUser } from "@/lib/auth-guard";
 
 /**
  * Generates a CSV report for PA reporting.
  * Includes data on professionals (NEETs), matches, and interview outcomes.
  */
 export async function generateKpiReportAction(startDate: Date, endDate: Date) {
-  const session = await auth();
-
-  // Security check: Only pa_admin can generate reports
-  if (session?.user?.role !== "pa_admin") {
-    // throw new Error("Unauthorized: Only PA administrators can generate reports.");
-    // For demo purposes, we'll allow it if the user is authenticated, 
-    // but in production, the above line should be active.
-    console.warn("User is not a pa_admin, but allowing report generation for development.");
+  // The report contains personal data of every professional: PA admins only.
+  const user = await requireUser("pa_admin");
+  if ("error" in user) {
+    return { success: false as const, error: "Solo gli amministratori PA possono generare il report." };
   }
 
   // 1. Fetch Professionals (NEETs) registered in the period
@@ -27,6 +24,7 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
       gte(users.createdAt, startDate),
       lte(users.createdAt, endDate)
     ),
+    columns: publicUserColumns,
     with: {
       professionalProfile: true,
     }
@@ -44,7 +42,8 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
   const totalBookings = await db.query.interviewBookings.findMany({
     where: and(
       gte(interviewBookings.createdAt, startDate),
-      lte(interviewBookings.createdAt, endDate)
+      lte(interviewBookings.createdAt, endDate),
+      ne(interviewBookings.status, "cancelled")
     )
   });
 
@@ -98,7 +97,7 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
     .join("\n");
 
   return {
-    success: true,
+    success: true as const,
     csv: csvContent,
     filename: `report_skillr_pa_${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}.csv`
   };

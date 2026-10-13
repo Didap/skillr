@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { users, matches, interviewBookings } from "@/db/schema";
-import { count, eq } from "drizzle-orm";
+import { count, eq, ne } from "drizzle-orm";
 
 export async function getPaDashboardStatsAction() {
   // const session = await auth();
@@ -27,7 +27,8 @@ export async function getPaDashboardStatsAction() {
     // 3. Totale Colloqui
     const [bookingCount] = await db
       .select({ value: count() })
-      .from(interviewBookings);
+      .from(interviewBookings)
+      .where(ne(interviewBookings.status, "cancelled"));
 
     // 4. Distribuzione per Provincia (Mock basata su CAP se presenti, altrimenti casuale per la demo)
     // In un sistema reale useremmo: 

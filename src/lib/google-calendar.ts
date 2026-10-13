@@ -14,6 +14,14 @@ const auth = new google.auth.JWT({
 
 const calendar = google.calendar({ version: "v3", auth });
 
+// Without the service account credentials every call fails: callers check this
+// up front so a company that picks Google Meet gets an error instead of no link.
+export function isGoogleCalendarConfigured() {
+  // A real service-account key is a PEM block; .env.example ships placeholder text,
+  // which would otherwise pass here and only fail when the professional confirms.
+  return Boolean(clientEmail && privateKey?.includes("-----BEGIN PRIVATE KEY-----"));
+}
+
 export async function createMeetEvent(
   summary: string,
   description: string,
@@ -21,6 +29,10 @@ export async function createMeetEvent(
   endTime: Date,
   attendees: string[] = []
 ) {
+  if (!isGoogleCalendarConfigured()) {
+    return { success: false as const, error: "Google Calendar non configurato" };
+  }
+
   try {
     const event = {
       summary,
@@ -50,14 +62,19 @@ export async function createMeetEvent(
       conferenceDataVersion: 1,
     });
 
-    return {
-      success: true,
-      eventId: response.data.id,
-      meetingLink: response.data.hangoutLink || response.data.conferenceData?.entryPoints?.[0]?.uri,
-    };
+    const eventId = response.data.id;
+    const meetingLink = response.data.hangoutLink || response.data.conferenceData?.entryPoints?.[0]?.uri;
+
+    // An event without a conference is useless to us: drop it rather than keep an orphan.
+    if (!eventId || !meetingLink) {
+      if (eventId) await deleteMeetEvent(eventId);
+      return { success: false as const, error: "Link Google Meet non generato" };
+    }
+
+    return { success: true as const, eventId, meetingLink };
   } catch (error) {
     console.error("Google Calendar Error:", error);
-    return { success: false, error };
+    return { success: false as const, error };
   }
 }
 

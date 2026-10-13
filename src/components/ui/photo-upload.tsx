@@ -75,8 +75,10 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
           
           {value && !isUploading && (
             <button 
+              type="button"
               onClick={removePhoto}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+              aria-label="Rimuovi foto"
+              className="absolute z-10 -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors before:absolute before:-inset-2.5 before:content-['']"
             >
               <X size={14} strokeWidth={3} />
             </button>

@@ -74,11 +74,11 @@ const formSchema = z.object({
   phone: z.string().optional(),
   organization: z.string().min(2, "Indica l'amministrazione o ente di appartenenza"),
   entityType: z.enum(["municipality", "region", "cpi", "ngo", "foundation"], {
-    required_error: "Seleziona il tipo di ente",
+    error: "Seleziona il tipo di ente",
   }),
   role: z.string().min(1, "Seleziona il tuo ruolo"),
   service: z.enum(["match", "outreach", "codesign"], {
-    required_error: "Seleziona il servizio di interesse",
+    error: "Seleziona il servizio di interesse",
   }),
   deadline: z.date().optional(),
   notes: z.string().optional(),

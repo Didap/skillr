@@ -1,21 +1,35 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { jobs, matches, jobApplications } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/auth-guard";
 
 import { JobData } from "@/types/job";
 
+// Only the editable fields: the payload comes from the client and must not set companyId, id, isActive...
+function jobFields(data: JobData): JobData {
+  return {
+    title: data.title,
+    description: data.description,
+    skills: data.skills,
+    budgetMinEur: data.budgetMinEur,
+    budgetMaxEur: data.budgetMaxEur,
+    rateType: data.rateType,
+    location: data.location,
+    remoteOk: data.remoteOk,
+  };
+}
+
 export async function createJob(data: JobData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser("company");
+  if ("error" in user) return { error: user.error };
 
   try {
     const [newJob] = await db.insert(jobs).values({
-      companyId: session.user.id,
-      ...data,
+      ...jobFields(data),
+      companyId: user.id,
     }).returning();
 
     revalidatePath("/jobs");
@@ -27,12 +41,12 @@ export async function createJob(data: JobData) {
 }
 
 export async function getCompanyJobs() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     const userJobs = await db.query.jobs.findMany({
-      where: (jobs, { eq }) => eq(jobs.companyId, session.user.id),
+      where: (jobs, { eq }) => eq(jobs.companyId, user.id),
       orderBy: (jobs, { desc }) => [desc(jobs.createdAt)],
     });
 
@@ -45,6 +59,7 @@ export async function getCompanyJobs() {
           eq(matches.companyStatus, 'liked')
         ));
       
+      // Only pending applications count as "nuovi candidati" ('passed' = left swipe, never counted)
       const applicationResults = await db.select()
         .from(jobApplications)
         .where(and(
@@ -67,13 +82,13 @@ export async function getCompanyJobs() {
 }
 
 export async function toggleJobStatus(jobId: string, isActive: boolean) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     await db.update(jobs)
       .set({ isActive })
-      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, session.user.id)));
+      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, user.id)));
     
     revalidatePath("/jobs");
     return { success: true };
@@ -84,12 +99,12 @@ export async function toggleJobStatus(jobId: string, isActive: boolean) {
 }
 
 export async function deleteJob(jobId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     await db.delete(jobs)
-      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, session.user.id)));
+      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, user.id)));
     
     revalidatePath("/jobs");
     return { success: true };
@@ -100,16 +115,16 @@ export async function deleteJob(jobId: string) {
 }
 
 export async function updateJob(jobId: string, data: JobData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     const [updatedJob] = await db.update(jobs)
       .set({
-        ...data,
+        ...jobFields(data),
         updatedAt: new Date(),
       })
-      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, session.user.id)))
+      .where(and(eq(jobs.id, jobId), eq(jobs.companyId, user.id)))
       .returning();
 
     if (!updatedJob) return { error: "Ricerca non trovata o non autorizzato" };
@@ -125,12 +140,12 @@ export async function updateJob(jobId: string, data: JobData) {
 }
 
 export async function getJobById(jobId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     const job = await db.query.jobs.findFirst({
-      where: and(eq(jobs.id, jobId), eq(jobs.companyId, session.user.id)),
+      where: and(eq(jobs.id, jobId), eq(jobs.companyId, user.id)),
     });
 
     if (!job) return { error: "Ricerca non trovata" };

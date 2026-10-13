@@ -1,99 +1,187 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/db";
-import { users, professionalProfiles, matches, jobs, jobApplications } from "@/db/schema";
-import { eq, and, notInArray, desc, sql } from "drizzle-orm";
+import { users, professionalProfiles, matches, jobApplications, reviews } from "@/db/schema";
+import { eq, and, desc, sql, isNull, inArray, notExists } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { sendEmail } from "@/lib/mail";
+import { sendEmail, sendInBackground } from "@/lib/mail";
 import { MatchEmail } from "@/emails/MatchEmail";
+import { publicUserColumns, companyWithProfile, professionalWithProfile } from "@/db/safe-columns";
+import { getSkillLabelMap } from "@/lib/skill-catalog";
+import { skillLabel } from "@/lib/skill-slugs";
+import { formatRate } from "@/lib/utils";
+import { requireUser } from "@/lib/auth-guard";
+import { appUrl } from "@/lib/app-url";
+import { companyDisplayName, professionalDisplayName } from "@/lib/display-name";
 
-export async function getMatches() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+const mutualLike = and(eq(matches.professionalStatus, "liked"), eq(matches.companyStatus, "liked"));
 
-  const userId = session.user.id;
-  const role = session.user.role;
+// The match list loads only what it renders: the counterpart, the call state and whether
+// the viewer already left a review.
+const listColumns = { id: true, matchedAt: true, scheduledAt: true } as const;
+const slotIds = { columns: { id: true } } as const;
 
-  try {
-    const userMatches = await db.query.matches.findMany({
-      where: role === 'company' 
-        ? and(eq(matches.companyId, userId), eq(matches.professionalStatus, 'liked'), eq(matches.companyStatus, 'liked'))
-        : and(eq(matches.professionalId, userId), eq(matches.professionalStatus, 'liked'), eq(matches.companyStatus, 'liked')),
+async function loadMatchList(userId: string, role: string | null) {
+  const viewerReview = { columns: { id: true }, where: eq(reviews.authorId, userId), limit: 1 } as const;
+  const callState = (m: { id: string; matchedAt: Date | null; scheduledAt: Date | null; proposedSlots: unknown[]; reviews: unknown[] }) => ({
+    id: m.id,
+    matchedAt: m.matchedAt,
+    status: "Match confermato",
+    // Call state, used by the list to say what happens next
+    proposedSlotCount: m.proposedSlots.length,
+    scheduledAt: m.scheduledAt,
+    hasReviewed: m.reviews.length > 0,
+  });
+
+  if (role === "company") {
+    const rows = await db.query.matches.findMany({
+      where: and(eq(matches.companyId, userId), mutualLike),
+      columns: listColumns,
       with: {
-        professional: { 
-          with: { professionalProfile: true } 
+        professional: {
+          columns: { name: true, image: true },
+          with: {
+            professionalProfile: {
+              columns: { firstName: true, lastName: true, title: true, photoUrl: true, averageRating: true, reviewCount: true },
+            },
+          },
         },
-        company: { 
-          with: { companyProfile: true } 
-        },
-        job: true,
+        proposedSlots: slotIds,
+        reviews: viewerReview,
       },
       orderBy: [desc(matches.matchedAt)],
     });
+    return rows.map((m) => {
+      const profile = m.professional?.professionalProfile;
+      return {
+        ...callState(m),
+        targetName: professionalDisplayName(m.professional),
+        targetTitle: profile?.title ?? null,
+        targetImage: profile?.photoUrl || m.professional?.image || null,
+        targetRating: profile?.averageRating || "0.0",
+        targetReviewCount: profile?.reviewCount || 0,
+      };
+    });
+  }
 
+  const rows = await db.query.matches.findMany({
+    where: and(eq(matches.professionalId, userId), mutualLike),
+    columns: listColumns,
+    with: {
+      company: {
+        columns: { name: true, image: true },
+        with: {
+          companyProfile: { columns: { companyName: true, logoUrl: true, averageRating: true, reviewCount: true } },
+        },
+      },
+      job: { columns: { title: true } },
+      proposedSlots: slotIds,
+      reviews: viewerReview,
+    },
+    orderBy: [desc(matches.matchedAt)],
+  });
+  return rows.map((m) => {
+    const profile = m.company?.companyProfile;
     return {
-      success: true,
-      data: userMatches.map(m => {
-        const isCompanyView = role === 'company';
-        const targetUser = isCompanyView ? m.professional : m.company;
-        const targetProfile = isCompanyView ? m.professional?.professionalProfile : m.company?.companyProfile;
-        
-        let targetName = "";
-        if (isCompanyView) {
-          targetName = m.professional?.professionalProfile?.firstName 
-            ? `${m.professional.professionalProfile.firstName} ${m.professional.professionalProfile.lastName}` 
-            : targetUser?.name || "Professionista";
-        } else {
-          targetName = m.company?.companyProfile?.companyName || targetUser?.name || "Azienda";
-        }
-
-        return {
-          id: m.id,
-          matchedAt: m.matchedAt,
-          targetName,
-          targetTitle: isCompanyView ? (m.professional?.professionalProfile?.title) : (m.job?.title || "Opportunità IT"),
-          targetImage: isCompanyView 
-            ? (m.professional?.professionalProfile?.photoUrl || m.professional?.image)
-            : (m.company?.companyProfile?.logoUrl || m.company?.image),
-          targetRating: targetProfile?.averageRating || "0.0",
-          targetReviewCount: targetProfile?.reviewCount || 0,
-          status: "Match confermato",
-        };
-      })
+      ...callState(m),
+      targetName: companyDisplayName(m.company),
+      targetTitle: m.job?.title || "Opportunità IT",
+      targetImage: profile?.logoUrl || m.company?.image || null,
+      targetRating: profile?.averageRating || "0.0",
+      targetReviewCount: profile?.reviewCount || 0,
     };
-  } catch (error) {
-    console.error("Error fetching matches:", error);
-    return { error: "Errore durante il caricamento dei match" };
+  });
+}
+
+// Applications the professional is still waiting on, or that were turned down.
+// Accepted ones are already in the match list; 'passed' ones are left swipes, not applications.
+async function loadMyApplications(professionalId: string) {
+  const applications = await db.query.jobApplications.findMany({
+    where: and(
+      eq(jobApplications.professionalId, professionalId),
+      inArray(jobApplications.status, ["pending", "rejected"])
+    ),
+    columns: { id: true, status: true, createdAt: true },
+    with: {
+      job: {
+        columns: { title: true, location: true, remoteOk: true },
+        with: {
+          company: {
+            columns: { name: true, image: true },
+            with: { companyProfile: { columns: { companyName: true, logoUrl: true } } },
+          },
+        },
+      },
+    },
+    orderBy: (apps, { desc }) => [desc(apps.createdAt)],
+  });
+
+  return applications.map((a) => ({
+    id: a.id,
+    status: a.status as "pending" | "rejected",
+    createdAt: a.createdAt,
+    jobTitle: a.job.title,
+    location: a.job.location || (a.job.remoteOk ? "Remote" : null),
+    companyName: companyDisplayName(a.job.company),
+    companyLogo: a.job.company?.companyProfile?.logoUrl || a.job.company?.image || null,
+  }));
+}
+
+// Each half of the /matches page fails on its own, as when they were two separate calls.
+async function settle<T>(promise: Promise<T>, error: string, log: string): Promise<{ success: true; data: T } | { success?: undefined; error: string }> {
+  try {
+    return { success: true, data: await promise };
+  } catch (e) {
+    console.error(log, e);
+    return { error };
   }
 }
 
-export async function getPotentialMatches() {
-  const session = await auth();
-  if (!session?.user?.id || !session.user.role) {
-    return { error: "Non autorizzato" };
-  }
+/** The /matches page in one call: the match list and, for professionals, their applications. */
+export async function getMatches() {
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
-  const userId = session.user.id;
-  const role = session.user.role;
+  const [matchList, applications] = await Promise.all([
+    settle(loadMatchList(user.id, user.role), "Errore durante il caricamento dei match", "Error fetching matches:"),
+    user.role === "professional"
+      ? settle(loadMyApplications(user.id), "Errore durante il caricamento delle candidature", "Error fetching my applications:")
+      : undefined,
+  ]);
+
+  if (!matchList.success) return { error: matchList.error, applications };
+  return { success: true as const, data: matchList.data, applications };
+}
+
+export async function getPotentialMatches() {
+  const user = await requireUser();
+  if ("error" in user || !user.role) return { error: "Non autorizzato" };
+
+  const userId = user.id;
+  const role = user.role;
 
   try {
     if (role === "company") {
-      // Get IDs of professionals already interacted with
-      const interacted = await db.query.matches.findMany({
-        where: eq(matches.companyId, userId),
-        columns: { professionalId: true }
-      });
-      const excludedIds = interacted.map(i => i.professionalId);
-
-      // Fetch random professionals
-      const potentialProfessionals = await db.query.professionalProfiles.findMany({
-        where: excludedIds.length > 0 ? notInArray(professionalProfiles.userId, excludedIds) : undefined,
-        with: {
-          user: true
-        },
-        limit: 20,
-      });
+      const [potentialProfessionals, labelBySlug] = await Promise.all([
+        db.query.professionalProfiles.findMany({
+          // Professionals this company already has any match row with (swipe or job match) are excluded
+          where: (p) => notExists(
+            db.select({ id: matches.id })
+              .from(matches)
+              .where(and(eq(matches.companyId, userId), eq(matches.professionalId, p.userId)))
+          ),
+          with: {
+            user: { columns: { name: true, image: true } }
+          },
+          // Newest members first. Raw alias: the relational query renames the root table.
+          orderBy: (p, { desc, asc }) => [
+            desc(sql`(select "u"."created_at" from "user" "u" where "u"."id" = ${p.userId})`),
+            asc(p.userId),
+          ],
+          limit: 20,
+        }),
+        getSkillLabelMap(),
+      ]);
 
       return {
         success: true,
@@ -101,9 +189,9 @@ export async function getPotentialMatches() {
           id: p.userId,
           name: p.firstName ? `${p.firstName} ${p.lastName}` : p.user?.name || "Professionista",
           title: p.title || "Esperto IT",
-          rate: p.rateAmountEur ? `€${p.rateAmountEur}/${p.rateType === 'ral_annual' ? 'anno' : p.rateType === 'daily' ? 'gg' : 'ora'}` : "Tariffa non indicata",
+          rate: p.rateAmountEur ? formatRate(p.rateType, p.rateAmountEur) : "Tariffa non indicata",
           location: p.city || "Remote",
-          skills: p.topSkills || [],
+          skills: (p.topSkills || []).map(s => skillLabel(s, labelBySlug)),
           image: p.photoUrl || p.user?.image,
           bioShort: p.bioShort || "",
           type: "professional" as const,
@@ -113,9 +201,13 @@ export async function getPotentialMatches() {
 
     } else if (role === "professional") {
       // Get professional profile to filter by skills
-      const profile = await db.query.professionalProfiles.findFirst({
-        where: eq(professionalProfiles.userId, userId),
-      });
+      const [profile, labelBySlug] = await Promise.all([
+        db.query.professionalProfiles.findFirst({
+          where: eq(professionalProfiles.userId, userId),
+          columns: { topSkills: true, secondarySkills: true },
+        }),
+        getSkillLabelMap(),
+      ]);
 
       if (!profile) return { error: "Profilo non trovato" };
 
@@ -124,27 +216,32 @@ export async function getPotentialMatches() {
         ...(profile.secondarySkills || [])
       ];
 
-      // Get IDs of jobs already applied to or skipped (skipped logic not fully implemented yet, but excluding applied)
-      const applied = await db.query.jobApplications.findMany({
-        where: eq(jobApplications.professionalId, userId),
-        columns: { jobId: true }
-      });
-      const excludedJobIds = applied.map(a => a.jobId);
-
-      // Fetch jobs matching skills
+      // Active jobs matching the skills, minus the ones already applied to, passed on
+      // (left swipe) or matched.
       const potentialJobs = await db.query.jobs.findMany({
-        where: and(
-          eq(jobs.isActive, true),
-          excludedJobIds.length > 0 ? notInArray(jobs.id, excludedJobIds) : undefined,
-          userSkills.length > 0 
-            ? sql`${jobs.skills} && ARRAY[${sql.join(userSkills.map(s => sql`${s}`), sql`, `)}]::text[]` 
+        where: (j) => and(
+          eq(j.isActive, true),
+          notExists(
+            db.select({ id: jobApplications.id })
+              .from(jobApplications)
+              .where(and(eq(jobApplications.professionalId, userId), eq(jobApplications.jobId, j.id)))
+          ),
+          notExists(
+            db.select({ id: matches.id })
+              .from(matches)
+              .where(and(eq(matches.professionalId, userId), eq(matches.jobId, j.id)))
+          ),
+          userSkills.length > 0
+            ? sql`${j.skills} && ARRAY[${sql.join(userSkills.map(s => sql`${s}`), sql`, `)}]::text[]`
             : undefined
         ),
         with: {
           company: {
-            with: { companyProfile: true }
+            columns: { image: true },
+            with: { companyProfile: { columns: { companyName: true, logoUrl: true } } }
           }
         },
+        orderBy: (j, { desc }) => [desc(j.createdAt), desc(j.id)],
         limit: 20,
       });
 
@@ -154,11 +251,9 @@ export async function getPotentialMatches() {
           id: j.id,
           name: j.title,
           title: j.company?.companyProfile?.companyName || "Azienda IT",
-          rate: j.rateType === 'ral_annual' 
-            ? `€${j.budgetMinEur}-${j.budgetMaxEur} RAL` 
-            : `€${j.budgetMinEur}-${j.budgetMaxEur}/${j.rateType === 'daily' ? 'gg' : 'ora'}`,
+          rate: formatRate(j.rateType, j.budgetMinEur, j.budgetMaxEur),
           location: j.location || "Remote",
-          skills: j.skills || [],
+          skills: (j.skills || []).map(s => skillLabel(s, labelBySlug)),
           image: j.company?.companyProfile?.logoUrl || j.company?.image,
           bioShort: j.description || "",
           type: "job" as const,
@@ -175,67 +270,65 @@ export async function getPotentialMatches() {
 }
 
 export async function recordSwipe(targetId: string, targetType: "professional" | "company", direction: "left" | "right") {
-  const session = await auth();
-  if (!session?.user?.id || !session.user.role) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user || !user.role) return { error: "Non autorizzato" };
 
-  const userId = session.user.id;
-  const role = session.user.role;
+  const userId = user.id;
+  const role = user.role;
   const status = direction === "right" ? "liked" : "passed";
 
   try {
-    const filter = role === 'company' 
-      ? and(eq(matches.companyId, userId), eq(matches.professionalId, targetId))
-      : and(eq(matches.professionalId, userId), eq(matches.companyId, targetId));
-    
+    // Swipe rows are the ones without a job; job matches are created by acceptApplicant.
+    const filter = role === 'company'
+      ? and(eq(matches.companyId, userId), eq(matches.professionalId, targetId), isNull(matches.jobId))
+      : and(eq(matches.professionalId, userId), eq(matches.companyId, targetId), isNull(matches.jobId));
+
     const existingMatch = await db.query.matches.findFirst({ where: filter });
 
     if (existingMatch) {
-      const updates = role === 'company' 
-        ? { companyStatus: status as "liked" | "passed" } 
+      const updates = role === 'company'
+        ? { companyStatus: status as "liked" | "passed" }
         : { professionalStatus: status as "liked" | "passed" };
-        
+
       const isMatch = (status === 'liked' && (role === 'company' ? existingMatch.professionalStatus === 'liked' : existingMatch.companyStatus === 'liked'));
-      
+
       await db.update(matches)
         .set({ ...updates, matchedAt: isMatch ? new Date() : existingMatch.matchedAt })
         .where(eq(matches.id, existingMatch.id));
-      
+
       if (isMatch) {
-        // Send Match Emails
+        // Match emails go out after the response
         try {
-          const [user, target] = await Promise.all([
-            db.query.users.findFirst({
-              where: eq(users.id, userId),
-              with: { professionalProfile: true, companyProfile: true }
-            }),
-            db.query.users.findFirst({
-              where: eq(users.id, targetId),
-              with: { professionalProfile: true, companyProfile: true }
-            })
+          const withProfiles = { columns: publicUserColumns, with: { professionalProfile: true, companyProfile: true } } as const;
+          const [me, target] = await Promise.all([
+            db.query.users.findFirst({ where: eq(users.id, userId), ...withProfiles }),
+            db.query.users.findFirst({ where: eq(users.id, targetId), ...withProfiles }),
           ]);
 
-          if (user && target) {
-            const userName = (user.role === 'company' ? user.companyProfile?.companyName : `${user.professionalProfile?.firstName || ''} ${user.professionalProfile?.lastName || ''}`.trim()) || user.name || "Utente";
-            const targetName = (target.role === 'company' ? target.companyProfile?.companyName : `${target.professionalProfile?.firstName || ''} ${target.professionalProfile?.lastName || ''}`.trim()) || target.name || "Utente";
-            
-            const userImage = user.role === 'company' ? user.companyProfile?.logoUrl : user.professionalProfile?.photoUrl;
+          if (me && target) {
+            const nameOf = (u: typeof me) =>
+              u.role === "company" ? companyDisplayName(u, "Utente") : professionalDisplayName(u, "Utente");
+            const userName = nameOf(me);
+            const targetName = nameOf(target);
+
+            const userImage = me.role === 'company' ? me.companyProfile?.logoUrl : me.professionalProfile?.photoUrl;
             const targetImage = target.role === 'company' ? target.companyProfile?.logoUrl : target.professionalProfile?.photoUrl;
 
-            const matchUrl = `${process.env.NEXTAUTH_URL}/matches/${existingMatch.id}`;
+            const matchUrl = appUrl(`/matches/${existingMatch.id}`);
 
-            await Promise.all([
-              sendEmail({
-                to: user.email,
+            sendInBackground(`match emails, match ${existingMatch.id}`, [
+              () => sendEmail({
+                to: me.email,
                 subject: "Nuovo Match su Skillr!",
                 react: MatchEmail({
                   userName,
                   matchedName: targetName,
                   matchedImage: targetImage || undefined,
-                  role: user.role as 'professional' | 'company',
+                  role: me.role as 'professional' | 'company',
                   matchUrl
                 })
               }),
-              sendEmail({
+              () => sendEmail({
                 to: target.email,
                 subject: "Nuovo Match su Skillr!",
                 react: MatchEmail({
@@ -245,25 +338,34 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
                   role: target.role as 'professional' | 'company',
                   matchUrl
                 })
-              })
+              }),
             ]);
           }
         } catch (emailError) {
           console.error("Error sending match emails:", emailError);
         }
       }
-      
+
       revalidatePath("/dashboard");
       revalidatePath("/matches");
       return { success: true, isMatch, matchId: existingMatch.id };
     } else {
+      const ownStatus = status as "liked" | "passed";
+      // A concurrent swipe on the same pair lands on the unique key: keep this side's choice.
       const newMatch = await db.insert(matches).values({
         companyId: role === 'company' ? userId : targetId,
         professionalId: role === 'professional' ? userId : targetId,
-        companyStatus: role === 'company' ? status as "liked" | "passed" : 'pending',
-        professionalStatus: role === 'professional' ? status as "liked" | "passed" : 'pending',
-      }).returning({ id: matches.id });
-      
+        companyStatus: role === 'company' ? ownStatus : 'pending',
+        professionalStatus: role === 'professional' ? ownStatus : 'pending',
+      })
+        .onConflictDoUpdate({
+          // Swipe rows (no job) are unique per pair through a partial index
+          target: [matches.professionalId, matches.companyId],
+          targetWhere: sql`${matches.jobId} is null`,
+          set: role === 'company' ? { companyStatus: ownStatus } : { professionalStatus: ownStatus },
+        })
+        .returning({ id: matches.id });
+
       return { success: true, isMatch: false, matchId: newMatch[0].id };
     }
   } catch (error) {
@@ -273,15 +375,15 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
 }
 
 export async function getMatchDetail(matchId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Non autorizzato" };
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
 
   try {
     const match = await db.query.matches.findFirst({
       where: eq(matches.id, matchId),
       with: {
-        professional: { with: { professionalProfile: true } },
-        company: { with: { companyProfile: true } },
+        professional: professionalWithProfile,
+        company: companyWithProfile,
         job: true,
         proposedSlots: true,
         reviews: true,
@@ -291,39 +393,36 @@ export async function getMatchDetail(matchId: string) {
     if (!match) return { error: "Match non trovato" };
 
     // Check authorization: must be either the professional or the company
-    if (match.professionalId !== session.user.id && match.companyId !== session.user.id) {
+    if (match.professionalId !== user.id && match.companyId !== user.id) {
       return { error: "Non autorizzato a vedere questo match" };
     }
 
-    const isCompanyView = session.user.role === 'company';
+    const isCompanyView = user.role === 'company';
     const targetUser = isCompanyView ? match.professional : match.company;
+    const professionalProfile = match.professional?.professionalProfile;
 
-    const hasReviewed = match.reviews.some(r => r.authorId === session.user.id);
+    const hasReviewed = match.reviews.some(r => r.authorId === user.id);
 
     return {
       success: true,
       data: {
         ...match,
         targetId: targetUser?.id,
-        targetName: (isCompanyView 
-          ? `${match.professional?.professionalProfile?.firstName || ''} ${match.professional?.professionalProfile?.lastName || ''}`.trim() 
-          : match.company?.companyProfile?.companyName) || targetUser?.name || "Utente",
-        targetTitle: isCompanyView ? match.professional?.professionalProfile?.title : (match.job?.title || "Opportunità IT"),
-        targetImage: isCompanyView 
-          ? (match.professional?.professionalProfile?.photoUrl || match.professional?.image)
+        targetName: isCompanyView
+          ? professionalDisplayName(match.professional, "Utente")
+          : companyDisplayName(match.company, "Utente"),
+        targetTitle: isCompanyView ? professionalProfile?.title : (match.job?.title || "Opportunità IT"),
+        targetImage: isCompanyView
+          ? (professionalProfile?.photoUrl || match.professional?.image)
           : (match.company?.companyProfile?.logoUrl || match.company?.image),
         targetEmail: targetUser?.email,
-        targetBio: isCompanyView 
-          ? (match.professional?.professionalProfile?.bioShort || "")
+        targetBio: isCompanyView
+          ? (professionalProfile?.bioShort || "")
           : (match.company?.companyProfile?.description || ""),
-        targetSkills: isCompanyView ? (match.professional?.professionalProfile?.topSkills || []) : [],
-        targetRate: isCompanyView 
-          ? (match.professional?.professionalProfile?.rateAmountEur 
-              ? `€${match.professional.professionalProfile.rateAmountEur}/${match.professional.professionalProfile.rateType === 'ral_annual' ? 'RAL' : match.professional.professionalProfile.rateType === 'daily' ? 'gg' : 'ora'}`
-              : null)
-          : (match.job?.budgetMinEur 
-              ? `€${match.job.budgetMinEur}-${match.job.budgetMaxEur} ${match.job.rateType === 'ral_annual' ? 'RAL' : match.job.rateType === 'daily' ? '/gg' : '/ora'}`
-              : null),
+        targetSkills: isCompanyView ? (professionalProfile?.topSkills || []) : [],
+        targetRate: isCompanyView
+          ? (professionalProfile?.rateAmountEur ? formatRate(professionalProfile.rateType, professionalProfile.rateAmountEur) : null)
+          : (match.job?.budgetMinEur ? formatRate(match.job.rateType, match.job.budgetMinEur, match.job.budgetMaxEur) : null),
         hasReviewed,
       }
     };

@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
 export const rateTypeEnum = pgEnum('rate_type', ['ral_annual', 'daily', 'hourly']);
@@ -8,7 +8,8 @@ export const paServiceEnum = pgEnum('pa_service', ['match', 'outreach', 'codesig
 export const paEntityTypeEnum = pgEnum('pa_entity_type', ['municipality', 'region', 'cpi', 'ngo', 'foundation']);
 export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['booked', 'cancelled', 'completed']);
 export const paSubscriberStatusEnum = pgEnum('pa_subscriber_status', ['pending', 'active', 'unsubscribed']);
-export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected']);
+// 'passed' = the professional swiped left on the job (kept so the job doesn't come back in the feed)
+export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected', 'passed']);
 
 
 export const users = pgTable("user", {
@@ -70,6 +71,7 @@ export const verificationCodes = pgTable("verification_codes", {
   email: text("email").notNull(),
   code: text("code").notNull(),
   expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  attempts: integer("attempts").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -133,7 +135,11 @@ export const jobApplications = pgTable("job_applications", {
   professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   status: jobApplicationStatusEnum("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("job_applications_job_professional_unique").on(t.jobId, t.professionalId),
+  // The feed and "my applications" look rows up by professional alone
+  index("job_applications_professional_idx").on(t.professionalId),
+]);
 
 export const matches = pgTable("matches", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -149,7 +155,14 @@ export const matches = pgTable("matches", {
   callDuration: integer("call_duration"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  // One row per pair and job (accepted applications)
+  unique("matches_pair_job_unique").on(t.professionalId, t.companyId, t.jobId),
+  // Swipe rows have no job: one per pair. A plain unique key treats NULL job_ids as
+  // distinct, and drizzle-kit can't introspect NULLS NOT DISTINCT (every push would try
+  // to recreate the constraint), hence a partial index.
+  uniqueIndex("matches_pair_swipe_unique").on(t.professionalId, t.companyId).where(sql`${t.jobId} is null`),
+]);
 
 export const proposedSlots = pgTable("proposed_slots", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -244,7 +257,9 @@ export const interviewBookings = pgTable("interview_bookings", {
   professionalId: text("professional_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   status: interviewBookingStatusEnum("status").default("booked"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  unique("interview_bookings_event_professional_unique").on(t.eventId, t.professionalId),
+]);
 
 export const reviews = pgTable("reviews", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -255,7 +270,14 @@ export const reviews = pgTable("reviews", {
   stars: integer("stars").notNull(),
   text: text("text"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [
+  // Columns in table order: drizzle-kit introspects unique keys that way, and any other
+  // order makes every db:push drop and recreate the constraint
+  unique("reviews_author_match_unique").on(t.matchId, t.authorId),
+  unique("reviews_author_booking_unique").on(t.interviewBookingId, t.authorId),
+  // Rating aggregates are recomputed per target after every review.
+  index("reviews_target_idx").on(t.targetId),
+]);
 
 // RELATIONS
 export const usersRelations = relations(users, ({ one, many }) => ({
