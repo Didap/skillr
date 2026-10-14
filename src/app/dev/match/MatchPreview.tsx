@@ -36,6 +36,7 @@ export function MatchPreview() {
             parties={PARTIES}
             viewerRole={role}
             matchId="preview"
+            preview
             onClose={() => setOpen(false)}
           />
         )}

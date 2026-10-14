@@ -1,15 +1,18 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
+import { Fragment, memo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { formatDayLabel, formatMessageTime, isSameRomeDay } from "@/lib/chat/format";
+import { formatDayLabel, isSameRomeDay } from "@/lib/chat/format";
+import type { ThreadMessage } from "@/lib/chat/merge";
+import { spring } from "@/lib/motion";
+import { formatEventTime } from "@/lib/rome-time";
 import type { ThreadPage } from "@/lib/chat/types";
 import { ChatAttachment } from "./ChatAttachment";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMenu } from "./ChatMenu";
 import { useChatVisible } from "./ChatVisibility";
-import { useChatThread, type ThreadMessage } from "./useChatThread";
+import { useChatThread } from "./useChatThread";
 
 interface ChatThreadProps {
   matchId: string;
@@ -49,10 +52,10 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
   }, [thread.messages, viewerId]);
 
   // Images have no reserved size: re-pin to the bottom once they load
-  const onImageLoad = () => {
+  const onImageLoad = useCallback(() => {
     const el = listRef.current;
     if (el && atBottom.current) el.scrollTop = el.scrollHeight;
-  };
+  }, []);
 
   // A hidden thread has no height: land at the bottom when it is shown
   useEffect(() => {
@@ -131,8 +134,8 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
                           : null
                       }
                       onImageLoad={onImageLoad}
-                      onRetry={() => thread.retry(m.clientId!)}
-                      onDiscard={() => thread.discard(m.clientId!)}
+                      onRetry={thread.retry}
+                      onDiscard={thread.discard}
                     />
                   </Fragment>
                 );
@@ -162,7 +165,7 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
   );
 }
 
-function MessageBubble({
+const MessageBubble = memo(function MessageBubble({
   message,
   mine,
   receipt,
@@ -174,14 +177,15 @@ function MessageBubble({
   mine: boolean;
   receipt: "Letto" | "Inviato" | null;
   onImageLoad: () => void;
-  onRetry: () => void;
-  onDiscard: () => void;
+  onRetry: (clientId: string) => void;
+  onDiscard: (clientId: string) => void;
 }) {
+  const { clientId } = message;
   return (
     <motion.li
       initial={{ opacity: 0, y: 8, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 480, damping: 32 }}
+      transition={spring.pop}
       className={cn("flex max-w-[85%] flex-col gap-1", mine ? "self-end items-end origin-bottom-right" : "self-start items-start origin-bottom-left")}
     >
       <div
@@ -205,7 +209,7 @@ function MessageBubble({
         {message.status === "sending" && "Invio…"}
         {message.status === "sent" && (
           <>
-            <time dateTime={message.createdAt}>{formatMessageTime(message.createdAt)}</time>
+            <time dateTime={message.createdAt}>{formatEventTime(message.createdAt)}</time>
             {receipt && <span className={cn(receipt === "Letto" && "text-viola font-semibold")}> · {receipt}</span>}
           </>
         )}
@@ -213,10 +217,10 @@ function MessageBubble({
       {message.status === "failed" && (
         <p className="flex flex-wrap items-center justify-end gap-x-3 px-1 text-label text-rosso-700">
           <span>Non inviato{message.error ? `: ${message.error}` : ""}</span>
-          <button type="button" onClick={onRetry} className="font-bold underline underline-offset-2">Riprova</button>
-          <button type="button" onClick={onDiscard} className="text-viola-500 underline underline-offset-2">Elimina</button>
+          <button type="button" onClick={() => clientId && onRetry(clientId)} className="font-bold underline underline-offset-2">Riprova</button>
+          <button type="button" onClick={() => clientId && onDiscard(clientId)} className="text-viola-500 underline underline-offset-2">Elimina</button>
         </p>
       )}
     </motion.li>
   );
-}
+});

@@ -14,17 +14,14 @@ interface ChatAttachmentProps {
 export function ChatAttachment({ attachment, mine, pending, onImageLoad }: ChatAttachmentProps) {
   // No URL yet: uploading while pending, otherwise (e.g. failed) just the file name
   if (!attachment.url) {
-    if (!pending) {
-      return (
-        <span className="flex items-center gap-2 text-sm">
-          <FileText size={16} className="shrink-0" aria-hidden="true" />
-          <span className="truncate">{attachment.name}</span>
-        </span>
-      );
-    }
+    const Icon = pending ? Loader2 : FileText;
     return (
       <span className="flex items-center gap-2 text-sm">
-        <Loader2 size={16} className="animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
+        <Icon
+          size={16}
+          className={cn("shrink-0", pending && "animate-spin motion-reduce:animate-none")}
+          aria-hidden="true"
+        />
         <span className="truncate">{attachment.name}</span>
       </span>
     );

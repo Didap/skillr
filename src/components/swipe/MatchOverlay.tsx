@@ -11,6 +11,7 @@ import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
 import { sendMessage } from "@/app/actions/chat";
+import { safeAction } from "@/lib/chat/call-action";
 import { MAX_BODY_LENGTH } from "@/lib/chat/types";
 import { hankenBlackItalic } from "./match-font";
 import { cn, inertOutside, isEditableTarget } from "@/lib/utils";
@@ -21,6 +22,8 @@ interface MatchOverlayProps {
   // Who is looking: decides who the icebreakers are addressed to
   viewerRole: "professional" | "company";
   matchId: string;
+  /** Dev preview: nothing is sent to the real chat */
+  preview?: boolean;
   onClose: () => void;
 }
 
@@ -63,7 +66,7 @@ function initials(name: string) {
  * safe-area aware. The cards fly in and meet on the rosa block, the "lll" badge pops
  * where they touch, then the icebreakers and actions settle.
  */
-export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOverlayProps) {
+export function MatchOverlay({ parties, viewerRole, matchId, preview, onClose }: MatchOverlayProps) {
   const reduceMotion = !!useReducedMotion();
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -148,6 +151,7 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
 
         <Icebreaker
           matchId={matchId}
+          preview={preview}
           suggestions={ICEBREAKERS[viewerRole]}
           recipientName={recipientName}
           reduceMotion={reduceMotion}
@@ -290,17 +294,19 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
 
 /*
  * First message after the match: suggested lines plus a text field, as in the Figma.
- * Messages go to the real chat; the dev preview (matchId "preview") keeps them local.
+ * Messages go to the real chat; the dev preview keeps them local.
  */
 type SentLine = { id: string; text: string; status: "sending" | "sent" | "failed"; error?: string };
 
 function Icebreaker({
   matchId,
+  preview,
   suggestions,
   recipientName,
   reduceMotion,
 }: {
   matchId: string;
+  preview?: boolean;
   suggestions: string[];
   recipientName: string;
   reduceMotion: boolean;
@@ -308,7 +314,6 @@ function Icebreaker({
   const [draft, setDraft] = useState("");
   const [sent, setSent] = useState<SentLine[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const preview = matchId === "preview";
 
   const send = async (e: FormEvent) => {
     e.preventDefault();
@@ -320,7 +325,7 @@ function Icebreaker({
     haptic(10);
     if (preview) return;
 
-    const res = await sendMessage(matchId, { clientId: id, body: text }).catch(() => ({ error: "Connessione assente. Riprova." }));
+    const res = await safeAction(sendMessage(matchId, { clientId: id, body: text }));
     setSent((prev) =>
       prev.map((m): SentLine => (m.id !== id ? m : "error" in res ? { ...m, status: "failed", error: res.error } : { ...m, status: "sent" }))
     );
