@@ -9,6 +9,7 @@ import { loadConversation, readMarkerOf } from "@/lib/chat/access";
 import { isInMatchFolder } from "@/lib/chat/attachments";
 import { CHAT_EVENTS, matchChannel, userChannel } from "@/lib/chat/channels";
 import { toChatMessage } from "@/lib/chat/messages";
+import { unreadTotal } from "@/lib/chat/summaries";
 import {
   AFTER_LIMIT,
   ATTACHMENT_MIME_TYPES,
@@ -155,5 +156,44 @@ export async function sendMessage(matchId: string, input: SendMessageInput) {
     if (error instanceof ConversationClosed) return { error: "Questa conversazione è chiusa" };
     console.error("Error sending chat message:", error);
     return { error: "Messaggio non inviato. Riprova." };
+  }
+}
+
+/** Moves the viewer's read marker to now and tells the other side (read receipt). */
+export async function markRead(matchId: string, socketId?: string) {
+  const ctx = await viewerConversation(matchId);
+  if ("error" in ctx) return { error: ctx.error };
+  const { user, convo } = ctx;
+  const socket = socketIdSchema.parse(socketId);
+
+  try {
+    const marker = convo.side === "professional" ? { professionalLastReadAt: sql`now()` } : { companyLastReadAt: sql`now()` };
+    const [row] = await db
+      .update(matches)
+      .set(marker)
+      .where(eq(matches.id, matchId))
+      .returning({ professionalLastReadAt: matches.professionalLastReadAt, companyLastReadAt: matches.companyLastReadAt });
+    const readAt = (convo.side === "professional" ? row.professionalLastReadAt : row.companyLastReadAt)!.toISOString();
+
+    await Promise.all([
+      publish(matchChannel(matchId), CHAT_EVENTS.read, { userId: user.id, readAt }, socket),
+      // Not skipping the socket: the reader's own badge must update too
+      publish(userChannel(user.id), CHAT_EVENTS.inbox, { matchId }),
+    ]);
+    return { success: true as const, data: { readAt } };
+  } catch (error) {
+    console.error("Error marking chat as read:", error);
+    return { error: "Errore durante l'aggiornamento della chat" };
+  }
+}
+
+export async function getUnreadTotal() {
+  const user = await requireUser();
+  if ("error" in user) return { error: user.error };
+  try {
+    return { success: true as const, data: await unreadTotal(user.id) };
+  } catch (error) {
+    console.error("Error counting unread messages:", error);
+    return { error: "Errore durante il conteggio dei messaggi" };
   }
 }
