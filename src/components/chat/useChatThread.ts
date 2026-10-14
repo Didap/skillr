@@ -5,11 +5,12 @@ import type { Channel } from "pusher-js";
 import { getMessages, markRead, sendMessage, uploadChatAttachment } from "@/app/actions/chat";
 import { CHAT_EVENTS, matchChannel } from "@/lib/chat/channels";
 import { confirmPending, latestReadAt, laterOf, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
-import type { ChatMessage, ThreadPage } from "@/lib/chat/types";
+import { AFTER_LIMIT, type ChatMessage, type ThreadPage } from "@/lib/chat/types";
 import { currentSocketId, getPusherClient } from "@/lib/pusher/client";
 
 export type { OutgoingDraft, ThreadMessage };
 
+const MAX_CATCH_UP_BATCHES = 10;
 const POLL_MS = 10_000;
 const TYPING_THROTTLE_MS = 3_000;
 const TYPING_TTL_MS = 5_000;
@@ -69,15 +70,20 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
 
   const catchUp = useCallback(async () => {
     const epoch = metaEpoch.current;
-    const after = messagesRef.current.findLast((m) => m.status === "sent")?.id;
-    const res = await getMessages(matchId, after ? { after } : {}).catch(() => null);
-    if (!res || "error" in res) return;
-    const { messages: fresh } = res.data;
-    if (fresh.length > 0) setMessages((prev) => mergeMessages(prev, fresh));
-    // Never move the read receipt backwards; a response that raced a block/unblock must not undo it
-    setOtherLastReadAt((current) => laterOf(current, latestReadAt(res.data.otherLastReadAt, fresh, viewerId)));
-    if (metaEpoch.current === epoch) setBlocked(res.data.blockedById);
-    if (fresh.some((m) => m.senderId !== viewerId)) scheduleRead();
+    let after = messagesRef.current.findLast((m) => m.status === "sent")?.id;
+    // An `after` fetch is capped at AFTER_LIMIT: a full batch means there may be more
+    for (let batch = 0; batch < MAX_CATCH_UP_BATCHES; batch++) {
+      const res = await getMessages(matchId, after ? { after } : {}).catch(() => null);
+      if (!res || "error" in res) return;
+      const { messages: fresh } = res.data;
+      if (fresh.length > 0) setMessages((prev) => mergeMessages(prev, fresh));
+      // Never move the read receipt backwards; a response that raced a block/unblock must not undo it
+      setOtherLastReadAt((current) => laterOf(current, latestReadAt(res.data.otherLastReadAt, fresh, viewerId)));
+      if (metaEpoch.current === epoch) setBlocked(res.data.blockedById);
+      if (fresh.some((m) => m.senderId !== viewerId)) scheduleRead();
+      if (!after || fresh.length < AFTER_LIMIT) return;
+      after = fresh[fresh.length - 1].id;
+    }
   }, [matchId, viewerId, scheduleRead]);
 
   // Realtime
