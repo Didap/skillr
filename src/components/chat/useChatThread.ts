@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Channel } from "pusher-js";
 import { getMessages, markRead, sendMessage, uploadChatAttachment } from "@/app/actions/chat";
 import { CHAT_EVENTS, matchChannel } from "@/lib/chat/channels";
-import { confirmPending, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
+import { confirmPending, latestReadAt, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
 import type { ChatMessage, ThreadPage } from "@/lib/chat/types";
 import { currentSocketId, getPusherClient } from "@/lib/pusher/client";
 
@@ -66,7 +66,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
     if (!res || "error" in res) return;
     const { messages: fresh } = res.data;
     if (fresh.length > 0) setMessages((prev) => mergeMessages(prev, fresh));
-    setOtherLastReadAt(res.data.otherLastReadAt);
+    setOtherLastReadAt(latestReadAt(res.data.otherLastReadAt, fresh, viewerId));
     setBlockedById(res.data.blockedById);
     if (fresh.some((m) => m.senderId !== viewerId)) scheduleRead();
   }, [matchId, viewerId, scheduleRead]);
@@ -88,6 +88,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
     channel.bind(CHAT_EVENTS.newMessage, (message: ChatMessage) => {
       setMessages((prev) => mergeMessages(prev, [message]));
       if (message.senderId !== viewerId) {
+        setOtherLastReadAt((current) => latestReadAt(current, [message], viewerId));
         setOtherTyping(false);
         scheduleRead();
       }

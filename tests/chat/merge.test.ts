@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmPending, mergeMessages, type ThreadMessage } from "@/lib/chat/merge";
+import { confirmPending, latestReadAt, mergeMessages, type ThreadMessage } from "@/lib/chat/merge";
 import type { ChatMessage } from "@/lib/chat/types";
 
 const msg = (id: string, second: number, body = id): ChatMessage => ({
@@ -35,5 +35,20 @@ describe("confirmPending", () => {
     const viaPusher = mergeMessages([pending("tmp")], [msg("real", 2)]);
     const confirmed = confirmPending(viaPusher, "tmp", msg("real", 2));
     expect(confirmed.map((m) => m.id)).toEqual(["real"]);
+  });
+});
+
+describe("latestReadAt", () => {
+  const from = (senderId: string, second: number): ChatMessage => ({ ...msg(`${senderId}${second}`, second), senderId });
+
+  it("moves forward to the newest message from the other side", () => {
+    expect(latestReadAt(null, [from("u2", 5), from("u2", 9)], "u1")).toBe(msg("x", 9).createdAt);
+    expect(latestReadAt(msg("x", 3).createdAt, [from("u2", 5)], "u1")).toBe(msg("x", 5).createdAt);
+  });
+
+  it("never moves backwards and ignores the viewer's own messages", () => {
+    expect(latestReadAt(msg("x", 20).createdAt, [from("u2", 5)], "u1")).toBe(msg("x", 20).createdAt);
+    expect(latestReadAt(null, [from("u1", 5)], "u1")).toBeNull();
+    expect(latestReadAt(msg("x", 3).createdAt, [], "u1")).toBe(msg("x", 3).createdAt);
   });
 });

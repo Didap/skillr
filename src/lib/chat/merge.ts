@@ -36,3 +36,16 @@ export function confirmPending(prev: ThreadMessage[], clientId: string, message:
   const rest = prev.filter((m) => m.status === "sent" || m.clientId !== clientId);
   return mergeMessages(rest, [message]).map((m) => (m.id === message.id ? { ...m, clientId } : m));
 }
+
+/**
+ * Replying means the other side has seen everything before it, but sending only moves the
+ * sender's marker server-side and publishes no read event. So when the other side's message
+ * arrives, their read marker is at least that message's time (ISO strings compare as text).
+ */
+export function latestReadAt(current: string | null, messages: ChatMessage[], viewerId: string): string | null {
+  let latest = current;
+  for (const m of messages) {
+    if (m.senderId !== viewerId && (latest === null || m.createdAt > latest)) latest = m.createdAt;
+  }
+  return latest;
+}
