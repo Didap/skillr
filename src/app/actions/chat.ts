@@ -155,7 +155,8 @@ export async function sendMessage(matchId: string, input: SendMessageInput) {
     const message: ChatMessage = toChatMessage(row);
     await Promise.all([
       publish(matchChannel(matchId), CHAT_EVENTS.newMessage, message, socketId),
-      publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }, socketId),
+      // No socketId: the sender's own tab must also get the inbox update (same socket as its provider)
+      publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }),
     ]);
     return { success: true as const, data: { message, clientId } };
   } catch (error) {

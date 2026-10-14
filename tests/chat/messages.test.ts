@@ -100,7 +100,7 @@ describe("sendMessage", () => {
     expect(row.companyLastReadAt).toBeNull();
   });
 
-  it("publishes the message to the thread and an inbox update to both users, skipping the sender's socket", async () => {
+  it("publishes the message to the thread and an inbox update to both users, skipping the sender's socket only for the thread event", async () => {
     const { match, pro, company } = await seedMatch();
     signInAs(pro);
     const res = await sendMessage(match.id, { clientId: "c1", body: "Ciao", socketId: "123.456" });
@@ -109,8 +109,7 @@ describe("sendMessage", () => {
     expect(publish).toHaveBeenCalledWith(
       [`private-user-${company.id}`, `private-user-${pro.id}`],
       "inbox:update",
-      { matchId: match.id },
-      "123.456"
+      { matchId: match.id }
     );
   });
 
