@@ -9,6 +9,11 @@ vi.mock("@/lib/mail", () => ({
   sendEmail: vi.fn(async () => ({ success: true })),
   sendInBackground: vi.fn(),
 }));
+// Realtime is a side effect: tests assert on publish() calls instead
+vi.mock("@/lib/pusher/server", () => ({
+  getPusher: vi.fn(() => null),
+  publish: vi.fn(async () => {}),
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
