@@ -13,17 +13,40 @@ import { formatRate } from "@/lib/utils";
 import { requireUser } from "@/lib/auth-guard";
 import { appUrl } from "@/lib/app-url";
 import { companyDisplayName, professionalDisplayName } from "@/lib/display-name";
+import { loadChatPreviews } from "@/lib/chat/summaries";
+import type { ChatSummary } from "@/lib/chat/types";
 
 const mutualLike = and(eq(matches.professionalStatus, "liked"), eq(matches.companyStatus, "liked"));
 
 // The match list loads only what it renders: the counterpart, the call state and whether
 // the viewer already left a review.
-const listColumns = { id: true, matchedAt: true, scheduledAt: true } as const;
+const listColumns = { id: true, matchedAt: true, scheduledAt: true, lastMessageAt: true, blockedById: true } as const;
 const slotIds = { columns: { id: true } } as const;
+
+// The match list is also the chat inbox: each row gets its conversation preview, and the
+// most recent activity (last message, else the match itself) comes first.
+async function withChatPreviews<T extends { id: string; matchedAt: Date | null; lastMessageAt: Date | null; blockedById: string | null }>(
+  userId: string,
+  list: T[]
+) {
+  const previews = await loadChatPreviews(userId, list.map((m) => m.id));
+  const activity = (m: T) => (m.lastMessageAt ?? m.matchedAt)?.getTime() ?? 0;
+  return [...list]
+    .sort((a, b) => activity(b) - activity(a))
+    .map((m) => {
+      const { lastMessageAt, blockedById, ...row } = m;
+      const chat: ChatSummary = {
+        ...(previews.get(m.id) ?? { lastMessage: null, unread: 0 }),
+        lastMessageAt: lastMessageAt?.toISOString() ?? null,
+        blocked: blockedById !== null,
+      };
+      return { ...row, chat };
+    });
+}
 
 async function loadMatchList(userId: string, role: string | null) {
   const viewerReview = { columns: { id: true }, where: eq(reviews.authorId, userId), limit: 1 } as const;
-  const callState = (m: { id: string; matchedAt: Date | null; scheduledAt: Date | null; proposedSlots: unknown[]; reviews: unknown[] }) => ({
+  const callState = (m: { id: string; matchedAt: Date | null; scheduledAt: Date | null; lastMessageAt: Date | null; blockedById: string | null; proposedSlots: unknown[]; reviews: unknown[] }) => ({
     id: m.id,
     matchedAt: m.matchedAt,
     status: "Match confermato",
@@ -31,6 +54,8 @@ async function loadMatchList(userId: string, role: string | null) {
     proposedSlotCount: m.proposedSlots.length,
     scheduledAt: m.scheduledAt,
     hasReviewed: m.reviews.length > 0,
+    lastMessageAt: m.lastMessageAt,
+    blockedById: m.blockedById,
   });
 
   if (role === "company") {
@@ -51,7 +76,7 @@ async function loadMatchList(userId: string, role: string | null) {
       },
       orderBy: [desc(matches.matchedAt)],
     });
-    return rows.map((m) => {
+    return withChatPreviews(userId, rows.map((m) => {
       const profile = m.professional?.professionalProfile;
       return {
         ...callState(m),
@@ -61,7 +86,7 @@ async function loadMatchList(userId: string, role: string | null) {
         targetRating: profile?.averageRating || "0.0",
         targetReviewCount: profile?.reviewCount || 0,
       };
-    });
+    }));
   }
 
   const rows = await db.query.matches.findMany({
@@ -80,7 +105,7 @@ async function loadMatchList(userId: string, role: string | null) {
     },
     orderBy: [desc(matches.matchedAt)],
   });
-  return rows.map((m) => {
+  return withChatPreviews(userId, rows.map((m) => {
     const profile = m.company?.companyProfile;
     return {
       ...callState(m),
@@ -90,7 +115,7 @@ async function loadMatchList(userId: string, role: string | null) {
       targetRating: profile?.averageRating || "0.0",
       targetReviewCount: profile?.reviewCount || 0,
     };
-  });
+  }));
 }
 
 // Applications the professional is still waiting on, or that were turned down.
