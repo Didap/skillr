@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils";
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
   subsets: ["latin"],
-  // Italic only for the match caption (Figma: Black Italic)
-  style: ["normal", "italic"],
   display: "swap",
 });
 

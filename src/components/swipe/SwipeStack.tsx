@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { SwipeCard, type SwipeCardHandle } from "./SwipeCard";
 import { MatchOverlay } from "./MatchOverlay";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const likeButtonClass =
   "h-16 min-w-[10.5rem] px-9 rounded-full bg-rosso flex items-center justify-center text-white";
 
 export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackProps) {
+  const { data: session } = useSession();
   const [profiles] = useState<Profile[]>(initialProfiles);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matchData, setMatchData] = useState<{ matchId: string; parties: MatchParties } | null>(null);
@@ -79,9 +81,10 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
     if (res.error) {
       toast.error(res.error);
     } else if (res.isMatch) {
-      // The server sends both sides; if it couldn't, fall back to the card that was swiped
-      const them = { name: swipedProfile.name, image: swipedProfile.image, detail: swipedProfile.title || null };
-      const you = { name: "Tu", image: null, detail: null };
+      // The server sends both sides; if it couldn't, fall back to the swiped card and the
+      // session. No role pill then: the card's title may be the feed's placeholder.
+      const them = { name: swipedProfile.name, image: swipedProfile.image, detail: null };
+      const you = { name: session?.user?.name || "Tu", image: session?.user?.image ?? null, detail: null };
       setMatchData({
         matchId: res.matchId || swipedProfile.id,
         parties: res.parties ?? (userRole === "company"
