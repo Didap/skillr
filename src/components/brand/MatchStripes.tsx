@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 // One cursive "l" from the match illustration (Figma "Coppia", v2). Repeated every PERIOD
@@ -16,7 +14,8 @@ const COPIES = [-1, 0, 1, 2, 3];
 /**
  * The wavy stripes behind the match cards, meant to sit inside a rosa block that clips it
  * (overflow-hidden, rounded). Paints with currentColor (crema by default). With `loop` the
- * band drifts left forever, one "l" every `secondsPerLoop`.
+ * band drifts left forever, one "l" every `secondsPerLoop`: a CSS animation on transform,
+ * so it runs on the compositor, not in JS every frame. Still with reduced motion.
  */
 export function MatchStripes({
   className,
@@ -27,20 +26,28 @@ export function MatchStripes({
   loop?: boolean;
   secondsPerLoop?: number;
 }) {
+  const style = {
+    width: `${(BAND_W / FRAME_W) * 100}%`,
+    "--stripes-shift": `${(-PERIOD / BAND_W) * 100}%`,
+    animationDuration: `${secondsPerLoop}s`,
+  } as CSSProperties;
+
   return (
-    <motion.svg
+    <svg
       viewBox={`0 0 ${BAND_W} 290`}
       preserveAspectRatio="none"
       fill="currentColor"
-      className={cn("absolute inset-y-0 left-0 h-full text-crema", className)}
-      style={{ width: `${(BAND_W / FRAME_W) * 100}%` }}
-      animate={loop ? { x: ["0%", `${(-PERIOD / BAND_W) * 100}%`] } : undefined}
-      transition={loop ? { duration: secondsPerLoop, ease: "linear", repeat: Infinity } : undefined}
+      className={cn(
+        "absolute inset-y-0 left-0 h-full text-crema",
+        loop && "animate-stripes-drift motion-reduce:animate-none",
+        className
+      )}
+      style={style}
       aria-hidden="true"
     >
       {COPIES.map((k) => (
         <path key={k} d={STRIPE} transform={`translate(${k * PERIOD} 0)`} />
       ))}
-    </motion.svg>
+    </svg>
   );
 }
