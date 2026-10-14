@@ -17,7 +17,7 @@ export default function TermsPage() {
       <section>
         <h2>2. Descrizione del Servizio</h2>
         <p>
-          Helllo è una piattaforma di matching professionale basata sul modello &quot;doppio opt-in&quot; e &quot;zero chat&quot;. Il servizio permette a professionisti e aziende di incontrarsi tramite uno swipe reciproco e di fissare direttamente call conoscitive.
+          Helllo è una piattaforma di matching professionale basata sul modello &quot;doppio opt-in&quot;. Il servizio permette a professionisti e aziende di incontrarsi tramite uno swipe reciproco, scriversi in chat dopo il match e fissare call conoscitive.
         </p>
       </section>
 
@@ -29,7 +29,12 @@ export default function TermsPage() {
           <li>Utilizzare la piattaforma in modo professionale e rispettoso.</li>
           <li>Non creare account multipli o falsi (bot).</li>
           <li>Rispettare gli appuntamenti (call) fissati tramite il sistema.</li>
+          <li>Usare la chat solo per scopi professionali legati al match: niente spam, molestie, contenuti offensivi o richieste di denaro.</li>
+          <li>Non condividere in chat dati personali di terzi senza il loro consenso.</li>
         </ul>
+        <p>
+          Ogni utente può bloccare una conversazione o segnalarla. In caso di segnalazione il team di Helllo può leggere gli ultimi messaggi della conversazione segnalata e sospendere gli account che violano questi termini.
+        </p>
       </section>
 
       <section>

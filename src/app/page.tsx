@@ -1,4 +1,4 @@
-import { Zap, Eye, Calendar } from "lucide-react";
+import { Zap, Eye, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,9 +34,9 @@ const PILLARS = [
     muted: "text-viola-500",
   },
   {
-    icon: Calendar,
-    title: "Niente chat",
-    body: "Dopo il match, una call di 30 minuti. Tutto qui.",
+    icon: MessageCircle,
+    title: "Chat solo dopo il match",
+    body: "Vi scrivete quando vi siete scelti a vicenda, poi una call di 30 minuti.",
     card: "bg-blu text-white",
     muted: "text-crema",
   },

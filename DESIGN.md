@@ -81,6 +81,12 @@ rosso buttons). `destructive` is `rosso-700`; pair errors with an icon/text, nev
   blu "È un" sticker) spilling over a rosa block with crema stripes (`MatchStripes`) holding both
   cards tilted ±6°, joined by `LogoMark`; Black Italic caption, rosa icebreaker chips, crema
   message field, rosso CTA. Everything enters one beat at a time.
+- **Chat**: lives in the match (`/matches/[id]`; "Chat"/"Dettagli" tabs below xl, a 26rem
+  column next to the details from xl). Own bubbles viola with white text and a small
+  bottom-right corner, the other side's crema with viola text and a small bottom-left corner;
+  day separators in viola-500 labels; "Inviato"/"Letto" under the last own message. Composer:
+  crema rounded field, viola round send button, paperclip for images/PDF. Unread counts are
+  rosso badges with white bold numbers (nav "Match" item and inbox rows).
 - **Icons**: lucide, 1.75–2px stroke, viola. Verified = blu filled badge-check.
 
 ## Brand assets

@@ -24,6 +24,7 @@ export default function PrivacyPage() {
           <li><strong>Dati di Registrazione:</strong> Nome, cognome, indirizzo email e password (criptata).</li>
           <li><strong>Dati del Profilo Professionale:</strong> Titolo professionale, competenze, tariffe/RAL, bio e fotografia (caricata tramite Cloudinary).</li>
           <li><strong>Dati Aziendali:</strong> Nome azienda, Partita IVA (verificata tramite API), sede e logo.</li>
+          <li><strong>Messaggi:</strong> I messaggi e gli allegati che scambi in chat dopo un match. Sono visibili solo ai due partecipanti; il team di Helllo legge gli ultimi messaggi di una conversazione solo se viene segnalata. Vengono cancellati insieme al match o al tuo account.</li>
         </ul>
         
         <h3>Dati raccolti automaticamente</h3>
@@ -41,6 +42,7 @@ export default function PrivacyPage() {
           <li>Inviare notifiche transazionali relative a match e interviste (tramite Resend).</li>
           <li>Gestire la prenotazione di call tramite integrazione con Google Calendar.</li>
           <li>Garantire la sicurezza della piattaforma e prevenire frodi.</li>
+          <li>Permettere la chat tra utenti che hanno fatto match e gestire le segnalazioni.</li>
         </ul>
       </section>
 
@@ -51,7 +53,7 @@ export default function PrivacyPage() {
         </p>
         <ul>
           <li><strong>Tra Utenti:</strong> I dettagli del profilo sono visibili agli altri utenti durante il processo di matching (swipe).</li>
-          <li><strong>Fornitori di Servizi:</strong> Cloudinary (immagini), Resend (email), Google (Calendar API), Pusher (notifiche real-time).</li>
+          <li><strong>Fornitori di Servizi:</strong> Cloudinary (immagini e allegati della chat), Resend (email), Google (Calendar API), Pusher (consegna in tempo reale dei messaggi e delle notifiche).</li>
           <li><strong>Obblighi di Legge:</strong> Quando richiesto dalle autorità competenti.</li>
         </ul>
       </section>

@@ -233,7 +233,7 @@ Visual language follows `DESIGN.md` / the Helllo tokens in `globals.css`; no new
   `src/app/terms/page.tsx:20`, `src/app/(app)/matches/page.tsx:262-270`,
   `src/app/(app)/matches/[id]/page.tsx:208`.
 - Terms: add a section on chat conduct, reports and blocking.
-- `src/emails/MatchEmail.tsx:64`: CTA becomes "Apri la chat" (link unchanged).
+- `src/emails/MatchEmail.tsx:64`: CTA becomes "Open the chat" (the email is in English; link unchanged).
 - `.env.example`: add `CHAT_MODERATION_EMAIL`.
 
 ## Testing

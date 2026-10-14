@@ -61,7 +61,7 @@ const STEPS: Record<Role, Step[]> = {
     {
       label: "Match",
       title: "Accetti o rifiuti",
-      body: "Accetti un candidato, o un professionista ricambia il tuo like: è match. Nessuna inbox da gestire.",
+      body: "Accetti un candidato, o un professionista ricambia il tuo like: è match. Da lì potete scrivervi.",
     },
     {
       label: "Call",
