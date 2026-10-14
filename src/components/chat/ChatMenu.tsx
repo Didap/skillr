@@ -39,8 +39,8 @@ export function ChatMenu({ matchId, viewerId, otherName, blockedById, onBlockedC
   const unblock = async () => {
     const res = await unblockConversation(matchId).catch(() => OFFLINE);
     if ("error" in res) return void toast.error(res.error);
-    onBlockedChange(null);
-    toast.success("Conversazione sbloccata");
+    onBlockedChange(res.data.blockedById);
+    if (res.data.blockedById === null) toast.success("Conversazione sbloccata");
   };
 
   const choose = (action: () => void) => () => {

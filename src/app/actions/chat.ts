@@ -241,15 +241,21 @@ export async function unblockConversation(matchId: string) {
   const { user, convo } = ctx;
   if (convo.match.blockedById !== user.id) return { error: "Solo chi ha bloccato la conversazione può sbloccarla" };
   try {
-    await db
+    const updated = await db
       .update(matches)
       .set({ blockedById: null, blockedAt: null })
-      .where(and(eq(matches.id, matchId), eq(matches.blockedById, user.id)));
+      .where(and(eq(matches.id, matchId), eq(matches.blockedById, user.id)))
+      .returning({ id: matches.id });
+    if (updated.length === 0) {
+      // The block changed under us: announce nothing, report who holds it now
+      const [current] = await db.select({ blockedById: matches.blockedById }).from(matches).where(eq(matches.id, matchId));
+      return { success: true as const, data: { blockedById: (current?.blockedById ?? null) as string | null } };
+    }
     await Promise.all([
       publish(matchChannel(matchId), CHAT_EVENTS.unblocked, {}),
       publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }),
     ]);
-    return { success: true as const, data: { blockedById: null } };
+    return { success: true as const, data: { blockedById: null as string | null } };
   } catch (error) {
     console.error("Error unblocking conversation:", error);
     return { error: "Errore durante lo sblocco della conversazione" };

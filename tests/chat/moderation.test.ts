@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { chatReports } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { chatReports, matches } from "@/db/schema";
 import { blockConversation, reportConversation, sendMessage, unblockConversation } from "@/app/actions/chat";
 import { buildReportEmail } from "@/lib/chat/report-email";
 import { sendEmail, sendInBackground } from "@/lib/mail";
@@ -26,6 +27,30 @@ describe("block", () => {
     expect(publish).toHaveBeenCalledWith(`private-match-${match.id}`, "conversation:unblocked", {});
     signInAs(pro);
     expect("success" in (await sendMessage(match.id, { clientId: "c2", body: "Ciao" }))).toBe(true);
+  });
+
+  it("does not announce an unblock that did not happen (the block moved to the other side mid-call)", async () => {
+    const { match, pro, company } = await seedMatch();
+    signInAs(company);
+    await blockConversation(match.id);
+    vi.mocked(publish).mockClear();
+
+    // Between loadConversation and the guarded UPDATE the block passes to the professional
+    const realUpdate = db.update.bind(db);
+    vi.spyOn(db, "update").mockImplementationOnce(((table: typeof matches) => ({
+      set: (values: Record<string, unknown>) => ({
+        where: (condition: unknown) => ({
+          returning: async (fields: Record<string, never>) => {
+            await realUpdate(matches).set({ blockedById: pro.id }).where(eq(matches.id, match.id));
+            return realUpdate(table).set(values).where(condition as never).returning(fields);
+          },
+        }),
+      }),
+    })) as never);
+
+    expect(await unblockConversation(match.id)).toEqual({ success: true, data: { blockedById: pro.id } });
+    expect(publish).not.toHaveBeenCalledWith(expect.anything(), "conversation:unblocked", expect.anything());
+    vi.restoreAllMocks();
   });
 
   it("keeps the first blocker when both sides block", async () => {
