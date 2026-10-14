@@ -6,7 +6,7 @@ import { MatchOverlay } from "@/components/swipe/MatchOverlay";
 import { Button } from "@/components/ui/button";
 
 const PARTIES = {
-  professional: { name: "Luca", image: null, detail: "Junior Graphic Designer" },
+  professional: { name: "Luca, 24", image: null, detail: "Junior Graphic Designer" },
   company: { name: "Studio Nord", image: null, detail: "Agenzia di branding" },
 };
 

@@ -5,8 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, Briefcase, Calendar, ImageIcon, X } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { Logo } from "@/components/brand/Logo";
+import { MatchTitle } from "@/components/brand/MatchTitle";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
@@ -27,8 +26,13 @@ const ICEBREAKERS = {
   company: ["Ci racconti un tuo progetto?", "Quando saresti libero?", "Ti va una call veloce?"],
 };
 
-// Timeline of the entrance, in seconds: title, then the cards meet, the badge pops, the rest settles
-const T = { title: 0.08, logo: 0.18, block: 0.12, cards: 0.3, badge: 0.72, pill: 0.9, copy: 1.0, chat: 1.1, actions: 1.25 };
+// Timeline of the entrance, in seconds. One thing at a time, top to bottom: the title
+// (wordmark, "!", sticker), the block, the cards meet, the badge pops, then the caption,
+// the icebreakers one by one, the field and the actions.
+const T = {
+  close: 0.05, title: 0.15, block: 0.8, cards: 0.95, badge: 1.4, pill: 1.6,
+  copy: 1.75, copyStep: 0.12, chips: 2.0, chipStep: 0.1, input: 2.35, cta: 2.5, link: 2.62,
+};
 
 // Confetti from the badge: brand colours, one burst
 const BURST = Array.from({ length: 12 }, (_, i) => {
@@ -101,47 +105,39 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
       exit={{ opacity: 0, transition: { duration: duration.feedback * 1.5, ease: ease.in } }}
-      className="fixed inset-0 z-[60] flex flex-col bg-white text-viola overflow-y-auto overflow-x-hidden overscroll-contain outline-none"
+      className="fixed inset-0 z-[60] bg-white text-viola overflow-y-auto overflow-x-hidden overscroll-contain outline-none"
     >
-      <div className="pt-safe shrink-0">
-        <div className="px-4 pt-4 md:px-6 md:pt-6">
-          <button
+      {/* The Figma frame: 390 wide, padding 16/16/20/16, 14 between rows */}
+      <div className="mx-auto w-full max-w-[24.375rem] min-h-full flex flex-col gap-3.5 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+        <div className="h-10 shrink-0 flex">
+          <motion.button
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: duration.state, ease: ease.out, delay: at(T.close) }}
             type="button"
             onClick={onClose}
             aria-label="Chiudi"
             className="pressable relative size-10 rounded-full border border-viola bg-white flex items-center justify-center text-viola hover:bg-crema before:absolute before:-inset-1 before:content-['']"
           >
             <X size={22} strokeWidth={1.75} />
-          </button>
+          </motion.button>
         </div>
-      </div>
 
-      <div className="flex-1 w-full max-w-[26rem] mx-auto px-4 flex flex-col">
-        <h2 id="match-title" className="mt-4 flex items-end justify-center gap-3.5 text-display text-viola">
-          <motion.span {...rise(T.title)} className="pb-1.5">
-            È un
-          </motion.span>
-          <motion.span
-            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.5, rotate: reduceMotion ? 0 : -8 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={
-              reduceMotion
-                ? { duration: duration.state }
-                : { type: "spring", stiffness: 420, damping: 14, delay: T.logo, opacity: { duration: 0.15, delay: T.logo } }
-            }
-            className="origin-bottom-left"
-          >
-            <Logo className="h-[3.25rem]" title="helllo" />
-          </motion.span>
+        {/* 358x92 in the layout; the art is 358x159 and spills over the block below */}
+        <h2 id="match-title" className="relative z-10 shrink-0 w-full aspect-[358/92]">
+          <MatchTitle delay={at(T.title)} reduceMotion={reduceMotion} className="absolute inset-x-0 top-0 w-full h-auto overflow-visible" />
         </h2>
 
         <MatchIllustration parties={parties} reduceMotion={reduceMotion} />
 
-        <motion.p {...rise(T.copy)} className="mt-[1.125rem] text-center text-lg leading-[1.375rem] font-medium text-viola">
-          Vi siete scelti a vicenda.
-          <br />
-          Ora rompete il ghiaccio.
-        </motion.p>
+        <p className="shrink-0 text-center text-[1.75rem] leading-8 font-black italic tracking-[-0.015em] text-viola">
+          <motion.span {...rise(T.copy)} className="block">
+            Vi siete scelti a vicenda.
+          </motion.span>
+          <motion.span {...rise(T.copy + T.copyStep)} className="block">
+            Ora rompete il ghiaccio.
+          </motion.span>
+        </p>
 
         <Icebreaker
           suggestions={ICEBREAKERS[viewerRole]}
@@ -149,27 +145,30 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
           reduceMotion={reduceMotion}
         />
 
-        {/* Pushes the actions to the bottom on tall phones, within thumb reach */}
-        <div className="flex-1 min-h-6" />
+        {/* "spazio": takes what's left so the actions sit at the bottom */}
+        <div className="flex-1 min-h-1" />
 
         <motion.div
-          {...rise(T.actions)}
-          className="shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-10 flex flex-col items-center gap-3"
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 24, scale: reduceMotion ? 1 : 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={reduceMotion ? { duration: duration.state } : { type: "spring", stiffness: 300, damping: 24, delay: T.cta }}
+          className="shrink-0"
         >
           <Link
             href={`/matches/${matchId}`}
-            className={cn(buttonVariants(), "h-14 w-full px-8 text-lg font-medium gap-3")}
+            className="pressable h-14 w-full rounded-full bg-rosso hover:bg-rosso-600 text-white text-body font-medium flex items-center justify-center gap-2"
           >
             <Calendar size={22} strokeWidth={1.75} /> Fissa un colloquio
           </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="pressable rounded-full px-3 py-2 text-base font-medium text-viola underline underline-offset-4 decoration-viola/60 hover:decoration-viola"
-          >
-            Continua a scoprire
-          </button>
         </motion.div>
+        <motion.button
+          {...rise(T.link)}
+          type="button"
+          onClick={onClose}
+          className="pressable shrink-0 self-center h-[1.375rem] text-body font-medium text-viola underline underline-offset-4 decoration-viola/60 hover:decoration-viola"
+        >
+          Continua a scoprire
+        </motion.button>
       </div>
     </motion.div>
   );
@@ -186,7 +185,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
   const fly = { type: "spring", stiffness: 210, damping: 17, mass: 0.9 } as const;
 
   return (
-    <div className="@container relative mt-3.5 w-full aspect-[358/290]">
+    <div className="@container relative shrink-0 w-full aspect-[358/290]">
       <motion.div
         initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -255,8 +254,9 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
             <motion.span
               className="absolute inset-0 rounded-full border-[0.9cqw] border-rosso"
               initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: [0.9, 2.1], opacity: [0.7, 0] }}
-              transition={{ duration: 0.75, ease: ease.out, delay: T.badge + 0.05 }}
+              // Starts from 0 opacity: keyframes would otherwise show the ring during the delay
+              animate={{ scale: [0.9, 0.9, 2.1], opacity: [0, 0.7, 0] }}
+              transition={{ duration: 0.75, ease: ease.out, delay: T.badge + 0.05, times: [0, 0.02, 1] }}
             />
             {BURST.map((p, i) => (
               <motion.span
@@ -329,8 +329,8 @@ function Icebreaker({
   };
 
   return (
-    <div className="mt-4">
-      <AnimatePresence initial={false} mode="popLayout">
+    <div className="shrink-0 flex flex-col gap-3.5">
+      <AnimatePresence mode="popLayout">
         {sent.length === 0 ? (
           <motion.ul
             key="chips"
@@ -343,7 +343,7 @@ function Icebreaker({
                 key={text}
                 initial={{ opacity: 0, y: reduceMotion ? 0 : 10, scale: reduceMotion ? 1 : 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 420, damping: 26, delay: at(T.chat + i * 0.06) }}
+                transition={{ type: "spring", stiffness: 420, damping: 26, delay: at(T.chips + i * T.chipStep) }}
               >
                 <button
                   type="button"
@@ -351,7 +351,7 @@ function Icebreaker({
                     setDraft(text);
                     inputRef.current?.focus();
                   }}
-                  className="pressable h-[2.125rem] rounded-full bg-rosa px-3.5 text-[0.9375rem] text-viola hover:bg-rosso-100"
+                  className="pressable h-[2.125rem] rounded-full bg-rosa px-3.5 text-chip text-viola hover:bg-rosso-100"
                 >
                   {text}
                 </button>
@@ -379,9 +379,9 @@ function Icebreaker({
       <motion.form
         initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: duration.view, ease: ease.out, delay: at(T.chat + 0.18) }}
+        transition={{ duration: duration.view, ease: ease.out, delay: at(T.input) }}
         onSubmit={send}
-        className="mt-3.5 flex h-[3.25rem] items-center rounded-full bg-crema pl-[1.125rem] pr-1.5 focus-within:ring-3 focus-within:ring-ring/50"
+        className="flex h-[3.25rem] items-center gap-2 rounded-full bg-crema pl-[1.125rem] pr-1.5 focus-within:ring-3 focus-within:ring-ring/50"
       >
         <input
           ref={inputRef}
@@ -391,7 +391,7 @@ function Icebreaker({
           aria-label={`Scrivi a ${recipientName}`}
           enterKeyHint="send"
           maxLength={500}
-          className="min-w-0 flex-1 bg-transparent text-base text-viola placeholder:text-viola/80 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-body text-viola placeholder:text-viola outline-none"
         />
         <button
           type="submit"
