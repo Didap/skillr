@@ -192,14 +192,8 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
         transition={{ duration: 0.26, ease: ease.out, delay: at(T.block) }}
         className="absolute inset-0 rounded-[10cqw] overflow-hidden bg-rosa"
       >
-        <motion.div
-          initial={{ x: reduceMotion ? 0 : "-9%" }}
-          animate={{ x: 0 }}
-          transition={{ duration: 0.9, ease: ease.out, delay: at(T.block) }}
-          className="absolute inset-0"
-        >
-          <MatchStripes />
-        </motion.div>
+        {/* The stripes drift left forever, slowly; still with reduced motion */}
+        <MatchStripes loop={!reduceMotion} />
       </motion.div>
 
       {/* Professional: white photo card, name on the viola band */}
