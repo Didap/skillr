@@ -11,8 +11,8 @@ import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
 import { hankenBlackItalic } from "./match-font";
-import { cn, isEditableTarget } from "@/lib/utils";
-import { duration, ease, enter, haptic } from "@/lib/motion";
+import { cn, inertOutside, isEditableTarget } from "@/lib/utils";
+import { beat, duration, ease, enter, haptic } from "@/lib/motion";
 
 interface MatchOverlayProps {
   parties: MatchParties;
@@ -30,7 +30,9 @@ const ICEBREAKERS = {
 
 // Timeline of the entrance, in seconds. One thing at a time, top to bottom: the title
 // (wordmark, "!", sticker), the block, the cards meet, the badge pops, then the caption,
-// the icebreakers one by one, the field and the actions.
+// the icebreakers one by one, the field and the actions. With reduced motion MotionConfig
+// drops every transform, `beat()` collapses the delays and the badge burst is skipped, so
+// everything just fades in together.
 const T = {
   close: 0.03, title: 0.08, block: 0.42, cards: 0.5, badge: 0.82, pill: 0.95,
   copy: 1.03, copyStep: 0.08, chips: 1.17, chipStep: 0.06, input: 1.36, cta: 1.45, link: 1.53,
@@ -70,10 +72,13 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
   }, [onClose]);
 
   useEffect(() => {
+    const dialog = dialogRef.current;
+    // A real modal: the page behind (swipe buttons, nav) can't be reached by Tab or clicks
+    const restore = dialog ? inertOutside(dialog) : undefined;
     // Focus lands on the dialog so screen readers announce it, without a ring on the CTA
-    dialogRef.current?.focus({ preventScroll: true });
+    dialog?.focus({ preventScroll: true });
     // A stronger pattern than the swipe tick, timed with the badge: this is the reward
-    const buzz = window.setTimeout(() => haptic([14, 60, 28]), reduceMotion ? 0 : T.badge * 1000);
+    const buzz = window.setTimeout(() => haptic([14, 60, 28]), beat(T.badge, reduceMotion) * 1000);
     const onKeyDown = (e: KeyboardEvent) => {
       // Escape while composing (IME) dismisses the candidates, nothing else
       if (e.key !== "Escape" || e.isComposing) return;
@@ -86,13 +91,12 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
+      restore?.();
       window.clearTimeout(buzz);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [reduceMotion]);
 
-  // Reduced motion: MotionConfig (reducedMotion="user") already drops the transform part
-  // of every animation; here only the delays collapse, so everything fades in together.
   const { professional, company } = parties;
   const recipient = viewerRole === "company" ? professional : company;
   // "Scrivi a Luca…" for a person, the full name for a company
@@ -114,13 +118,11 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
       <div className="mx-auto w-full max-w-[24.375rem] min-h-full flex flex-col gap-3.5 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <div className="h-10 shrink-0 flex">
           <motion.button
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: duration.state, ease: ease.out, delay: reduceMotion ? 0 : T.close }}
+            {...enter(T.close, reduceMotion, { scale: 0.7 })}
             type="button"
             onClick={onClose}
             aria-label="Chiudi"
-            className="pressable relative size-10 rounded-full border border-viola bg-white flex items-center justify-center text-viola hover:bg-crema before:absolute before:-inset-1 before:content-['']"
+            className={cn(buttonVariants({ variant: "outline", size: "icon" }), "relative size-10 before:absolute before:-inset-1 before:content-['']")}
           >
             <X size={22} strokeWidth={1.75} />
           </motion.button>
@@ -128,12 +130,12 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
 
         {/* 358x92 in the layout; the art is 358x159 and spills over the block below */}
         <h2 id="match-title" className="relative z-10 shrink-0 w-full aspect-[358/92]">
-          <MatchTitle delay={T.title} reduceMotion={reduceMotion} className="absolute inset-x-0 top-0 w-full h-auto overflow-visible" />
+          <MatchTitle delay={beat(T.title, reduceMotion)} className="absolute inset-x-0 top-0 w-full h-auto overflow-visible" />
         </h2>
 
         <MatchIllustration parties={parties} reduceMotion={reduceMotion} />
 
-        <p className={cn(hankenBlackItalic.className, "shrink-0 text-center text-title text-viola")}>
+        <p className={cn(hankenBlackItalic.className, "shrink-0 text-center text-title font-black text-viola")}>
           <motion.span {...enter(T.copy, reduceMotion)} className="block">
             Vi siete scelti a vicenda.
           </motion.span>
@@ -154,14 +156,14 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={reduceMotion ? { duration: duration.state } : { type: "spring", stiffness: 420, damping: 28, delay: T.cta }}
+          transition={{ type: "spring", stiffness: 420, damping: 28, delay: beat(T.cta, reduceMotion), opacity: { duration: duration.state, delay: beat(T.cta, reduceMotion) } }}
           className="shrink-0"
         >
           <Link
             href={`/matches/${matchId}`}
-            className={cn(buttonVariants(), "h-14 w-full gap-2 border-0 text-body font-medium")}
+            className={cn(buttonVariants({ size: "xl" }), "w-full font-medium")}
           >
-            <Calendar className="size-[22px]" strokeWidth={1.75} /> Fissa un colloquio
+            <Calendar strokeWidth={1.75} /> Fissa un colloquio
           </Link>
         </motion.div>
         <motion.button
@@ -199,12 +201,12 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
       <motion.div
         initial={{ opacity: 0, x: "-120%", y: "8%", rotate: -22 }}
         animate={{ opacity: 1, x: 0, y: 0, rotate: -6 }}
-        transition={reduceMotion ? { duration: duration.state } : { ...fly, delay: T.cards, opacity: { duration: 0.2, delay: T.cards } }}
+        transition={{ ...fly, delay: beat(T.cards, reduceMotion), opacity: { duration: 0.2, delay: beat(T.cards, reduceMotion) } }}
         className="absolute left-[6.1%] top-[16.42%] w-[41.9%] h-[67.59%] rounded-[6.7cqw] border border-viola bg-white overflow-hidden flex flex-col"
       >
         <div className="relative flex-1 flex items-center justify-center text-viola/50">
           {professional.image ? (
-            <Image src={professional.image} alt={professional.name} fill sizes="180px" className="object-cover" />
+            <Image src={professional.image} alt={professional.name} fill sizes="180px" className="object-cover" unoptimized />
           ) : (
             <ImageIcon className="size-[6.7cqw]" strokeWidth={1.75} aria-hidden />
           )}
@@ -218,16 +220,12 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
       <motion.div
         initial={{ opacity: 0, x: "120%", y: "-6%", rotate: 22 }}
         animate={{ opacity: 1, x: 0, y: 0, rotate: 6 }}
-        transition={
-          reduceMotion
-            ? { duration: duration.state }
-            : { ...fly, delay: T.cards + 0.06, opacity: { duration: 0.2, delay: T.cards + 0.06 } }
-        }
+        transition={{ ...fly, delay: beat(T.cards + 0.06, reduceMotion), opacity: { duration: 0.2, delay: beat(T.cards + 0.06, reduceMotion) } }}
         className="absolute left-[52.33%] top-[16.31%] w-[41.9%] h-[67.59%] rounded-[6.7cqw] bg-blu p-[3.9cqw] pt-[5.5cqw] flex flex-col justify-between text-left"
       >
         <div className="relative size-[15.64cqw] rounded-full bg-white overflow-hidden flex items-center justify-center text-[5.6cqw] font-medium text-blu">
           {company.image ? (
-            <Image src={company.image} alt={company.name} fill sizes="64px" className="object-cover" />
+            <Image src={company.image} alt={company.name} fill sizes="64px" className="object-cover" unoptimized />
           ) : (
             <span aria-hidden>{initials(company.name)}</span>
           )}
@@ -267,11 +265,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
           className="relative"
           initial={{ opacity: 0, scale: 0, rotate: -40 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={
-            reduceMotion
-              ? { duration: duration.state }
-              : { type: "spring", stiffness: 520, damping: 13, delay: T.badge, opacity: { duration: 0.1, delay: T.badge } }
-          }
+          transition={{ type: "spring", stiffness: 520, damping: 13, delay: beat(T.badge, reduceMotion), opacity: { duration: 0.1, delay: beat(T.badge, reduceMotion) } }}
         >
           <LogoMark className="size-full" />
         </motion.div>
@@ -333,7 +327,7 @@ function Icebreaker({
                 key={text}
                 initial={{ opacity: 0, y: 10, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 420, damping: 26, delay: reduceMotion ? 0 : T.chips + i * T.chipStep }}
+                transition={{ type: "spring", stiffness: 420, damping: 26, delay: beat(T.chips + i * T.chipStep, reduceMotion) }}
               >
                 <button
                   type="button"

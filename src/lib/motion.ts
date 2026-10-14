@@ -38,11 +38,18 @@ export const pageEnter = {
  * delay collapses to 0 (everything appears together); MotionConfig already skips the
  * transform part, so `from` needs no reduced-motion branch.
  */
-export function enter(delay: number, reduce: boolean, from: Record<string, number> = { y: 14 }) {
+/** A timeline delay that collapses to 0 with reduced motion (everything appears at once). */
+export const beat = (delay: number, reduce: boolean) => (reduce ? 0 : delay);
+
+type EnterFrom = { x?: number; y?: number; scale?: number };
+const REST = { x: 0, y: 0, scale: 1 };
+
+export function enter(delay: number, reduce: boolean, from: EnterFrom = { y: 14 }) {
+  const to = Object.fromEntries(Object.keys(from).map((k) => [k, REST[k as keyof EnterFrom]]));
   return {
     initial: { opacity: 0, ...from },
-    animate: { opacity: 1, y: 0, x: 0, scale: 1 },
-    transition: { duration: duration.state, ease: ease.out, delay: reduce ? 0 : delay },
+    animate: { opacity: 1, ...to },
+    transition: { duration: duration.state, ease: ease.out, delay: beat(delay, reduce) },
   };
 }
 

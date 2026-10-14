@@ -124,11 +124,11 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-swipe: cubic-bezier(0.23, 1, 0.32, 1);
 
-  /* Match screen stripes: slide the band by one period (set per element), forever */
+  /* Match screen stripes: the band is 4 "l" wide, a quarter of it is one "l" */
   --animate-stripes-drift: stripes-drift 9s linear infinite;
   @keyframes stripes-drift {
     to {
-      transform: translateX(var(--stripes-shift));
+      transform: translateX(-25%);
     }
   }
 }

@@ -272,6 +272,10 @@ export async function getPotentialMatches() {
 export type MatchParty = { name: string; image: string | null; detail: string | null };
 export type MatchParties = { professional: MatchParty; company: MatchParty };
 
+type MatchUser = NonNullable<Awaited<ReturnType<typeof findUserWithProfiles>>>;
+const findUserWithProfiles = (id: string) =>
+  db.query.users.findFirst({ where: eq(users.id, id), columns: publicUserColumns, with: { professionalProfile: true, companyProfile: true } });
+
 export async function recordSwipe(targetId: string, targetType: "professional" | "company", direction: "left" | "right") {
   const user = await requireUser();
   if ("error" in user || !user.role) return { error: "Non autorizzato" };
@@ -295,80 +299,82 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
 
       const isMatch = (status === 'liked' && (role === 'company' ? existingMatch.professionalStatus === 'liked' : existingMatch.companyStatus === 'liked'));
 
+      // On a match both sides are loaded first: the match screen needs them, and a missing
+      // user means the match can't be shown, so nothing is written.
+      let pair: { me: MatchUser; target: MatchUser } | null = null;
+      if (isMatch) {
+        const [me, target] = await Promise.all([findUserWithProfiles(userId), findUserWithProfiles(targetId)]);
+        if (!me || !target) return { error: "Profilo non trovato" };
+        pair = { me, target };
+      }
+
       await db.update(matches)
         .set({ ...updates, matchedAt: isMatch ? new Date() : existingMatch.matchedAt })
         .where(eq(matches.id, existingMatch.id));
 
-      let parties: MatchParties | undefined;
-      if (isMatch) {
-        // Match emails go out after the response
-        try {
-          const withProfiles = { columns: publicUserColumns, with: { professionalProfile: true, companyProfile: true } } as const;
-          const [me, target] = await Promise.all([
-            db.query.users.findFirst({ where: eq(users.id, userId), ...withProfiles }),
-            db.query.users.findFirst({ where: eq(users.id, targetId), ...withProfiles }),
-          ]);
-
-          if (me && target) {
-            // Both sides for the match screen, whichever of the two swiped last
-            const pro = me.role === "company" ? target : me;
-            const company = me.role === "company" ? me : target;
-            parties = {
-              professional: {
-                name: professionalDisplayName(pro),
-                image: pro.professionalProfile?.photoUrl || pro.image || null,
-                detail: pro.professionalProfile?.title || null,
-              },
-              company: {
-                name: companyDisplayName(company),
-                image: company.companyProfile?.logoUrl || company.image || null,
-                detail: company.companyProfile?.industry || null,
-              },
-            };
-
-            const nameOf = (u: typeof me) =>
-              u.role === "company" ? companyDisplayName(u, "Utente") : professionalDisplayName(u, "Utente");
-            const userName = nameOf(me);
-            const targetName = nameOf(target);
-
-            const userImage = me.role === 'company' ? me.companyProfile?.logoUrl : me.professionalProfile?.photoUrl;
-            const targetImage = target.role === 'company' ? target.companyProfile?.logoUrl : target.professionalProfile?.photoUrl;
-
-            const matchUrl = appUrl(`/matches/${existingMatch.id}`);
-
-            sendInBackground(`match emails, match ${existingMatch.id}`, [
-              () => sendEmail({
-                to: me.email,
-                subject: "Nuovo Match su Helllo!",
-                react: MatchEmail({
-                  userName,
-                  matchedName: targetName,
-                  matchedImage: targetImage || undefined,
-                  role: me.role as 'professional' | 'company',
-                  matchUrl
-                })
-              }),
-              () => sendEmail({
-                to: target.email,
-                subject: "Nuovo Match su Helllo!",
-                react: MatchEmail({
-                  userName: targetName,
-                  matchedName: userName,
-                  matchedImage: userImage || undefined,
-                  role: target.role as 'professional' | 'company',
-                  matchUrl
-                })
-              }),
-            ]);
-          }
-        } catch (emailError) {
-          console.error("Error sending match emails:", emailError);
-        }
-      }
-
       revalidatePath("/dashboard");
       revalidatePath("/matches");
-      return { success: true, isMatch, matchId: existingMatch.id, parties };
+
+      if (!pair) return { success: true, isMatch: false as const, matchId: existingMatch.id };
+
+      const { me, target } = pair;
+      const pro = me.role === "company" ? target : me;
+      const company = me.role === "company" ? me : target;
+      // Both sides for the match screen, whichever of the two swiped last
+      const parties: MatchParties = {
+        professional: {
+          name: professionalDisplayName(pro),
+          image: pro.professionalProfile?.photoUrl || pro.image || null,
+          detail: pro.professionalProfile?.title || null,
+        },
+        company: {
+          name: companyDisplayName(company),
+          image: company.companyProfile?.logoUrl || company.image || null,
+          detail: company.companyProfile?.industry || null,
+        },
+      };
+
+      // Match emails go out after the response
+      try {
+        const nameOf = (u: MatchUser) =>
+          u.role === "company" ? companyDisplayName(u, "Utente") : professionalDisplayName(u, "Utente");
+        const userName = nameOf(me);
+        const targetName = nameOf(target);
+
+        const userImage = me.role === 'company' ? me.companyProfile?.logoUrl : me.professionalProfile?.photoUrl;
+        const targetImage = target.role === 'company' ? target.companyProfile?.logoUrl : target.professionalProfile?.photoUrl;
+
+        const matchUrl = appUrl(`/matches/${existingMatch.id}`);
+
+        sendInBackground(`match emails, match ${existingMatch.id}`, [
+          () => sendEmail({
+            to: me.email,
+            subject: "Nuovo Match su Helllo!",
+            react: MatchEmail({
+              userName,
+              matchedName: targetName,
+              matchedImage: targetImage || undefined,
+              role: me.role as 'professional' | 'company',
+              matchUrl
+            })
+          }),
+          () => sendEmail({
+            to: target.email,
+            subject: "Nuovo Match su Helllo!",
+            react: MatchEmail({
+              userName: targetName,
+              matchedName: userName,
+              matchedImage: userImage || undefined,
+              role: target.role as 'professional' | 'company',
+              matchUrl
+            })
+          }),
+        ]);
+      } catch (emailError) {
+        console.error("Error sending match emails:", emailError);
+      }
+
+      return { success: true, isMatch: true as const, matchId: existingMatch.id, parties };
     } else {
       const ownStatus = status as "liked" | "passed";
       // A concurrent swipe on the same pair lands on the unique key: keep this side's choice.
@@ -386,7 +392,7 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
         })
         .returning({ id: matches.id });
 
-      return { success: true, isMatch: false, matchId: newMatch[0].id };
+      return { success: true, isMatch: false as const, matchId: newMatch[0].id };
     }
   } catch (error) {
     console.error("Error recording swipe:", error);

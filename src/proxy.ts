@@ -3,19 +3,16 @@ import { NextResponse } from "next/server";
 
 const PUBLIC_ROUTES = new Set(["/", "/login", "/privacy", "/terms", "/cookies", "/onboarding", "/events", "/events/"]);
 
+// "/pa" matches /pa and /pa/..., not /password
+const isUnder = (pathname: string, segment: string) => pathname === segment || pathname.startsWith(`${segment}/`);
+
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const pathname = nextUrl.pathname;
 
-  // 0. Dev-only previews (/dev/*, 404 in production) work without signing in
-  if (process.env.NODE_ENV !== "production" && (pathname === "/dev" || pathname.startsWith("/dev/"))) {
-    return null;
-  }
-
-  // 1. Early Exit for Onboarding, PA, and Events (Public)
-  const isEvents = pathname.startsWith("/events");
-  if (pathname === "/onboarding" || isEvents || pathname.startsWith("/pa")) {
+  // 1. Early Exit for Onboarding, PA, Events and the dev-only previews (404 in production)
+  if (pathname === "/onboarding" || isUnder(pathname, "/events") || isUnder(pathname, "/pa") || isUnder(pathname, "/dev")) {
     return null;
   }
 

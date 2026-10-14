@@ -24,6 +24,23 @@ export function isEditableTarget(target: EventTarget | null) {
   return target instanceof Element && !!target.closest("input, textarea, select, [contenteditable='true']")
 }
 
+/**
+ * Makes everything outside `el` inert (no focus, no clicks, hidden from assistive tech), as a
+ * modal needs. Returns the undo. Works on any element without portalling it.
+ */
+export function inertOutside(el: HTMLElement) {
+  const changed: HTMLElement[] = []
+  for (let node: HTMLElement | null = el; node && node !== document.body; node = node.parentElement) {
+    for (const sibling of node.parentElement?.children ?? []) {
+      if (sibling !== node && sibling instanceof HTMLElement && !sibling.inert) {
+        sibling.inert = true
+        changed.push(sibling)
+      }
+    }
+  }
+  return () => changed.forEach((s) => (s.inert = false))
+}
+
 /** Amount with Italian thousands separators (80000 -> "80.000"); "—" when missing. */
 export function formatEur(n: number | null | undefined) {
   return typeof n === "number" && !Number.isNaN(n) ? n.toLocaleString("it-IT") : "—"

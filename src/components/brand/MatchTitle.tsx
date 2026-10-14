@@ -24,25 +24,19 @@ const own = { transformBox: "fill-box", transformOrigin: "center" } as const;
 export function MatchTitle({
   className,
   delay = 0,
-  reduceMotion = false,
 }: {
   className?: string;
-  // When the title starts, in seconds; the wordmark, "!" and sticker follow in that order
+  // When the title starts, in seconds; the wordmark, "!" and sticker follow in that order.
+  // Pass 0 for reduced motion (MotionConfig already drops the transforms).
   delay?: number;
-  reduceMotion?: boolean;
 }) {
-  const fade = { duration: 0.2 };
   return (
     <svg viewBox="0 0 358 159" className={className} role="img" aria-label="È un helllo!">
       <motion.g
         style={own}
         initial={{ opacity: 0, scale: 0.55, rotate: -10 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={
-          reduceMotion
-            ? fade
-            : { type: "spring", stiffness: 480, damping: 15, delay, opacity: { duration: 0.15, delay } }
-        }
+        transition={{ type: "spring", stiffness: 480, damping: 15, delay, opacity: { duration: 0.15, delay } }}
         fill="var(--color-rosso)"
       >
         {WORDMARK.map((d) => (
@@ -55,21 +49,13 @@ export function MatchTitle({
         style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}
         initial={{ opacity: 0, y: -36, rotate: 24 }}
         animate={{ opacity: 1, y: 0, rotate: 0 }}
-        transition={
-          reduceMotion
-            ? fade
-            : { type: "spring", stiffness: 520, damping: 12, delay: delay + 0.18, opacity: { duration: 0.1, delay: delay + 0.18 } }
-        }
+        transition={{ type: "spring", stiffness: 520, damping: 12, delay: delay + 0.18, opacity: { duration: 0.1, delay: delay + 0.18 } }}
       />
       <motion.g
         style={own}
         initial={{ opacity: 0, scale: 0.2, rotate: -50 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={
-          reduceMotion
-            ? fade
-            : { type: "spring", stiffness: 460, damping: 14, delay: delay + 0.28, opacity: { duration: 0.12, delay: delay + 0.28, ease: ease.out } }
-        }
+        transition={{ type: "spring", stiffness: 460, damping: 14, delay: delay + 0.28, opacity: { duration: 0.12, delay: delay + 0.28, ease: ease.out } }}
       >
         <rect x="77.6016" width="86" height="46" rx="23" transform="rotate(30 77.6016 0)" fill="var(--color-blu)" />
         <path d={STICKER_TEXT} fill="white" />

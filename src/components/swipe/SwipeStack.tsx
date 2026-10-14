@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { SwipeCard, type SwipeCardHandle } from "./SwipeCard";
 import { MatchOverlay } from "./MatchOverlay";
+import { warmMatchFont } from "./match-font";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, X, Zap } from "lucide-react";
@@ -74,22 +75,14 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
     }
 
     const targetType = userRole === "company" ? "professional" : "company";
+    // A like may become a match: start fetching the match caption's font during the request
+    if (direction === "right") warmMatchFont();
     const res = await recordSwipe(swipedProfile.id, targetType, direction);
 
     if (res.error) {
       toast.error(res.error);
     } else if (res.isMatch) {
-      // The server sends both sides; if it couldn't, fall back to the swiped card and a
-      // neutral "you" (the session has the person's name, not the company's). No role pill:
-      // the card's title may be the feed's placeholder.
-      const them = { name: swipedProfile.name, image: swipedProfile.image, detail: null };
-      const you = { name: userRole === "company" ? "La tua azienda" : "Tu", image: null, detail: null };
-      setMatchData({
-        matchId: res.matchId,
-        parties: res.parties ?? (userRole === "company"
-          ? { professional: them, company: you }
-          : { professional: you, company: them }),
-      });
+      setMatchData({ matchId: res.matchId, parties: res.parties });
     }
   };
 
