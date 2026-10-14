@@ -3,12 +3,13 @@
 import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { chatMessages, matches } from "@/db/schema";
+import { chatMessages, chatReports, matches } from "@/db/schema";
 import { requireUser } from "@/lib/auth-guard";
 import { loadConversation, readMarkerOf } from "@/lib/chat/access";
 import { isInMatchFolder } from "@/lib/chat/attachments";
 import { CHAT_EVENTS, matchChannel, userChannel } from "@/lib/chat/channels";
 import { toChatMessage } from "@/lib/chat/messages";
+import { buildReportEmail } from "@/lib/chat/report-email";
 import { unreadTotal } from "@/lib/chat/summaries";
 import {
   AFTER_LIMIT,
@@ -17,9 +18,11 @@ import {
   MAX_BODY_LENGTH,
   PAGE_SIZE,
   type ChatMessage,
+  type ReportInput,
   type SendMessageInput,
   type ThreadPage,
 } from "@/lib/chat/types";
+import { sendEmail, sendInBackground } from "@/lib/mail";
 import { publish } from "@/lib/pusher/server";
 
 // Pusher socket ids look like "123.456"; anything else is dropped, not an error
@@ -195,5 +198,120 @@ export async function getUnreadTotal() {
   } catch (error) {
     console.error("Error counting unread messages:", error);
     return { error: "Errore durante il conteggio dei messaggi" };
+  }
+}
+
+/** Sets the block if nobody has blocked yet; returns who holds the block now. */
+async function applyBlock(matchId: string, userId: string, otherUserId: string) {
+  const updated = await db
+    .update(matches)
+    .set({ blockedById: userId, blockedAt: sql`now()` })
+    .where(and(eq(matches.id, matchId), isNull(matches.blockedById)))
+    .returning({ blockedById: matches.blockedById });
+  if (updated.length > 0) {
+    await Promise.all([
+      publish(matchChannel(matchId), CHAT_EVENTS.blocked, { blockedById: userId }),
+      publish([userChannel(otherUserId), userChannel(userId)], CHAT_EVENTS.inbox, { matchId }),
+    ]);
+    return userId;
+  }
+  const [current] = await db.select({ blockedById: matches.blockedById }).from(matches).where(eq(matches.id, matchId));
+  return current?.blockedById ?? userId;
+}
+
+export async function blockConversation(matchId: string) {
+  const ctx = await viewerConversation(matchId);
+  if ("error" in ctx) return { error: ctx.error };
+  try {
+    const blockedById = await applyBlock(matchId, ctx.user.id, ctx.convo.otherUserId);
+    return { success: true as const, data: { blockedById } };
+  } catch (error) {
+    console.error("Error blocking conversation:", error);
+    return { error: "Errore durante il blocco della conversazione" };
+  }
+}
+
+export async function unblockConversation(matchId: string) {
+  const ctx = await viewerConversation(matchId);
+  if ("error" in ctx) return { error: ctx.error };
+  const { user, convo } = ctx;
+  if (convo.match.blockedById !== user.id) return { error: "Solo chi ha bloccato la conversazione può sbloccarla" };
+  try {
+    await db
+      .update(matches)
+      .set({ blockedById: null, blockedAt: null })
+      .where(and(eq(matches.id, matchId), eq(matches.blockedById, user.id)));
+    await Promise.all([
+      publish(matchChannel(matchId), CHAT_EVENTS.unblocked, {}),
+      publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }),
+    ]);
+    return { success: true as const, data: { blockedById: null } };
+  } catch (error) {
+    console.error("Error unblocking conversation:", error);
+    return { error: "Errore durante lo sblocco della conversazione" };
+  }
+}
+
+const reportSchema = z.object({
+  reason: z.enum(["spam", "harassment", "inappropriate", "scam", "other"]),
+  details: z.string().trim().max(1000).optional(),
+  messageId: z.string().min(1).optional(),
+  block: z.boolean().optional(),
+});
+
+export async function reportConversation(matchId: string, input: ReportInput) {
+  const ctx = await viewerConversation(matchId);
+  if ("error" in ctx) return { error: ctx.error };
+  const parsed = reportSchema.safeParse(input);
+  if (!parsed.success) return { error: "Segnalazione non valida" };
+  const { reason, messageId, block } = parsed.data;
+  const details = parsed.data.details || null;
+  const { user, convo } = ctx;
+
+  try {
+    if (messageId) {
+      const [own] = await db
+        .select({ id: chatMessages.id })
+        .from(chatMessages)
+        .where(and(eq(chatMessages.id, messageId), eq(chatMessages.matchId, matchId)));
+      if (!own) return { error: "Messaggio non trovato" };
+    }
+
+    const [report] = await db
+      .insert(chatReports)
+      .values({ matchId, reporterId: user.id, messageId: messageId ?? null, reason, details })
+      .returning({ id: chatReports.id });
+
+    const to = process.env.CHAT_MODERATION_EMAIL;
+    if (to) {
+      const recent = await db
+        .select()
+        .from(chatMessages)
+        .where(eq(chatMessages.matchId, matchId))
+        .orderBy(desc(chatMessages.createdAt), desc(chatMessages.id))
+        .limit(20);
+      const email = buildReportEmail({
+        reportId: report.id,
+        matchId,
+        reason,
+        details,
+        reporter: { id: user.id, email: user.email, role: user.role },
+        reportedMessageId: messageId ?? null,
+        transcript: recent.reverse().map((m) => ({
+          senderRole: m.senderId === convo.match.professionalId ? ("professional" as const) : ("company" as const),
+          createdAt: m.createdAt.toISOString(),
+          text: [m.body, m.attachmentName && `[allegato: ${m.attachmentName}]`].filter(Boolean).join(" "),
+        })),
+      });
+      sendInBackground("chat report", [() => sendEmail({ to, ...email })]);
+    } else {
+      console.warn(`Chat report ${report.id} stored, but CHAT_MODERATION_EMAIL is not set: nobody was notified.`);
+    }
+
+    const blockedById = block ? await applyBlock(matchId, user.id, convo.otherUserId) : convo.match.blockedById;
+    return { success: true as const, data: { reportId: report.id, blockedById } };
+  } catch (error) {
+    console.error("Error reporting conversation:", error);
+    return { error: "Errore durante l'invio della segnalazione" };
   }
 }
