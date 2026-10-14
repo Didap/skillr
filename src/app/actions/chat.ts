@@ -5,8 +5,9 @@ import { z } from "zod";
 import { db } from "@/db";
 import { chatMessages, chatReports, matches } from "@/db/schema";
 import { requireUser } from "@/lib/auth-guard";
+import { cloudinary } from "@/lib/cloudinary";
 import { loadConversation, readMarkerOf } from "@/lib/chat/access";
-import { isInMatchFolder } from "@/lib/chat/attachments";
+import { chatFolder, isInMatchFolder } from "@/lib/chat/attachments";
 import { CHAT_EVENTS, matchChannel, userChannel } from "@/lib/chat/channels";
 import { toChatMessage } from "@/lib/chat/messages";
 import { buildReportEmail } from "@/lib/chat/report-email";
@@ -17,10 +18,12 @@ import {
   MAX_ATTACHMENT_BYTES,
   MAX_BODY_LENGTH,
   PAGE_SIZE,
+  type AttachmentMime,
   type ChatMessage,
   type ReportInput,
   type SendMessageInput,
   type ThreadPage,
+  type UploadedAttachment,
 } from "@/lib/chat/types";
 import { sendEmail, sendInBackground } from "@/lib/mail";
 import { publish } from "@/lib/pusher/server";
@@ -313,5 +316,45 @@ export async function reportConversation(matchId: string, input: ReportInput) {
   } catch (error) {
     console.error("Error reporting conversation:", error);
     return { error: "Errore durante l'invio della segnalazione" };
+  }
+}
+
+/**
+ * Step one of sending a file: upload it as a private ("authenticated") Cloudinary resource
+ * in this conversation's folder. sendMessage then references it by public id.
+ */
+export async function uploadChatAttachment(matchId: string, formData: FormData) {
+  const ctx = await viewerConversation(matchId);
+  if ("error" in ctx) return { error: ctx.error };
+  if (ctx.convo.match.blockedById) return { error: "Questa conversazione è chiusa" };
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return { error: "File mancante" };
+  if (!(ATTACHMENT_MIME_TYPES as readonly string[]).includes(file.type)) {
+    return { error: "Formato non supportato. Invia un'immagine (JPG, PNG, WebP, GIF) o un PDF." };
+  }
+  if (file.size > MAX_ATTACHMENT_BYTES) return { error: "File troppo grande. Massimo 5MB." };
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const result = await new Promise<{ public_id: string }>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          // PDFs are "image" resources in Cloudinary too, so one resource type covers both
+          { folder: chatFolder(matchId), type: "authenticated", resource_type: "image" },
+          (error, res) => (error || !res ? reject(error ?? new Error("Empty Cloudinary response")) : resolve(res))
+        )
+        .end(buffer);
+    });
+    const data: UploadedAttachment = {
+      publicId: result.public_id,
+      name: file.name.slice(0, 200) || "allegato",
+      mime: file.type as AttachmentMime,
+      size: file.size,
+    };
+    return { success: true as const, data };
+  } catch (error) {
+    console.error("Cloudinary chat upload error:", error);
+    return { error: "Errore durante il caricamento del file" };
   }
 }
