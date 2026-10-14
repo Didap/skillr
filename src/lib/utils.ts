@@ -19,6 +19,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** True when a key event comes from a text field, where keys belong to the field. */
+export function isEditableTarget(target: EventTarget | null) {
+  return target instanceof Element && !!target.closest("input, textarea, select, [contenteditable='true']")
+}
+
 /** Amount with Italian thousands separators (80000 -> "80.000"); "—" when missing. */
 export function formatEur(n: number | null | undefined) {
   return typeof n === "number" && !Number.isNaN(n) ? n.toLocaleString("it-IT") : "—"

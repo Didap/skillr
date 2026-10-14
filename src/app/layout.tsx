@@ -1,26 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Bricolage_Grotesque, Pacifico } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const pacifico = Pacifico({
-  variable: "--font-pacifico",
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-});
+import { hanken, bricolage, pacifico } from "./fonts";
 
 export const metadata: Metadata = {
   title: "Helllo | Il lavoro parte da un ciao",

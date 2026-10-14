@@ -9,7 +9,7 @@ export default auth((req) => {
   const pathname = nextUrl.pathname;
 
   // 0. Dev-only previews (/dev/*, 404 in production) work without signing in
-  if (process.env.NODE_ENV !== "production" && pathname.startsWith("/dev")) {
+  if (process.env.NODE_ENV !== "production" && (pathname === "/dev" || pathname.startsWith("/dev/"))) {
     return null;
   }
 

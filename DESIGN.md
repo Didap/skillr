@@ -1,8 +1,9 @@
 # DESIGN.md — Helllo Visual System
 
 Source of truth: Figma "Helllo — Brand Identity" (snNq4LfmuM6VuXOrUjwApb). Tokens live in
-`src/app/globals.css`; fonts are loaded in `src/app/layout.tsx`; brand assets in
-`src/components/brand/` and `public/brand/`.
+`src/app/globals.css`; fonts are defined in `src/app/fonts.ts` (the match caption's Black
+Italic in `src/components/swipe/match-font.ts`); brand assets in `src/components/brand/` and
+`public/brand/`.
 
 ## Personality
 Warm, direct, a little cheeky. The product is a "hello": every match is an icebreaker, not an
@@ -47,7 +48,7 @@ rosso buttons). `destructive` is `rosso-700`; pair errors with an icon/text, nev
 | Label | Hanken Grotesk | 13/16 | 500 | 0 | `text-label` |
 | Chip | Hanken Grotesk | 14/18 | 500 | 0 | `text-chip` |
 | Accent Script | Pacifico | 24/32 | 400 | 0 | `font-script` |
-| Match caption | Hanken Grotesk Italic | 28/32 | 900 | -1.5% | `text-[1.75rem] leading-8 font-black italic` |
+| Match caption | Hanken Grotesk Italic | 28/32 | 900 | -1.5% | `hankenBlackItalic.className` + `text-title` |
 
 - `font-sans` and `font-display` are both Hanken Grotesk; headlines are bold and tight.
 - `font-prompt` (Bricolage) is the user's own voice: answers to profile prompts, bios, headlines

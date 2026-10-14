@@ -33,6 +33,19 @@ export const pageEnter = {
   animate: { opacity: 1, transition: { duration: duration.state, ease: ease.out } },
 };
 
+/**
+ * Entrance on a timeline: fades in from `from` after `delay` seconds. With reduced motion the
+ * delay collapses to 0 (everything appears together); MotionConfig already skips the
+ * transform part, so `from` needs no reduced-motion branch.
+ */
+export function enter(delay: number, reduce: boolean, from: Record<string, number> = { y: 14 }) {
+  return {
+    initial: { opacity: 0, ...from },
+    animate: { opacity: 1, y: 0, x: 0, scale: 1 },
+    transition: { duration: duration.state, ease: ease.out, delay: reduce ? 0 : delay },
+  };
+}
+
 /** Light haptic tick where supported (Android Chrome). iOS Safari has no vibration API. */
 export function haptic(pattern: number | number[] = 10) {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {

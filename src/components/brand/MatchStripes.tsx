@@ -10,39 +10,29 @@ const PERIOD = 133.373;
 const FRAME_W = 358;
 const BAND_W = FRAME_W + PERIOD;
 const COPIES = [-1, 0, 1, 2, 3];
+const BAND_STYLE = {
+  width: `${(BAND_W / FRAME_W) * 100}%`,
+  // How far one loop slides: exactly one "l" (read by the stripes-drift keyframes)
+  "--stripes-shift": `${(-PERIOD / BAND_W) * 100}%`,
+} as CSSProperties;
 
 /**
  * The wavy stripes behind the match cards, meant to sit inside a rosa block that clips it
- * (overflow-hidden, rounded). Paints with currentColor (crema by default). With `loop` the
- * band drifts left forever, one "l" every `secondsPerLoop`: a CSS animation on transform,
- * so it runs on the compositor, not in JS every frame. Still with reduced motion.
+ * (overflow-hidden, rounded). Paints with currentColor (crema by default). The band drifts
+ * left forever (`animate-stripes-drift`, timing in globals.css): a CSS transform animation,
+ * so it runs on the compositor. Still with reduced motion.
  */
-export function MatchStripes({
-  className,
-  loop = false,
-  secondsPerLoop = 9,
-}: {
-  className?: string;
-  loop?: boolean;
-  secondsPerLoop?: number;
-}) {
-  const style = {
-    width: `${(BAND_W / FRAME_W) * 100}%`,
-    "--stripes-shift": `${(-PERIOD / BAND_W) * 100}%`,
-    animationDuration: `${secondsPerLoop}s`,
-  } as CSSProperties;
-
+export function MatchStripes({ className }: { className?: string }) {
   return (
     <svg
       viewBox={`0 0 ${BAND_W} 290`}
       preserveAspectRatio="none"
       fill="currentColor"
       className={cn(
-        "absolute inset-y-0 left-0 h-full text-crema",
-        loop && "animate-stripes-drift motion-reduce:animate-none",
+        "absolute inset-y-0 left-0 h-full text-crema animate-stripes-drift motion-reduce:animate-none",
         className
       )}
-      style={style}
+      style={BAND_STYLE}
       aria-hidden="true"
     >
       {COPIES.map((k) => (

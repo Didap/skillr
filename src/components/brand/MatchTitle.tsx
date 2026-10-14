@@ -36,7 +36,7 @@ export function MatchTitle({
     <svg viewBox="0 0 358 159" className={className} role="img" aria-label="È un helllo!">
       <motion.g
         style={own}
-        initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.55, rotate: reduceMotion ? 0 : -10 }}
+        initial={{ opacity: 0, scale: 0.55, rotate: -10 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={
           reduceMotion
@@ -53,7 +53,7 @@ export function MatchTitle({
         d={BANG}
         fill="var(--color-rosso)"
         style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}
-        initial={{ opacity: 0, y: reduceMotion ? 0 : -36, rotate: reduceMotion ? 0 : 24 }}
+        initial={{ opacity: 0, y: -36, rotate: 24 }}
         animate={{ opacity: 1, y: 0, rotate: 0 }}
         transition={
           reduceMotion
@@ -63,7 +63,7 @@ export function MatchTitle({
       />
       <motion.g
         style={own}
-        initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.2, rotate: reduceMotion ? 0 : -50 }}
+        initial={{ opacity: 0, scale: 0.2, rotate: -50 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={
           reduceMotion

@@ -4,15 +4,15 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Hanken_Grotesk } from "next/font/google";
 import { ArrowUp, Briefcase, Calendar, ImageIcon, X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { MatchTitle } from "@/components/brand/MatchTitle";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
-import { cn } from "@/lib/utils";
-import { duration, ease, haptic } from "@/lib/motion";
+import { hankenBlackItalic } from "./match-font";
+import { cn, isEditableTarget } from "@/lib/utils";
+import { duration, ease, enter, haptic } from "@/lib/motion";
 
 interface MatchOverlayProps {
   parties: MatchParties;
@@ -35,18 +35,6 @@ const T = {
   close: 0.03, title: 0.08, block: 0.42, cards: 0.5, badge: 0.82, pill: 0.95,
   copy: 1.03, copyStep: 0.08, chips: 1.17, chipStep: 0.06, input: 1.36, cta: 1.45, link: 1.53,
 };
-
-// The caption is Hanken Grotesk Black Italic (Figma). Loaded here, not in the root layout,
-// so no other page downloads the italic; not preloaded either, it is needed ~1s in.
-const captionFont = Hanken_Grotesk({ subsets: ["latin"], weight: "900", style: "italic", preload: false });
-
-// With reduced motion every beat starts at once and things simply fade in
-const beat = (delay: number, reduce: boolean) => (reduce ? 0 : delay);
-const fadeUp = (delay: number, reduce: boolean, y = 14) => ({
-  initial: { opacity: 0, y: reduce ? 0 : y },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.26, ease: ease.out, delay: beat(delay, reduce) },
-});
 
 // Confetti from the badge: brand colours, one burst
 const BURST = Array.from({ length: 12 }, (_, i) => {
@@ -87,11 +75,11 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
     // A stronger pattern than the swipe tick, timed with the badge: this is the reward
     const buzz = window.setTimeout(() => haptic([14, 60, 28]), reduceMotion ? 0 : T.badge * 1000);
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      // In the message field Escape belongs to the field (autocomplete, IME): just leave it
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("input, textarea")) {
-        target.blur();
+      // Escape while composing (IME) dismisses the candidates, nothing else
+      if (e.key !== "Escape" || e.isComposing) return;
+      // In the message field it only leaves the field, back to the dialog; the draft stays
+      if (isEditableTarget(e.target)) {
+        dialogRef.current?.focus({ preventScroll: true });
         return;
       }
       onCloseRef.current();
@@ -103,13 +91,12 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
     };
   }, [reduceMotion]);
 
+  // Reduced motion: MotionConfig (reducedMotion="user") already drops the transform part
+  // of every animation; here only the delays collapse, so everything fades in together.
   const { professional, company } = parties;
   const recipient = viewerRole === "company" ? professional : company;
   // "Scrivi a Luca…" for a person, the full name for a company
   const recipientName = viewerRole === "company" ? recipient.name.split(/\s+/)[0] : recipient.name;
-
-  const at = (delay: number) => beat(delay, reduceMotion);
-  const rise = (delay: number) => fadeUp(delay, reduceMotion);
 
   return (
     <motion.div
@@ -127,9 +114,9 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
       <div className="mx-auto w-full max-w-[24.375rem] min-h-full flex flex-col gap-3.5 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <div className="h-10 shrink-0 flex">
           <motion.button
-            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.7 }}
+            initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: duration.state, ease: ease.out, delay: at(T.close) }}
+            transition={{ duration: duration.state, ease: ease.out, delay: reduceMotion ? 0 : T.close }}
             type="button"
             onClick={onClose}
             aria-label="Chiudi"
@@ -141,16 +128,16 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
 
         {/* 358x92 in the layout; the art is 358x159 and spills over the block below */}
         <h2 id="match-title" className="relative z-10 shrink-0 w-full aspect-[358/92]">
-          <MatchTitle delay={at(T.title)} reduceMotion={reduceMotion} className="absolute inset-x-0 top-0 w-full h-auto overflow-visible" />
+          <MatchTitle delay={T.title} reduceMotion={reduceMotion} className="absolute inset-x-0 top-0 w-full h-auto overflow-visible" />
         </h2>
 
         <MatchIllustration parties={parties} reduceMotion={reduceMotion} />
 
-        <p className={cn(captionFont.className, "shrink-0 text-center text-[1.75rem] leading-8 tracking-[-0.015em] text-viola")}>
-          <motion.span {...rise(T.copy)} className="block">
+        <p className={cn(hankenBlackItalic.className, "shrink-0 text-center text-title text-viola")}>
+          <motion.span {...enter(T.copy, reduceMotion)} className="block">
             Vi siete scelti a vicenda.
           </motion.span>
-          <motion.span {...rise(T.copy + T.copyStep)} className="block">
+          <motion.span {...enter(T.copy + T.copyStep, reduceMotion)} className="block">
             Ora rompete il ghiaccio.
           </motion.span>
         </p>
@@ -165,23 +152,23 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
         <div className="flex-1 min-h-1" />
 
         <motion.div
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 24, scale: reduceMotion ? 1 : 0.96 }}
+          initial={{ opacity: 0, y: 24, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={reduceMotion ? { duration: duration.state } : { type: "spring", stiffness: 420, damping: 28, delay: T.cta }}
           className="shrink-0"
         >
           <Link
             href={`/matches/${matchId}`}
-            className={cn(buttonVariants(), "h-14 w-full gap-2 text-body font-medium")}
+            className={cn(buttonVariants(), "h-14 w-full gap-2 border-0 text-body font-medium")}
           >
-            <Calendar size={22} strokeWidth={1.75} /> Fissa un colloquio
+            <Calendar className="size-[22px]" strokeWidth={1.75} /> Fissa un colloquio
           </Link>
         </motion.div>
         <motion.button
-          {...rise(T.link)}
+          {...enter(T.link, reduceMotion)}
           type="button"
           onClick={onClose}
-          className="pressable shrink-0 self-center h-[1.375rem] text-body font-medium text-viola underline underline-offset-4 decoration-viola/60 hover:decoration-viola"
+          className={cn(buttonVariants({ variant: "link" }), "shrink-0 self-center h-[1.375rem] px-0 text-body font-medium")}
         >
           Continua a scoprire
         </motion.button>
@@ -202,25 +189,22 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
   return (
     <div className="@container relative shrink-0 w-full aspect-[358/290]">
       <motion.div
-        initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.26, ease: ease.out, delay: beat(T.block, reduceMotion) }}
+        {...enter(T.block, reduceMotion, { scale: 0.92 })}
         className="absolute inset-0 rounded-[10cqw] overflow-hidden bg-rosa"
       >
-        {/* The stripes drift left forever, slowly; still with reduced motion */}
-        <MatchStripes loop={!reduceMotion} />
+        <MatchStripes />
       </motion.div>
 
       {/* Professional: white photo card, name on the viola band */}
       <motion.div
-        initial={reduceMotion ? { opacity: 0, rotate: -6 } : { opacity: 0, x: "-120%", y: "8%", rotate: -22 }}
+        initial={{ opacity: 0, x: "-120%", y: "8%", rotate: -22 }}
         animate={{ opacity: 1, x: 0, y: 0, rotate: -6 }}
         transition={reduceMotion ? { duration: duration.state } : { ...fly, delay: T.cards, opacity: { duration: 0.2, delay: T.cards } }}
         className="absolute left-[6.1%] top-[16.42%] w-[41.9%] h-[67.59%] rounded-[6.7cqw] border border-viola bg-white overflow-hidden flex flex-col"
       >
         <div className="relative flex-1 flex items-center justify-center text-viola/50">
           {professional.image ? (
-            <Image src={professional.image} alt={professional.name} fill sizes="180px" className="object-cover" unoptimized />
+            <Image src={professional.image} alt={professional.name} fill sizes="180px" className="object-cover" />
           ) : (
             <ImageIcon className="size-[6.7cqw]" strokeWidth={1.75} aria-hidden />
           )}
@@ -232,7 +216,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
 
       {/* Company: blu card with logo or initials */}
       <motion.div
-        initial={reduceMotion ? { opacity: 0, rotate: 6 } : { opacity: 0, x: "120%", y: "-6%", rotate: 22 }}
+        initial={{ opacity: 0, x: "120%", y: "-6%", rotate: 22 }}
         animate={{ opacity: 1, x: 0, y: 0, rotate: 6 }}
         transition={
           reduceMotion
@@ -243,7 +227,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
       >
         <div className="relative size-[15.64cqw] rounded-full bg-white overflow-hidden flex items-center justify-center text-[5.6cqw] font-medium text-blu">
           {company.image ? (
-            <Image src={company.image} alt={company.name} fill sizes="64px" className="object-cover" unoptimized />
+            <Image src={company.image} alt={company.name} fill sizes="64px" className="object-cover" />
           ) : (
             <span aria-hidden>{initials(company.name)}</span>
           )}
@@ -281,7 +265,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
         )}
         <motion.div
           className="relative"
-          initial={{ opacity: 0, scale: reduceMotion ? 1 : 0, rotate: reduceMotion ? 0 : -40 }}
+          initial={{ opacity: 0, scale: 0, rotate: -40 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
           transition={
             reduceMotion
@@ -296,7 +280,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
       {/* What the match is about: the professional's role */}
       {professional.detail && (
         <motion.div
-          {...fadeUp(T.pill, reduceMotion, 10)}
+          {...enter(T.pill, reduceMotion, { y: 10 })}
           className="absolute left-1/2 -translate-x-1/2 top-[82.07%] h-[11.72%] max-w-[86%] rounded-full bg-white px-[4.5cqw] flex items-center gap-[2.2cqw] text-[4.2cqw] text-viola whitespace-nowrap"
         >
           <Briefcase className="size-[5.6cqw] shrink-0" strokeWidth={1.75} aria-hidden />
@@ -310,7 +294,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
 /*
  * First message after the match: suggested lines plus a text field, as in the Figma.
  * Front-end only for now: messages stay in this component and are not sent anywhere
- * until the chat backend exists, and the screen says so instead of "Inviato".
+ * until the chat backend exists, and the screen says so: nothing is kept or sent later.
  */
 function Icebreaker({
   suggestions,
@@ -336,8 +320,8 @@ function Icebreaker({
 
   return (
     <div className="shrink-0 flex flex-col gap-3.5">
-      <AnimatePresence mode="popLayout">
-        {sent.length === 0 ? (
+      <AnimatePresence>
+        {sent.length === 0 && (
           <motion.ul
             key="chips"
             exit={{ opacity: 0, scale: 0.96, transition: { duration: duration.feedback } }}
@@ -347,9 +331,9 @@ function Icebreaker({
             {suggestions.map((text, i) => (
               <motion.li
                 key={text}
-                initial={{ opacity: 0, y: reduceMotion ? 0 : 10, scale: reduceMotion ? 1 : 0.9 }}
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 420, damping: 26, delay: beat(T.chips + i * T.chipStep, reduceMotion) }}
+                transition={{ type: "spring", stiffness: 420, damping: 26, delay: reduceMotion ? 0 : T.chips + i * T.chipStep }}
               >
                 <button
                   type="button"
@@ -364,31 +348,32 @@ function Icebreaker({
               </motion.li>
             ))}
           </motion.ul>
-        ) : (
-          <motion.ol key="sent" className="flex flex-col items-end gap-1.5" aria-label="I tuoi messaggi">
-            {sent.map((text, i) => (
-              <motion.li
-                key={i}
-                initial={{ opacity: 0, y: reduceMotion ? 0 : 12, scale: reduceMotion ? 1 : 0.92 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 480, damping: 30 }}
-                className="max-w-[85%] origin-bottom-right rounded-3xl rounded-br-md bg-viola px-4 py-2.5 text-body text-white"
-              >
-                {text}
-              </motion.li>
-            ))}
-            <li className="text-label text-viola-500 pr-1 text-right">Non ancora inviato: la chat arriva a breve</li>
-          </motion.ol>
         )}
       </AnimatePresence>
 
-      {/* Mounted from the start so screen readers announce what changes in it */}
-      <p className="sr-only" aria-live="polite">
-        {sent.length > 0 && `Messaggio salvato qui, non ancora inviato a ${recipientName}: la chat arriva a breve.`}
-      </p>
+      {/* Mounted from the start (empty), so screen readers announce each message added to
+          it and the status line under the first one */}
+      <div aria-live="polite" className={cn("flex flex-col items-end gap-1.5", sent.length === 0 && "hidden")}>
+        <ol className="contents" aria-label="I tuoi messaggi">
+          {sent.map((text, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, y: 12, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 480, damping: 30 }}
+              className="max-w-[85%] origin-bottom-right rounded-3xl rounded-br-md bg-viola px-4 py-2.5 text-body text-white"
+            >
+              {text}
+            </motion.li>
+          ))}
+        </ol>
+        {sent.length > 0 && (
+          <p className="text-label text-viola-500 pr-1 text-right">Anteprima: la chat non è ancora attiva, il messaggio non viene inviato</p>
+        )}
+      </div>
 
       <motion.form
-        {...fadeUp(T.input, reduceMotion, 10)}
+        {...enter(T.input, reduceMotion, { y: 10 })}
         onSubmit={send}
         className="flex h-[3.25rem] items-center gap-2 rounded-full bg-crema pl-[1.125rem] pr-1.5 focus-within:ring-3 focus-within:ring-ring/50"
       >
