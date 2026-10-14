@@ -41,7 +41,7 @@ export function MatchTitle({
         transition={
           reduceMotion
             ? fade
-            : { type: "spring", stiffness: 380, damping: 13, delay, opacity: { duration: 0.15, delay } }
+            : { type: "spring", stiffness: 480, damping: 15, delay, opacity: { duration: 0.15, delay } }
         }
         fill="var(--color-rosso)"
       >
@@ -58,7 +58,7 @@ export function MatchTitle({
         transition={
           reduceMotion
             ? fade
-            : { type: "spring", stiffness: 520, damping: 12, delay: delay + 0.32, opacity: { duration: 0.1, delay: delay + 0.32 } }
+            : { type: "spring", stiffness: 520, damping: 12, delay: delay + 0.18, opacity: { duration: 0.1, delay: delay + 0.18 } }
         }
       />
       <motion.g
@@ -68,7 +68,7 @@ export function MatchTitle({
         transition={
           reduceMotion
             ? fade
-            : { type: "spring", stiffness: 460, damping: 14, delay: delay + 0.5, opacity: { duration: 0.12, delay: delay + 0.5, ease: ease.out } }
+            : { type: "spring", stiffness: 460, damping: 14, delay: delay + 0.28, opacity: { duration: 0.12, delay: delay + 0.28, ease: ease.out } }
         }
       >
         <rect x="77.6016" width="86" height="46" rx="23" transform="rotate(30 77.6016 0)" fill="var(--color-blu)" />

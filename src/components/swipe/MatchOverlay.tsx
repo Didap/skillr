@@ -30,8 +30,8 @@ const ICEBREAKERS = {
 // (wordmark, "!", sticker), the block, the cards meet, the badge pops, then the caption,
 // the icebreakers one by one, the field and the actions.
 const T = {
-  close: 0.05, title: 0.15, block: 0.8, cards: 0.95, badge: 1.4, pill: 1.6,
-  copy: 1.75, copyStep: 0.12, chips: 2.0, chipStep: 0.1, input: 2.35, cta: 2.5, link: 2.62,
+  close: 0.03, title: 0.08, block: 0.42, cards: 0.5, badge: 0.82, pill: 0.95,
+  copy: 1.03, copyStep: 0.08, chips: 1.17, chipStep: 0.06, input: 1.36, cta: 1.45, link: 1.53,
 };
 
 // Confetti from the badge: brand colours, one burst
@@ -92,7 +92,7 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
   const rise = (delay: number) => ({
     initial: { opacity: 0, y: reduceMotion ? 0 : 14 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: duration.view, ease: ease.out, delay: at(delay) },
+    transition: { duration: 0.26, ease: ease.out, delay: at(delay) },
   });
 
   return (
@@ -151,7 +151,7 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
         <motion.div
           initial={{ opacity: 0, y: reduceMotion ? 0 : 24, scale: reduceMotion ? 1 : 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={reduceMotion ? { duration: duration.state } : { type: "spring", stiffness: 300, damping: 24, delay: T.cta }}
+          transition={reduceMotion ? { duration: duration.state } : { type: "spring", stiffness: 420, damping: 28, delay: T.cta }}
           className="shrink-0"
         >
           <Link
@@ -182,20 +182,20 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
 function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; reduceMotion: boolean }) {
   const { professional, company } = parties;
   const at = (delay: number) => (reduceMotion ? 0 : delay);
-  const fly = { type: "spring", stiffness: 210, damping: 17, mass: 0.9 } as const;
+  const fly = { type: "spring", stiffness: 300, damping: 21, mass: 0.8 } as const;
 
   return (
     <div className="@container relative shrink-0 w-full aspect-[358/290]">
       <motion.div
         initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: duration.focal, ease: ease.out, delay: at(T.block) }}
+        transition={{ duration: 0.26, ease: ease.out, delay: at(T.block) }}
         className="absolute inset-0 rounded-[10cqw] overflow-hidden bg-rosa"
       >
         <motion.div
           initial={{ x: reduceMotion ? 0 : "-9%" }}
           animate={{ x: 0 }}
-          transition={{ duration: 1.6, ease: ease.out, delay: at(T.block) }}
+          transition={{ duration: 0.9, ease: ease.out, delay: at(T.block) }}
           className="absolute inset-0"
         >
           <MatchStripes />
@@ -256,7 +256,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
               initial={{ scale: 0.9, opacity: 0 }}
               // Starts from 0 opacity: keyframes would otherwise show the ring during the delay
               animate={{ scale: [0.9, 0.9, 2.1], opacity: [0, 0.7, 0] }}
-              transition={{ duration: 0.75, ease: ease.out, delay: T.badge + 0.05, times: [0, 0.02, 1] }}
+              transition={{ duration: 0.55, ease: ease.out, delay: T.badge + 0.03, times: [0, 0.02, 1] }}
             />
             {BURST.map((p, i) => (
               <motion.span
@@ -265,7 +265,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
                 style={{ rotate: p.rotate }}
                 initial={{ x: 0, y: 0, opacity: 0, scale: 0.4 }}
                 animate={{ x: `${p.x}cqw`, y: `${p.y}cqw`, opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 0.6] }}
-                transition={{ duration: 0.9, ease: ease.out, delay: T.badge + 0.04, times: [0, 0.15, 0.7, 1] }}
+                transition={{ duration: 0.65, ease: ease.out, delay: T.badge + 0.03, times: [0, 0.15, 0.7, 1] }}
               />
             ))}
           </>
@@ -289,7 +289,7 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
         <motion.div
           initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: duration.view, ease: ease.out, delay: at(T.pill) }}
+          transition={{ duration: 0.26, ease: ease.out, delay: at(T.pill) }}
           className="absolute left-1/2 -translate-x-1/2 top-[82.07%] h-[11.72%] max-w-[86%] rounded-full bg-white px-[4.5cqw] flex items-center gap-[2.2cqw] text-[4.2cqw] text-viola whitespace-nowrap"
         >
           <Briefcase className="size-[5.6cqw] shrink-0" strokeWidth={1.75} aria-hidden />
@@ -379,7 +379,7 @@ function Icebreaker({
       <motion.form
         initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: duration.view, ease: ease.out, delay: at(T.input) }}
+        transition={{ duration: 0.26, ease: ease.out, delay: at(T.input) }}
         onSubmit={send}
         className="flex h-[3.25rem] items-center gap-2 rounded-full bg-crema pl-[1.125rem] pr-1.5 focus-within:ring-3 focus-within:ring-ring/50"
       >
