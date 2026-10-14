@@ -50,17 +50,17 @@ export function FileCardUpload({ value, onChange, label, description, accept = "
 
   return (
     <div className={cn("space-y-3", className)}>
-      <Label className="font-bold text-slate-700 ml-1">{label}</Label>
+      <Label className="text-label text-viola ml-1">{label}</Label>
       <div 
         className={cn(
-          "relative group rounded-3xl border-2 border-dashed transition-all p-6",
-          value ? "border-emerald-500 bg-emerald-50/30" : "border-slate-200 bg-slate-50/50 hover:border-emerald-400 hover:bg-white"
+          "relative group rounded-card border-2 border-dashed transition-colors p-6 has-focus-visible:border-ring",
+          value ? "border-solid border-viola/15 bg-white" : "border-viola-200 bg-crema hover:border-viola-400"
         )}
       >
         <div className="flex items-center gap-4">
           <div className={cn(
-            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-            value ? "bg-emerald-500 text-white" : "bg-white text-slate-300 shadow-sm"
+            "w-12 h-12 rounded-full flex items-center justify-center transition-colors",
+            value ? "bg-rosa text-viola" : "bg-white text-viola-400"
           )}>
             {isUploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
@@ -72,10 +72,10 @@ export function FileCardUpload({ value, onChange, label, description, accept = "
           </div>
           
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-bold text-slate-900 truncate">
+            <h4 className="text-sm font-semibold text-viola truncate">
               {value ? "Documento caricato" : description}
             </h4>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+            <p className="text-label text-viola-400 mt-1">
               {value ? "Clicca per sostituire" : "PDF o Immagine. Max 5MB"}
             </p>
           </div>
@@ -86,7 +86,7 @@ export function FileCardUpload({ value, onChange, label, description, accept = "
               onClick={removeFile}
               aria-label="Rimuovi documento"
               // Above the invisible file input, otherwise tapping it opens the file picker
-              className="pressable relative z-10 w-11 h-11 flex items-center justify-center hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors rounded-xl"
+              className="pressable relative z-10 w-11 h-11 flex items-center justify-center hover:bg-crema text-viola-400 hover:text-viola transition-colors rounded-full"
             >
               <X size={18} />
             </button>

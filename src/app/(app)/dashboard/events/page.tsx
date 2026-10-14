@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { InterviewEvent } from "@/types/interview";
 
 export const metadata = {
-  title: "Smart Interviews | Skillr",
+  title: "Smart Interviews | Helllo",
   description: "Gestisci i tuoi eventi di speed-dating aziendale.",
 };
 

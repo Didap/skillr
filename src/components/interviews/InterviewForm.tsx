@@ -32,9 +32,11 @@ const DURATION_MIN = 15;
 const DURATION_MAX = 720;
 const DURATION_STEP = 15;
 
-const labelClass = "text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1";
+const labelClass = "text-label text-viola ml-4";
+// Crema pill fields; the focus ring comes from the Input primitive (blu)
 const fieldClass =
-  "rounded-2xl h-14 bg-white border-slate-200 text-base md:text-sm font-bold focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10 transition-all";
+  "rounded-full h-14 bg-crema border-transparent text-base md:text-sm font-medium text-viola placeholder:text-viola-400";
+const pickerClass = "pl-12 h-14 rounded-full bg-crema border-transparent font-medium text-viola";
 
 // Date and time are entered as Italian wall-clock time, whatever the browser timezone.
 // The date picker works with local-midnight Dates, so only its calendar day is used.
@@ -53,11 +55,11 @@ function initialDuration(initialData?: Partial<InterviewEvent>) {
 
 function SectionTitle({ icon, tone, title, hint }: { icon: React.ReactNode; tone: string; title: string; hint: string }) {
   return (
-    <div className="flex items-center gap-3 md:gap-4 border-b border-slate-100 pb-3 md:pb-4">
-      <div className={cn("w-10 h-10 shrink-0 rounded-xl flex items-center justify-center", tone)}>{icon}</div>
+    <div className="flex items-center gap-3 md:gap-4 border-b border-viola/15 pb-3 md:pb-4">
+      <div className={cn("w-11 h-11 shrink-0 rounded-full flex items-center justify-center", tone)}>{icon}</div>
       <div className="min-w-0">
-        <h3 className="text-xl font-display italic font-bold text-slate-950 leading-tight">{title}</h3>
-        <p className="text-[13px] md:text-xs text-slate-400 font-medium">{hint}</p>
+        <h3 className="text-2xl font-display font-bold text-viola leading-tight">{title}</h3>
+        <p className="text-label text-viola-500 mt-0.5">{hint}</p>
       </div>
     </div>
   );
@@ -87,9 +89,9 @@ function Stepper({
 }) {
   const clamp = (n: number) => Math.max(min, max !== undefined ? Math.min(max, n) : n);
   const btn =
-    "pressable shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-slate-500 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-30 disabled:pointer-events-none";
+    "pressable shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-viola bg-white hover:bg-rosa disabled:opacity-30 disabled:pointer-events-none";
   return (
-    <div className="flex items-center gap-1 h-14 rounded-2xl bg-white border border-slate-200 px-1.5 focus-within:border-emerald-500 transition-colors">
+    <div className="flex items-center gap-1 h-14 rounded-full bg-crema px-1.5 focus-within:ring-3 focus-within:ring-ring/50 transition-shadow">
       <button
         type="button"
         aria-label={decreaseLabel}
@@ -110,7 +112,7 @@ function Stepper({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 w-full min-w-0 bg-transparent text-center text-base font-bold text-slate-950 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="flex-1 w-full min-w-0 bg-transparent text-center text-base font-bold text-viola outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <button
         type="button"
@@ -201,32 +203,32 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
       {/* 1. Identità dell'Evento */}
       <section className="space-y-6 md:space-y-8">
         <SectionTitle
-          icon={<ImageIcon size={20} />}
-          tone="bg-emerald-50 text-emerald-600 border border-emerald-100/50"
-          title="Identità & Media"
+          icon={<ImageIcon size={20} strokeWidth={1.75} />}
+          tone="bg-rosa text-viola"
+          title="Identità e copertina"
           hint="Personalizza il volto della tua Smart Interview"
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           <div className="lg:col-span-4 space-y-2">
-            <Label className={labelClass}>Immagine di Copertina</Label>
+            <Label className={labelClass}>Immagine di copertina</Label>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
             {previewImage ? (
-              <div className="relative aspect-video lg:aspect-auto lg:h-56 rounded-3xl overflow-hidden shadow-md group">
+              <div className="relative aspect-video lg:aspect-auto lg:h-56 rounded-card overflow-hidden group">
                 <Image src={previewImage} alt="Anteprima copertina" fill sizes="(min-width: 1024px) 320px, 100vw" className="object-cover" />
                 {/* Always visible on touch, revealed on hover with a mouse */}
-                <div className="absolute inset-x-0 bottom-0 p-3 flex justify-end gap-2 bg-linear-to-t from-black/50 to-transparent md:inset-0 md:items-center md:justify-center md:bg-black/40 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+                <div className="absolute inset-x-0 bottom-0 p-3 flex justify-end gap-2 md:inset-0 md:items-center md:justify-center md:bg-viola/40 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="pressable h-11 px-4 rounded-full bg-white text-slate-900 text-sm font-bold inline-flex items-center gap-2 shadow-sm"
+                    className="pressable h-11 px-4 rounded-full bg-white text-viola text-sm font-bold inline-flex items-center gap-2"
                   >
                     <RefreshCw size={16} /> Cambia
                   </button>
                   <button
                     type="button"
                     onClick={removeImage}
-                    className="pressable h-11 px-4 rounded-full bg-red-600 text-white text-sm font-bold inline-flex items-center gap-2 shadow-sm"
+                    className="pressable h-11 px-4 rounded-full bg-rosso hover:bg-rosso-600 text-white text-sm font-bold inline-flex items-center gap-2"
                   >
                     <Trash2 size={16} /> Rimuovi
                   </button>
@@ -236,35 +238,35 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="pressable group w-full aspect-video lg:aspect-auto lg:h-56 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:border-emerald-300 hover:bg-emerald-50/20 transition-colors flex flex-col items-center justify-center text-center p-6"
+                className="pressable group w-full aspect-video lg:aspect-auto lg:h-56 rounded-card bg-crema hover:bg-rosso-50 transition-colors flex flex-col items-center justify-center text-center p-6"
               >
-                <span className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-slate-400 mb-3 group-hover:text-emerald-500 transition-colors border border-slate-100">
-                  <Upload size={22} />
+                <span className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-viola mb-3">
+                  <Upload size={22} strokeWidth={1.75} />
                 </span>
-                <span className="text-slate-950 font-bold text-[15px]">Carica cover</span>
-                <span className="text-xs text-slate-400 font-medium mt-0.5">PNG, JPG (16:9)</span>
+                <span className="text-viola font-bold text-[15px]">Carica copertina</span>
+                <span className="text-label text-viola-500 mt-0.5">PNG, JPG (16:9)</span>
               </button>
             )}
           </div>
 
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="title" className={labelClass}>Titolo dell&apos;Evento</Label>
-              <Input id="title" name="title" defaultValue={initialData?.title || undefined} required placeholder="Es: Speed Dating per React Developers" className={cn(fieldClass, "px-5 md:px-6 md:text-base placeholder:text-slate-300")} />
+              <Label htmlFor="title" className={labelClass}>Titolo dell&apos;evento</Label>
+              <Input id="title" name="title" defaultValue={initialData?.title || undefined} required placeholder="Es: Speed Dating per React Developers" className={cn(fieldClass, "px-5 md:px-6 md:text-base")} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="topic" className={labelClass}>Settore / Argomento</Label>
+              <Label htmlFor="topic" className={labelClass}>Settore o argomento</Label>
               <Input id="topic" name="topic" defaultValue={initialData?.topic || undefined} required placeholder="Es: Sviluppo Frontend" className={cn(fieldClass, "px-5 md:px-6")} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="format" className={labelClass}>Formato Sessione</Label>
+              <Label htmlFor="format" className={labelClass}>Formato della sessione</Label>
               <Input id="format" name="format" defaultValue={initialData?.format || undefined} placeholder="Es: 10m Pitch + 5m Q&A" className={cn(fieldClass, "px-5 md:px-6")} />
             </div>
 
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="tags" className={labelClass}>Competenze in Target</Label>
+              <Label htmlFor="tags" className={labelClass}>Competenze cercate</Label>
               <TagInput value={tags} onChange={setTags} suggestions={suggestions} placeholder="Cerca competenze..." />
             </div>
           </div>
@@ -274,34 +276,34 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
       {/* 2. Logistica */}
       <section className="space-y-6 md:space-y-8">
         <SectionTitle
-          icon={<CalendarIcon size={20} />}
-          tone="bg-slate-950 text-white border border-slate-800"
-          title="Logistica & Tempo"
+          icon={<CalendarIcon size={20} strokeWidth={1.75} />}
+          tone="bg-blu text-white"
+          title="Quando e dove"
           hint="Gestisci orari e accessibilità"
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-x-3 gap-y-5 md:gap-6">
           <div className="col-span-2 md:col-span-1 space-y-2">
-            <Label className={labelClass}>Data Evento</Label>
+            <Label className={labelClass}>Data</Label>
             <div className="relative">
               <DatePicker
                 value={date}
                 onChange={setDate}
                 disablePast
-                className="pl-12 h-14 rounded-2xl bg-white border-slate-200 hover:border-emerald-500 font-bold"
+                className={pickerClass}
               />
-              <CalendarIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none z-10" />
+              <CalendarIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none z-10" />
             </div>
           </div>
           <div className="col-span-2 md:col-span-1 space-y-2">
-            <Label className={labelClass}>Ora Inizio</Label>
+            <Label className={labelClass}>Ora di inizio</Label>
             <div className="relative">
               <TimePicker
                 value={time}
                 onChange={setTime}
-                className="pl-12 h-14 rounded-2xl bg-white border-slate-200 focus-within:border-emerald-500 font-bold"
+                className={pickerClass}
               />
-              <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none z-10" />
+              <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none z-10" />
             </div>
           </div>
           <div className="space-y-2">
@@ -332,7 +334,7 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
             />
           </div>
           <div className="col-span-2 lg:col-span-1 space-y-2">
-             <Label htmlFor="location" className={labelClass}>Sede / Modalità</Label>
+             <Label htmlFor="location" className={labelClass}>Sede o modalità</Label>
              <div className="relative">
                <Input
                  id="location"
@@ -341,16 +343,16 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
                  placeholder="Online / In sede"
                  className={cn(fieldClass, "pl-12 pr-4")}
                />
-               <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+               <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none" />
              </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="meetingLink" className={labelClass}>Link Meeting Diretto (Opzionale)</Label>
+          <Label htmlFor="meetingLink" className={labelClass}>Link del meeting (facoltativo)</Label>
           <div className="relative">
-            <Input id="meetingLink" name="meetingLink" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" defaultValue={initialData?.meetingLink || undefined} placeholder="https://meet.google.com/..." className="rounded-2xl h-14 md:h-12 md:rounded-xl bg-white border-slate-200 pl-12 pr-4 text-base md:text-sm" />
-            <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+            <Input id="meetingLink" name="meetingLink" type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" defaultValue={initialData?.meetingLink || undefined} placeholder="https://meet.google.com/..." className={cn(fieldClass, "pl-12 pr-4")} />
+            <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none" />
           </div>
         </div>
       </section>
@@ -358,30 +360,30 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
       {/* 3. Descrizione */}
       <section className="space-y-6 md:space-y-8">
         <SectionTitle
-          icon={<Info size={20} />}
-          tone="bg-emerald-500 text-white"
+          icon={<Info size={20} strokeWidth={1.75} />}
+          tone="bg-rosso text-white"
           title="Descrizione"
           hint="Racconta ai candidati perché partecipare"
         />
 
         <div className="space-y-2">
-          <Label htmlFor="description" className={labelClass}>Dettagli ed Obiettivi</Label>
-          <Textarea id="description" name="description" defaultValue={initialData?.description || undefined} placeholder="Descrivi il programma dell'evento..." className="rounded-2xl min-h-[140px] resize-none bg-white border-slate-200 p-5 md:p-6 text-base md:text-sm leading-relaxed" />
+          <Label htmlFor="description" className={labelClass}>Dettagli e obiettivi</Label>
+          <Textarea id="description" name="description" defaultValue={initialData?.description || undefined} placeholder="Descrivi il programma dell'evento..." className="rounded-3xl min-h-[140px] resize-none bg-crema border-transparent p-5 md:p-6 text-base md:text-sm leading-relaxed text-viola placeholder:text-viola-400" />
         </div>
       </section>
 
       {/* Submit: a sticky thumb bar on phones, a plain right-aligned button from md up */}
       <div
         className={cn(
-          "sticky z-30 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100",
-          "md:static md:mx-0 md:px-0 md:py-0 md:pt-8 md:bg-transparent md:backdrop-blur-none md:border-0 md:flex md:justify-end",
+          "sticky z-30 -mx-4 px-4 py-3 bg-white border-t border-viola/15",
+          "md:static md:mx-0 md:px-0 md:py-0 md:pt-8 md:bg-transparent md:border-0 md:flex md:justify-end",
           stickyBar === "tabbar" ? "bottom-0" : "bottom-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-0"
         )}
       >
         <Button
           type="submit"
           disabled={loading || !date}
-          className="pressable w-full md:w-auto px-10 h-14 rounded-full text-lg font-display font-bold italic bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/10"
+          className="w-full md:w-auto px-10 h-14 text-lg"
         >
           {loading ? (
             <div className="flex items-center gap-3">
@@ -390,8 +392,8 @@ export function InterviewForm({ onSubmit, loading, initialData, buttonText, stic
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span>{buttonText || "Pubblica Evento"}</span>
-              <Zap size={20} fill="currentColor" />
+              <span>{buttonText || "Pubblica evento"}</span>
+              <Zap size={20} />
             </div>
           )}
         </Button>

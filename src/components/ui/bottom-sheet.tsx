@@ -57,7 +57,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
       {open && (
         <div className="fixed inset-0 z-100 flex items-end md:items-center justify-center">
           <motion.div
-            className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-viola/40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
             exit={{ opacity: 0, transition: { duration: duration.feedback } }}
@@ -80,7 +80,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
             exit={{ y: "100%", transition: { duration: duration.state, ease: ease.in } }}
             className={cn(
               "relative w-full md:max-w-lg max-h-[90dvh] flex flex-col bg-white outline-none",
-              "rounded-t-[2rem] md:rounded-[2rem] shadow-premium pb-safe",
+              "rounded-t-card md:rounded-card shadow-card pb-safe",
               className
             )}
           >
@@ -88,15 +88,15 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
               className="pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing touch-none md:hidden"
               onPointerDown={(e) => dragControls.start(e)}
             >
-              <span className="h-1.5 w-10 rounded-full bg-slate-200" aria-hidden="true" />
+              <span className="h-1.5 w-10 rounded-full bg-viola-200" aria-hidden="true" />
             </div>
             {title && (
               <div className="flex items-center justify-between gap-4 px-6 pt-2 md:pt-6 pb-3">
-                <h2 id={titleId} className="font-display text-2xl text-slate-950 truncate">{title}</h2>
+                <h2 id={titleId} className="font-display text-2xl font-bold text-viola truncate">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Chiudi"
-                  className="pressable shrink-0 w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100"
+                  className="pressable shrink-0 w-11 h-11 -mr-1 rounded-full border border-viola flex items-center justify-center text-viola hover:bg-crema"
                 >
                   <X size={20} />
                 </button>

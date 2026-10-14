@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Briefcase, Info, MapPin, Laptop, Euro, Loader2 } from "lucide-react";
+import { Briefcase, Info, MapPin, Laptop, Euro, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +43,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
       const res = await getMetadataCatalog();
       if (res.success) {
         setCatalog(res.data);
-        
+
         // If editing, auto-select clusters based on initial skills
         if (initialData?.skills?.length) {
           const clustersToSelect = new Set<string>();
@@ -89,59 +89,59 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
         {/* Left Column: Base Info & Budget */}
         <div className="space-y-10 md:space-y-16">
           <section className="space-y-5 md:space-y-8">
-            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <Briefcase size={20} />
+            <div className="flex items-center gap-3 md:gap-4 border-b border-viola/15 pb-4 md:pb-6">
+              <div className="w-11 h-11 shrink-0 rounded-full bg-rosa text-viola flex items-center justify-center" aria-hidden="true">
+                <Briefcase size={20} strokeWidth={1.75} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Informazioni Base</h2>
+              <h2 className="text-title text-viola">Informazioni base</h2>
             </div>
-            
+
             <div className="space-y-5 md:space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Titolo della ricerca</Label>
-                <Input 
+                <Label htmlFor="title" className="text-label text-viola">Titolo della ricerca</Label>
+                <Input
                   id="title"
-                  name="title" 
-                  required 
+                  name="title"
+                  required
                   defaultValue={initialData?.title}
-                  placeholder="Es: Senior React Developer (Remote)" 
-                  className="rounded-2xl h-14 bg-white border-border-subtle focus:border-primary px-4 md:px-6 text-base" 
+                  placeholder="Es: Senior React Developer (Remote)"
+                  className="h-12 px-5 text-base"
                 />
-                <p className="text-sm md:text-xs text-text-muted italic px-1">Sii specifico e conciso: è la prima cosa che vedrà il pro.</p>
+                <p className="text-label font-normal text-viola-500 px-1">Sii specifico e conciso: è la prima cosa che vedrà il pro.</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Descrizione breve</Label>
-                <Textarea 
+                <Label htmlFor="description" className="text-label text-viola">Descrizione breve</Label>
+                <Textarea
                   id="description"
-                  name="description" 
+                  name="description"
                   defaultValue={initialData?.description || ""}
-                  placeholder="Descrivi il team, il progetto e cosa cerchi..." 
-                  className="rounded-2xl min-h-[140px] md:min-h-[160px] resize-none bg-white border-border-subtle focus:border-primary p-4 md:p-6 text-base" 
+                  placeholder="Descrivi il team, il progetto e cosa cerchi..."
+                  className="min-h-[140px] md:min-h-[160px] resize-none rounded-3xl p-5 md:p-6 font-prompt text-lg font-medium leading-7"
                 />
               </div>
             </div>
           </section>
 
           <section className="space-y-5 md:space-y-8">
-            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <Euro size={20} />
+            <div className="flex items-center gap-3 md:gap-4 border-b border-viola/15 pb-4 md:pb-6">
+              <div className="w-11 h-11 shrink-0 rounded-full bg-rosa text-viola flex items-center justify-center" aria-hidden="true">
+                <Euro size={20} strokeWidth={1.75} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Budget e Tipo Contratto</h2>
+              <h2 className="text-title text-viola">Budget e contratto</h2>
             </div>
 
             <div className="space-y-5 md:space-y-6">
               <div className="space-y-5 md:space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Tipo di Retribuzione</Label>
+                  <Label className="text-label text-viola">Tipo di retribuzione</Label>
                   <Select name="rateType" value={rateType} onValueChange={(v: string | null) => setRateType((v ?? "daily") as "ral_annual" | "daily" | "hourly")}>
-                    <SelectTrigger className="rounded-2xl h-14 w-full bg-white border-border-subtle px-4 md:px-6 text-base font-bold text-text-primary">
+                    <SelectTrigger className="h-12! w-full px-5 text-base font-medium">
                       <SelectValue>
                         {rateTypeLabels[rateType as keyof typeof rateTypeLabels]}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-border-subtle shadow-premium">
+                    <SelectContent>
                       <SelectItem value="ral_annual">RAL Annua (€)</SelectItem>
                       <SelectItem value="daily">Tariffa Giornaliera (€/gg)</SelectItem>
                       <SelectItem value="hourly">Tariffa Oraria (€/ora)</SelectItem>
@@ -151,42 +151,42 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
 
                 <div className="grid grid-cols-2 gap-3 md:gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="budgetMinEur" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Budget Minimo</Label>
+                    <Label htmlFor="budgetMinEur" className="text-label text-viola">Budget minimo</Label>
                     <div className="relative">
-                      <Input 
+                      <Input
                         id="budgetMinEur"
-                        name="budgetMinEur" 
-                        type="number" 
-                        required 
+                        name="budgetMinEur"
+                        type="number"
+                        required
                         defaultValue={initialData?.budgetMinEur || ""}
-                        placeholder="Min" 
+                        placeholder="Min"
                         inputMode="numeric"
-                        className="rounded-2xl h-14 bg-white border-border-subtle pl-4 md:pl-6 pr-10 md:pr-12 text-lg font-bold tabular-nums" 
+                        className="h-14 pl-5 pr-10 text-xl md:text-xl font-bold tabular-nums" 
                       />
-                      <span aria-hidden="true" className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg pointer-events-none">€</span>
+                      <span aria-hidden="true" className="absolute right-5 top-1/2 -translate-y-1/2 text-viola-500 font-bold text-lg pointer-events-none">€</span>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="budgetMaxEur" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Budget Massimo</Label>
+                    <Label htmlFor="budgetMaxEur" className="text-label text-viola">Budget massimo</Label>
                     <div className="relative">
-                      <Input 
+                      <Input
                         id="budgetMaxEur"
-                        name="budgetMaxEur" 
-                        type="number" 
-                        required 
+                        name="budgetMaxEur"
+                        type="number"
+                        required
                         defaultValue={initialData?.budgetMaxEur || ""}
-                        placeholder="Max" 
+                        placeholder="Max"
                         inputMode="numeric"
-                        className="rounded-2xl h-14 bg-white border-border-subtle pl-4 md:pl-6 pr-10 md:pr-12 text-lg font-bold tabular-nums" 
+                        className="h-14 pl-5 pr-10 text-xl md:text-xl font-bold tabular-nums" 
                       />
-                      <span aria-hidden="true" className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-text-muted font-bold text-lg pointer-events-none">€</span>
+                      <span aria-hidden="true" className="absolute right-5 top-1/2 -translate-y-1/2 text-viola-500 font-bold text-lg pointer-events-none">€</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="p-4 md:p-6 bg-emerald-50/50 rounded-2xl md:rounded-[2rem] flex gap-3 md:gap-4 text-emerald-900 text-sm italic border border-emerald-100/50">
-                <Info size={20} className="shrink-0 text-emerald-600" />
-                <p>La trasparenza è obbligatoria. Skillr mostrerà questa fascia direttamente sulla card.</p>
+              <div className="p-5 md:p-6 bg-rosa rounded-card flex gap-3 md:gap-4 text-viola text-body font-medium">
+                <Info size={20} strokeWidth={1.75} className="shrink-0 mt-0.5" aria-hidden="true" />
+                <p>La trasparenza è obbligatoria. Helllo mostrerà questa fascia direttamente sulla card.</p>
               </div>
             </div>
           </section>
@@ -195,51 +195,51 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
         {/* Right Column: Location & Skills */}
         <div className="space-y-10 md:space-y-16">
           <section className="space-y-5 md:space-y-8">
-            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <MapPin size={20} />
+            <div className="flex items-center gap-3 md:gap-4 border-b border-viola/15 pb-4 md:pb-6">
+              <div className="w-11 h-11 shrink-0 rounded-full bg-rosa text-viola flex items-center justify-center" aria-hidden="true">
+                <MapPin size={20} strokeWidth={1.75} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Location</h2>
+              <h2 className="text-title text-viola">Sede</h2>
             </div>
 
             <div className="space-y-5 md:space-y-6">
-              <div className="flex items-center justify-between gap-4 p-4 md:p-6 bg-surface-warm/50 rounded-2xl md:rounded-[2rem] border border-border-subtle">
+              <div className="flex items-center justify-between gap-4 p-5 md:p-6 bg-crema rounded-card">
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">
-                  <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-2xl bg-white border border-border-subtle flex items-center justify-center text-text-muted">
-                    <Laptop size={20} />
+                  <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-full bg-white flex items-center justify-center text-viola" aria-hidden="true">
+                    <Laptop size={20} strokeWidth={1.75} />
                   </div>
                   <div>
-                    <Label htmlFor="remoteOk" className="font-bold text-text-primary cursor-pointer">Lavoro da remoto</Label>
-                    <p className="text-sm md:text-xs text-text-muted">Abilita per attirare candidati da tutta Italia.</p>
+                    <Label htmlFor="remoteOk" className="text-body font-bold text-viola cursor-pointer">Lavoro da remoto</Label>
+                    <p className="text-label font-normal text-viola-500">Abilita per attirare candidati da tutta Italia.</p>
                   </div>
                 </div>
-                <Switch id="remoteOk" name="remoteOk" defaultChecked={initialData?.remoteOk || false} className="data-[state=checked]:bg-primary" />
+                <Switch id="remoteOk" name="remoteOk" defaultChecked={initialData?.remoteOk || false} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Città (opzionale)</Label>
-                <Input 
+                <Label htmlFor="location" className="text-label text-viola">Città (opzionale)</Label>
+                <Input
                   id="location"
-                  name="location" 
+                  name="location"
                   defaultValue={initialData?.location || ""}
-                  placeholder="Es: Milano, Roma..." 
-                  className="rounded-2xl h-14 bg-white border-border-subtle px-6" 
+                  placeholder="Es: Milano, Roma..."
+                  className="h-12 px-5 text-base"
                 />
               </div>
             </div>
           </section>
 
           <section className="space-y-5 md:space-y-8">
-            <div className="flex items-center gap-3 md:gap-4 border-b border-border-subtle pb-4 md:pb-6">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <Briefcase size={20} />
+            <div className="flex items-center gap-3 md:gap-4 border-b border-viola/15 pb-4 md:pb-6">
+              <div className="w-11 h-11 shrink-0 rounded-full bg-rosa text-viola flex items-center justify-center" aria-hidden="true">
+                <Briefcase size={20} strokeWidth={1.75} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Skill Richieste</h2>
+              <h2 className="text-title text-viola">Skill richieste</h2>
             </div>
-            
+
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-3 md:space-y-4">
-                <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80 pl-1">Seleziona i Cluster di riferimento</Label>
+                <Label className="text-label text-viola">Settori di riferimento</Label>
                 <div className="flex flex-wrap gap-2">
                   {catalog.map(cluster => (
                     <button
@@ -248,18 +248,19 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                       aria-pressed={selectedClusters.includes(cluster.slug)}
                       onClick={() => {
                         const exists = selectedClusters.includes(cluster.slug);
-                        setSelectedClusters(exists 
+                        setSelectedClusters(exists
                           ? selectedClusters.filter(s => s !== cluster.slug)
                           : [...selectedClusters, cluster.slug]
                         );
                       }}
                       className={cn(
-                        "pressable min-h-11 px-4 md:px-5 py-2 rounded-xl border text-sm font-bold transition-colors",
+                        "pressable min-h-11 px-4 md:px-5 py-2 rounded-full border text-chip text-viola inline-flex items-center gap-1.5 transition-colors",
                         selectedClusters.includes(cluster.slug)
-                          ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                          : "bg-white border-border-subtle text-text-secondary hover:border-primary/40"
+                          ? "bg-rosa border-rosa"
+                          : "bg-white border-viola/15 hover:bg-crema"
                       )}
                     >
+                      {selectedClusters.includes(cluster.slug) && <Check size={14} strokeWidth={2.5} className="-ml-1 shrink-0" aria-hidden="true" />}
                       {cluster.label}
                     </button>
                   ))}
@@ -269,15 +270,15 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               {selectedClusters.length > 0 && (
                 <div className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center gap-3 px-1">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-text-muted/80">Seleziona le Skill (max 10)</Label>
-                    <span className="shrink-0 text-xs font-black tabular-nums text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                    <Label className="text-label text-viola">Skill (massimo 10)</Label>
+                    <span className="shrink-0 text-label font-bold tabular-nums text-viola bg-rosa px-2.5 py-0.5 rounded-full">
                       {selectedSkills.length}/10
                     </span>
                   </div>
-                  <div className="space-y-6 md:max-h-[350px] md:overflow-y-auto overscroll-contain p-4 md:p-6 bg-surface-warm/30 rounded-2xl md:rounded-[2rem] border border-border-subtle scrollbar-thin scrollbar-thumb-border-strong">
+                  <div className="space-y-6 md:max-h-[350px] md:overflow-y-auto overscroll-contain p-5 md:p-6 bg-crema rounded-card">
                     {catalog.filter(c => selectedClusters.includes(c.slug)).map(cluster => (
                       <div key={cluster.id} className="space-y-3">
-                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-text-muted pl-1">{cluster.label}</p>
+                        <p className="text-label text-viola-500 pl-1">{cluster.label}</p>
                         <div className="flex flex-wrap gap-2">
                           {cluster.skills.map((skill: Skill) => (
                             <button
@@ -287,19 +288,20 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                               onClick={() => {
                                 const exists = selectedSkills.includes(skill.slug);
                                 if (!exists && selectedSkills.length >= 10) return;
-                                setSelectedSkills(exists 
+                                setSelectedSkills(exists
                                   ? selectedSkills.filter(s => s !== skill.slug)
                                   : [...selectedSkills, skill.slug]
                                 );
                               }}
                               className={cn(
-                                "pressable min-h-11 md:min-h-9 px-4 py-2 rounded-full border text-sm md:text-xs font-bold transition-colors",
+                                "pressable min-h-11 md:min-h-9 px-4 py-2 rounded-full border text-chip text-viola inline-flex items-center gap-1.5 transition-colors",
                                 selectedSkills.includes(skill.slug)
-                                  ? "bg-slate-950 border-slate-950 text-white shadow-md"
-                                  : "bg-white border-border-strong text-text-secondary hover:bg-surface-warm",
+                                  ? "bg-rosa border-rosa"
+                                  : "bg-white border-white hover:border-viola/15",
                                 !selectedSkills.includes(skill.slug) && selectedSkills.length >= 10 && "opacity-40"
                               )}
                             >
+                              {selectedSkills.includes(skill.slug) && <Check size={14} strokeWidth={2.5} className="-ml-1 shrink-0" aria-hidden="true" />}
                               {skill.label}
                             </button>
                           ))}
@@ -315,15 +317,15 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
       </div>
 
       {/* Phones: sticky action bar above the tab bar. From md: in-flow centred button */}
-      <div className="sticky z-20 bottom-0 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
-        <Button 
-          type="submit" 
-          disabled={loading} 
-          className="pressable w-full md:max-w-md h-13 md:h-16 rounded-2xl text-base md:text-xl font-bold shadow-xl md:shadow-2xl shadow-primary/20 bg-primary hover:bg-primary-dark transition-colors md:transition-all md:hover:scale-[1.02] md:active:scale-[0.98]"
+      <div className="sticky z-20 bottom-0 -mx-4 px-4 py-3 bg-white border-t border-viola/15 md:static md:mx-0 md:px-0 md:py-0 md:pt-10 md:bg-transparent flex justify-center">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full md:max-w-md h-13 md:h-14 text-base md:text-lg"
         >
           {loading ? (
             <div className="flex items-center gap-3">
-              <Loader2 className="animate-spin size-5 md:size-6" /> 
+              <Loader2 className="animate-spin size-5 md:size-6" />
               <span>Salvataggio...</span>
             </div>
           ) : (

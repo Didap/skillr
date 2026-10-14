@@ -21,7 +21,7 @@ async function seedNews() {
         </ul>
 
         <h3>Il ruolo dei Centri per l'Impiego (CPI)</h3>
-        <p>I CPI avranno un ruolo centrale nella profilazione dei candidati. Skillr si integra nativamente con i flussi di dati regionali per facilitare il matching immediato.</p>
+        <p>I CPI avranno un ruolo centrale nella profilazione dei candidati. Helllo si integra nativamente con i flussi di dati regionali per facilitare il matching immediato.</p>
       `,
       category: "bandi" as const,
       publishedAt: new Date(),
@@ -35,7 +35,7 @@ async function seedNews() {
         <p>La digitalizzazione della Pubblica Amministrazione non è più solo una scelta, ma una necessità dettata dal PNRR. L'IA permette di analizzare migliaia di CV in pochi secondi, garantendo trasparenza e meritocrazia.</p>
         
         <h3>Perché usare algoritmi di matching?</h3>
-        <p>A differenza della ricerca manuale, l'algoritmo di Skillr valuta non solo le competenze tecniche ma anche la compatibilità geografica e la disponibilità immediata, riducendo i tempi di assunzione del 40%.</p>
+        <p>A differenza della ricerca manuale, l'algoritmo di Helllo valuta non solo le competenze tecniche ma anche la compatibilità geografica e la disponibilità immediata, riducendo i tempi di assunzione del 40%.</p>
       `,
       category: "tecnico" as const,
       publishedAt: new Date(),
@@ -43,12 +43,12 @@ async function seedNews() {
     {
       slug: "case-study-comune-di-bari-smart-interviews",
       title: "Case Study: Comune di Bari e le Smart Interviews",
-      excerpt: "Scopri come il Comune di Bari ha ottimizzato il reclutamento per i progetti straordinari del PNRR utilizzando il sistema di Smart Interviews di Skillr.",
+      excerpt: "Scopri come il Comune di Bari ha ottimizzato il reclutamento per i progetti straordinari del PNRR utilizzando il sistema di Smart Interviews di Helllo.",
       content: `
         <h2>Il problema: 500 posizioni da coprire in 3 mesi</h2>
         <p>Il Comune di Bari doveva gestire una mole enorme di candidature per i progetti di infrastrutturazione urbana. Il sistema tradizionale era troppo lento.</p>
         
-        <h3>La soluzione Skillr</h3>
+        <h3>La soluzione Helllo</h3>
         <p>Implementando il sistema di video-colloqui asincroni e matching pre-filtrato, il Comune ha completato le selezioni in tempi record, garantendo la partenza di tutti i cantieri nei tempi previsti.</p>
       `,
       category: "case-study" as const,

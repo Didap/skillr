@@ -25,7 +25,7 @@ async function sendAlreadyRegisteredNotice(email: string) {
   const loginUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL ? appUrl("/login") : undefined;
   return sendEmail({
     to: email,
-    subject: "Hai già un account Skillr",
+    subject: "Hai già un account Helllo",
     react: AlreadyRegisteredEmail({ loginUrl }),
   });
 }

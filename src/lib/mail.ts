@@ -37,7 +37,7 @@ export async function sendEmail({ to, subject, react, html, text, attachments }:
     // which is only installed nested under @react-email/components, so it always failed.
     const body = react ? await render(react) : html || '';
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Skillr <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || 'Helllo <onboarding@resend.dev>',
       to,
       subject,
       html: body,

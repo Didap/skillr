@@ -8,6 +8,9 @@ import { ProfessionalProfileView } from "@/components/profile/ProfessionalProfil
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { publicUserColumns } from "@/db/safe-columns";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { buttonVariants } from "@/components/ui/button";
+import { UserRound } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default async function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -65,11 +68,20 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
         ? user.companyProfile.companyName || "Profilo"
         : "Profilo";
 
+  // Helllo profile pages sit on a full colour block: blu for professionals (as in the Figma
+  // profile), viola for companies (matching their viola job cards in the feed)
+  const pageTone =
+    user.role === "professional" && user.professionalProfile
+      ? "bg-blu"
+      : user.role === "company" && user.companyProfile
+        ? "bg-viola"
+        : "bg-white";
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <PageHeader title={headerTitle} subtitle="Dettagli Utente" />
 
-      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
+      <div className={cn("flex-1 overflow-y-auto overscroll-contain custom-scrollbar", pageTone)}>
         <main className="px-4 md:px-10 lg:px-20 pt-6 md:pt-10 max-w-7xl mx-auto w-full">
           {/* Tab bar clearance on phones; the desktop keeps its roomy bottom margin */}
           <div className="pb-tabbar">
@@ -89,17 +101,17 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
                   reviews={receivedReviews}
                 />
               ) : (
-                <div className="max-w-xl mx-auto text-center py-12 md:py-20 bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-premium px-6 md:px-8 mb-8">
-                  <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8">
-                    <span className="text-4xl text-slate-300">?</span>
+                <div className="max-w-xl mx-auto text-center py-12 md:py-16 bg-crema rounded-card px-6 md:px-8 mb-8">
+                  <div className="size-16 bg-rosa rounded-full flex items-center justify-center mx-auto mb-6 text-viola">
+                    <UserRound size={28} strokeWidth={1.75} aria-hidden />
                   </div>
-                  <h2 className="text-3xl font-display font-bold text-slate-950 mb-4 tracking-tight">Profilo in allestimento</h2>
-                  <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                  <h2 className="text-title text-viola mb-3">Profilo in allestimento</h2>
+                  <p className="text-body text-viola-500 mb-8">
                     L&apos;utente non ha ancora completato la configurazione del suo profilo pubblico.
                     Torna a trovarci tra poco!
                   </p>
-                  <Link href="/dashboard" className="pressable inline-flex items-center justify-center h-12 px-8 rounded-xl bg-slate-950 text-white font-bold hover:bg-emerald-600 transition-colors">
-                    Torna alla Dashboard
+                  <Link href="/dashboard" className={cn(buttonVariants(), "h-12 px-8 text-base")}>
+                    Torna a scoprire
                   </Link>
                 </div>
               )}

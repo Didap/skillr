@@ -41,25 +41,25 @@ function ConfirmNewsletterContent() {
   }, [token]);
 
   return (
-    <div className="bg-white p-10 rounded-2xl shadow-xl border border-slate-100 text-center max-w-lg w-full">
+    <div className="bg-white p-8 md:p-10 rounded-card border border-viola/15 text-center max-w-lg w-full" aria-live="polite">
       {status === "loading" && (
         <div className="flex flex-col items-center py-8">
-          <Loader2 className="h-16 w-16 text-pa-blue animate-spin mb-6" />
-          <h1 className="text-2xl font-bold text-pa-blue">Verifica in corso...</h1>
-          <p className="text-text-secondary mt-2">Attendere prego mentre confermiamo la tua iscrizione.</p>
+          <Loader2 className="h-14 w-14 text-blu animate-spin mb-6" aria-hidden="true" />
+          <h1 className="text-2xl font-bold text-viola">Verifica in corso...</h1>
+          <p className="text-viola-500 mt-2">Attendere prego mentre confermiamo la tua iscrizione.</p>
         </div>
       )}
 
       {status === "success" && (
         <div className="flex flex-col items-center py-8 animate-in zoom-in duration-500">
-          <div className="rounded-full bg-green-100 p-4 mb-6">
-            <CheckCircle2 className="h-16 w-16 text-green-600" />
+          <div className="rounded-full bg-blu-50 p-4 mb-6">
+            <CheckCircle2 className="h-14 w-14 text-blu" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-bold text-pa-blue mb-2">Iscrizione Confermata!</h1>
-          <p className="text-text-secondary mb-8">
+          <h1 className="text-2xl font-bold text-viola mb-2">Iscrizione confermata!</h1>
+          <p className="text-viola-500 mb-8">
             Grazie per aver confermato il tuo indirizzo email. Inizierai a ricevere i nostri aggiornamenti sui bandi NEET e le politiche attive in Puglia.
           </p>
-          <Link href="/pa" className={cn(buttonVariants({ variant: "default" }), "bg-pa-blue text-white hover:bg-pa-blue/90 w-full h-12")}>
+          <Link href="/pa" className={cn(buttonVariants({ variant: "outline" }), "w-full h-12 text-base")}>
             Torna alla Home PA
           </Link>
         </div>
@@ -67,18 +67,18 @@ function ConfirmNewsletterContent() {
 
       {status === "error" && (
         <div className="flex flex-col items-center py-8 animate-in zoom-in duration-500">
-          <div className="rounded-full bg-red-100 p-4 mb-6">
-            <XCircle className="h-16 w-16 text-red-600" />
+          <div className="rounded-full bg-rosso-50 p-4 mb-6">
+            <XCircle className="h-14 w-14 text-rosso-700" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-bold text-red-700 mb-2">Iscrizione Fallita</h1>
-          <p className="text-text-secondary mb-8">
+          <h1 className="text-2xl font-bold text-viola mb-2">Iscrizione non riuscita</h1>
+          <p className="text-viola-500 mb-8">
             {errorMessage}
           </p>
           <div className="flex flex-col gap-3 w-full">
-            <Link href="/pa/newsletter" className={cn(buttonVariants({ variant: "default" }), "bg-pa-blue text-white hover:bg-pa-blue/90 w-full h-12")}>
-              Riprova ad Iscriverti
+            <Link href="/pa/newsletter" className={cn(buttonVariants({ variant: "default" }), "w-full h-12 text-base")}>
+              Riprova a iscriverti
             </Link>
-            <Link href="/pa" className={cn(buttonVariants({ variant: "outline" }), "border-pa-blue text-pa-blue hover:bg-pa-blue/5 w-full h-12")}>
+            <Link href="/pa" className={cn(buttonVariants({ variant: "outline" }), "w-full h-12 text-base")}>
               Torna alla Home PA
             </Link>
           </div>
@@ -90,10 +90,10 @@ function ConfirmNewsletterContent() {
 
 export default function ConfirmNewsletterPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-crema flex items-center justify-center p-4">
       <Suspense fallback={
-        <div className="bg-white p-10 rounded-2xl shadow-xl flex justify-center items-center h-64 w-full max-w-lg">
-          <Loader2 className="h-12 w-12 text-pa-blue animate-spin" />
+        <div className="bg-white p-10 rounded-card border border-viola/15 flex justify-center items-center h-64 w-full max-w-lg">
+          <Loader2 className="h-12 w-12 text-blu animate-spin" aria-hidden="true" />
         </div>
       }>
         <ConfirmNewsletterContent />

@@ -1,50 +1,126 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-04-27T10:00:00Z",
-  "title": "Design System: Skillr",
+  "generatedAt": "2026-10-14T10:00:00Z",
+  "title": "Design System: Helllo",
+  "source": "Figma — Helllo — Brand Identity (snNq4LfmuM6VuXOrUjwApb)",
   "extensions": {
     "colorMeta": {
-      "primary": { "role": "primary", "displayName": "Skillr Emerald" },
-      "surface": { "role": "surface", "displayName": "Slate Surface" },
-      "surfaceWarm": { "role": "surface", "displayName": "Warm Profile Card" }
+      "viola": {
+        "role": "text",
+        "displayName": "colore/viola"
+      },
+      "rosso": {
+        "role": "primary",
+        "displayName": "colore/rosso"
+      },
+      "rosa": {
+        "role": "accent",
+        "displayName": "colore/rosa"
+      },
+      "blu": {
+        "role": "secondary",
+        "displayName": "colore/blu"
+      },
+      "crema": {
+        "role": "surface",
+        "displayName": "colore/crema"
+      },
+      "bianco": {
+        "role": "background",
+        "displayName": "colore/bianco"
+      }
     }
   },
   "colors": {
-    "primary": "#059669",
-    "primaryDark": "#064E3B",
-    "accent": "#F59E0B",
-    "background": "#FFFFFF",
-    "surface": "#F8FAFC",
-    "surfaceWarm": "#FDFCF9",
-    "text": "#0F172A",
-    "textSecondary": "#475569",
-    "muted": "#94A3B8",
-    "border": "#E2E8F0",
-    "borderStrong": "#CBD5E1",
-    "success": "#10B981",
-    "error": "#EF4444"
+    "viola": "#653171",
+    "rosso": "#E93D29",
+    "rosa": "#F6B9C9",
+    "blu": "#225AD6",
+    "crema": "#F4E9E9",
+    "bianco": "#FFFFFF",
+    "primary": "#E93D29",
+    "primaryHover": "#CC3523",
+    "text": "#653171",
+    "textSecondary": "#80558A",
+    "muted": "#A180A9",
+    "border": "#E4DAE6",
+    "borderSubtle": "#F1EBF2",
+    "ring": "#225AD6",
+    "error": "#B02D1D"
   },
   "fonts": {
-    "display": "Instrument Serif",
-    "sans": "Inter",
-    "mono": "JetBrains Mono"
+    "sans": "Hanken Grotesk",
+    "display": "Hanken Grotesk",
+    "prompt": "Bricolage Grotesque",
+    "script": "Pacifico"
+  },
+  "textStyles": {
+    "display": {
+      "family": "Hanken Grotesk",
+      "size": 40,
+      "lineHeight": 44,
+      "weight": 700,
+      "letterSpacing": "-2%"
+    },
+    "title": {
+      "family": "Hanken Grotesk",
+      "size": 28,
+      "lineHeight": 32,
+      "weight": 700,
+      "letterSpacing": "-1.5%"
+    },
+    "prompt": {
+      "family": "Bricolage Grotesque",
+      "size": 26,
+      "lineHeight": 32,
+      "weight": 500,
+      "letterSpacing": "-1%"
+    },
+    "body": {
+      "family": "Hanken Grotesk",
+      "size": 16,
+      "lineHeight": 22,
+      "weight": 400
+    },
+    "bodyStrong": {
+      "family": "Hanken Grotesk",
+      "size": 16,
+      "lineHeight": 22,
+      "weight": 500
+    },
+    "label": {
+      "family": "Hanken Grotesk",
+      "size": 13,
+      "lineHeight": 16,
+      "weight": 500
+    },
+    "chip": {
+      "family": "Hanken Grotesk",
+      "size": 14,
+      "lineHeight": 18,
+      "weight": 500
+    },
+    "accentScript": {
+      "family": "Pacifico",
+      "size": 24,
+      "lineHeight": 32,
+      "weight": 400
+    }
   },
   "radii": {
-    "sm": "6px",
-    "md": "8px",
-    "lg": "12px",
-    "xl": "16px",
-    "full": "9999px"
+    "chip": "9999px",
+    "button": "9999px",
+    "card": "28px",
+    "illustration": "36px",
+    "appIcon": "80/292"
   },
   "shadows": {
-    "sm": "0 1px 2px 0 rgba(15, 23, 42, 0.05)",
-    "md": "0 4px 8px -2px rgba(15, 23, 42, 0.08)",
-    "card": "0 0 0 1px rgba(15, 23, 42, 0.04), 0 4px 12px 0 rgba(15, 23, 42, 0.08)"
+    "card": "0 0 0 1px rgba(101,49,113,0.08), 0 8px 32px -12px rgba(101,49,113,0.12)"
   },
   "motion": {
-    "snappy": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+    "expo": "cubic-bezier(0.16, 1, 0.3, 1)",
     "swipe": "cubic-bezier(0.23, 1, 0.32, 1)",
-    "hoverDuration": "180ms",
+    "hoverDuration": "150ms",
     "swipeDuration": "400ms"
   }
 }

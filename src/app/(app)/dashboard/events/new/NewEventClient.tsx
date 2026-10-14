@@ -46,20 +46,20 @@ export default function NewEventClient() {
 
   if (isSuccess) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#FDFDFC] p-6 pb-tabbar">
+      <div className="flex-1 flex flex-col items-center justify-center bg-background p-6 pb-tabbar">
         <motion.div
           initial={{ scale: 0.96, opacity: 0 }}
           animate={{ scale: 1, opacity: 1, transition: { duration: duration.view, ease: ease.out } }}
           className="text-center space-y-6 max-w-md"
         >
-          <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto border border-emerald-100">
-            <CheckCircle2 size={32} />
+          <div className="w-16 h-16 bg-rosso text-white rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 size={32} strokeWidth={1.75} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-display italic font-bold text-slate-950">Evento Creato!</h1>
-            <p className="text-slate-500 text-sm">Verrai reindirizzato tra poco.</p>
+            <h1 className="text-title font-display text-viola">Evento creato!</h1>
+            <p className="text-viola-500 text-body">Ti riportiamo ai tuoi eventi tra un attimo.</p>
           </div>
-          <Loader2 className="animate-spin motion-reduce:animate-none text-emerald-500 mx-auto" size={20} />
+          <Loader2 className="animate-spin motion-reduce:animate-none text-rosso mx-auto" size={20} />
         </motion.div>
       </div>
     );
@@ -72,9 +72,9 @@ export default function NewEventClient() {
         subtitle="Smart Interview"
         backHref="/dashboard/events"
         actions={
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50/50">
-            <Sparkles size={12} className="text-emerald-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Setup</span>
+          <div className="hidden md:flex items-center gap-2 h-8 px-4 rounded-full bg-rosa text-viola">
+            <Sparkles size={14} aria-hidden="true" />
+            <span className="text-chip">Setup</span>
           </div>
         }
       />

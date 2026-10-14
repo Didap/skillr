@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import NewEventClient from "./NewEventClient";
 
 export const metadata: Metadata = {
-  title: "Crea Smart Interview | Skillr",
+  title: "Crea Smart Interview | Helllo",
   description: "Crea una nuova sessione di speed-dating professionale.",
 };
 

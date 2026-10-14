@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, MapPin, ExternalLink, Zap, UserRound } from "lucide-react";
+import { Banknote, Mail, MapPin, ExternalLink, UserRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Logo } from "@/components/brand/Logo";
+import { LogoMark } from "@/components/brand/LogoMark";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageBody } from "@/components/layout/PageBody";
@@ -62,6 +64,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     ? { city: match.professional?.professionalProfile?.city, remoteOk: match.professional?.professionalProfile?.remoteOk }
     : { city: match.job?.location || match.company?.companyProfile?.city, remoteOk: match.job?.remoteOk };
   const locationLabel = [location.city, location.remoteOk ? 'Remoto OK' : null].filter(Boolean).join(' · ');
+  // Same colour code as the feed: professionals on blu, companies on viola
+  const block = role === 'company' ? 'bg-blu' : 'bg-viola';
 
   return (
     <>
@@ -74,18 +78,15 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             <Link
               href={`/profile/${match.targetId}`}
               aria-label="Vedi profilo"
-              className="md:hidden pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100"
+              className="md:hidden pressable size-11 -mr-1 rounded-full border border-viola bg-white flex items-center justify-center text-viola hover:bg-crema"
             >
-              <UserRound size={21} />
+              <UserRound size={21} strokeWidth={1.75} />
             </Link>
             <Link
               href={`/profile/${match.targetId}`}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "hidden md:inline-flex rounded-2xl h-12 px-5 border-border-strong bg-white hover:bg-surface-warm transition-colors font-bold gap-2 shadow-sm"
-              )}
+              className={cn(buttonVariants({ variant: "outline" }), "hidden md:inline-flex h-12 px-5 text-base gap-2")}
             >
-              Vedi Profilo <ExternalLink size={16} />
+              Vedi profilo <ExternalLink size={16} strokeWidth={1.75} />
             </Link>
           </>
         }
@@ -94,49 +95,45 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
       <PageBody className="custom-scrollbar">
         <main className="max-w-5xl w-full mx-auto px-4 py-5 md:p-8 lg:p-12">
           {/* Phones: two stacked blocks (profile card, then scheduling). Desktop: one card. */}
-          <div className="md:bg-white md:rounded-[2.5rem] md:border md:border-border-subtle md:shadow-premium md:overflow-hidden">
-            {/* Profile summary */}
+          <div className="md:bg-white md:rounded-card md:border md:border-viola/15 md:overflow-hidden">
+            {/* Profile summary: the colour block of the match card */}
             <section
               aria-label={`Profilo di ${match.targetName}`}
-              className="relative bg-white rounded-3xl border border-border-subtle shadow-card md:rounded-none md:border-0 md:shadow-none"
+              className={cn("rounded-card md:rounded-none text-white", block)}
             >
-              <div className="absolute inset-0 hidden md:block bg-linear-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
-
-              <div className="relative p-5 md:p-12">
-                <div className="flex flex-row gap-4 md:gap-12 items-center">
+              <div className="p-6 md:p-12">
+                <div className="flex flex-row gap-4 md:gap-10 items-center">
                   <div className="relative shrink-0">
-                    <div className="w-20 h-20 md:w-40 md:h-40 rounded-3xl md:rounded-[2.5rem] bg-surface-warm border border-border-subtle shadow-sm overflow-hidden flex items-center justify-center">
+                    <div className="w-20 h-20 md:w-36 md:h-36 rounded-[1.25rem] md:rounded-card bg-crema overflow-hidden flex items-center justify-center">
                       {match.targetImage ? (
-                        <Image src={match.targetImage} alt={match.targetName} width={160} height={160} className="w-full h-full object-cover" />
+                        <Image src={match.targetImage} alt={match.targetName} width={144} height={144} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-primary font-display text-4xl md:text-6xl italic">
+                        <span className="text-viola text-3xl md:text-display font-bold">
                           {match.targetName.charAt(0)}
                         </span>
                       )}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-emerald-500 w-6 h-6 md:w-8 md:h-8 rounded-full border-[3px] md:border-4 border-white flex items-center justify-center shadow-md">
-                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full animate-pulse motion-reduce:animate-none" />
-                    </div>
+                    <LogoMark className="absolute -bottom-2 -right-2 size-9 md:size-12" />
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1 md:space-y-2">
-                    <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-black uppercase tracking-[0.2em] mb-2">
-                      <Zap size={10} fill="currentColor" /> Match Confermato
+                    <div className="hidden md:inline-flex items-center gap-2 rounded-full bg-rosso px-4 h-8 text-chip font-bold text-white mb-1">
+                      <span aria-hidden className="size-2 rounded-full bg-white" /> Match confermato
                     </div>
-                    <h2 className="text-2xl md:text-5xl font-display italic text-text-primary tracking-tight leading-tight break-words line-clamp-2">
+                    <h2 className="text-title md:text-display break-words line-clamp-2">
                       {match.targetName}
                     </h2>
                     {match.targetTitle && (
-                      <p className="text-base md:text-2xl text-primary font-medium opacity-90 italic leading-snug break-words line-clamp-2">
+                      <p className="text-body md:text-xl font-medium text-rosa leading-snug break-words line-clamp-2">
                         {match.targetTitle}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-5 md:mt-8 md:pl-52 space-y-5 md:space-y-6">
+                <div className="mt-5 md:mt-8 md:pl-46 space-y-5 md:space-y-6">
                   {match.targetBio && (
-                    <p className="text-[15px] md:text-base text-text-secondary leading-relaxed max-w-2xl break-words">
+                    <p className="font-prompt text-xl leading-7 font-medium max-w-2xl break-words">
                       {match.targetBio}
                     </p>
                   )}
@@ -144,7 +141,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                   {match.targetSkills && match.targetSkills.length > 0 && (
                     <ul className="flex flex-wrap gap-2" aria-label="Competenze">
                       {match.targetSkills.map((skill: string) => (
-                        <li key={skill} className="max-w-full px-3 py-1.5 rounded-lg bg-surface-warm text-text-secondary text-xs font-bold border border-border-subtle break-words">
+                        <li key={skill} className="max-w-full rounded-full bg-rosa px-4 py-2 text-chip text-viola break-words">
                           {skillLabel(skill, labelBySlug)}
                         </li>
                       ))}
@@ -152,22 +149,22 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                   )}
 
                   {(locationLabel || match.targetRate || match.targetEmail) && (
-                    <div className="flex flex-wrap gap-2 md:gap-3">
+                    <div className="flex flex-wrap gap-x-5 gap-y-2 text-body">
                       {locationLabel && (
-                        <div className="flex items-center gap-2 max-w-full bg-surface-warm/50 px-3 md:px-4 py-2 rounded-2xl text-sm font-semibold text-text-secondary border border-border-subtle">
-                          <MapPin size={16} className="text-primary shrink-0" />
+                        <div className="flex items-center gap-2 max-w-full">
+                          <MapPin size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
                           <span className="min-w-0 break-words">{locationLabel}</span>
                         </div>
                       )}
                       {match.targetRate && (
-                        <div className="flex items-center gap-2 max-w-full bg-emerald-50 text-emerald-700 px-3 md:px-4 py-2 rounded-2xl text-sm font-bold border border-emerald-100 shadow-sm">
-                          <Zap size={16} fill="currentColor" className="text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 max-w-full">
+                          <Banknote size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
                           <span className="min-w-0 break-words">{match.targetRate}</span>
                         </div>
                       )}
                       {match.targetEmail && (
-                        <div className="flex items-center gap-2 max-w-full bg-primary/5 text-primary px-3 md:px-4 py-2 rounded-2xl text-sm font-bold border border-primary/10">
-                          <Mail size={16} className="shrink-0" />
+                        <div className="flex items-center gap-2 max-w-full">
+                          <Mail size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
                           <span className="min-w-0 break-all">{match.targetEmail}</span>
                         </div>
                       )}
@@ -177,16 +174,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
               </div>
             </section>
 
-            {/* Separator with badge (desktop) */}
-            <div className="relative hidden md:block" aria-hidden="true">
-              <div className="absolute inset-0 flex items-center px-12">
-                <div className="w-full border-t border-border-subtle/50" />
-              </div>
+            {/* Separator with label (desktop) */}
+            <div className="relative hidden md:block pt-8" aria-hidden="true">
+              <div className="absolute inset-x-12 top-1/2 border-t border-viola/15" />
               <div className="relative flex justify-center">
-                <div className="bg-white px-6">
-                  <div className="px-4 py-1.5 rounded-full bg-slate-950 text-white text-[11px] font-black uppercase tracking-[0.2em]">
-                    Scheduling & Feedback
-                  </div>
+                <div className="bg-white px-4">
+                  <div className="rounded-full bg-rosa px-4 py-2 text-chip text-viola">Colloquio e feedback</div>
                 </div>
               </div>
             </div>
@@ -210,10 +203,9 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             </section>
           </div>
 
-          <footer className="hidden md:block text-center py-12">
-            <p className="text-xs font-bold text-text-muted uppercase tracking-[0.3em]">
-              Skillr © 2026 — Zero Messaggi, Solo Match.
-            </p>
+          <footer className="hidden md:flex items-center justify-center gap-2 py-12 text-label text-viola-400">
+            <Logo className="h-4 text-viola-400" />
+            <span>© 2026 · Zero messaggi, solo match.</span>
           </footer>
         </main>
       </PageBody>

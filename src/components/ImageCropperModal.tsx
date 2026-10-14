@@ -75,7 +75,7 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
       exit={{ opacity: 0, transition: { duration: duration.feedback } }}
-      className="fixed inset-0 z-100 flex items-stretch md:items-center justify-center md:p-4 bg-slate-950 md:bg-slate-950/80 md:backdrop-blur-sm"
+      className="fixed inset-0 z-100 flex items-stretch md:items-center justify-center md:p-4 bg-viola md:bg-viola/60"
     >
       <motion.div
         role="dialog"
@@ -84,28 +84,28 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: spring.sheet }}
         exit={{ y: 24, opacity: 0, transition: { duration: duration.feedback, ease: ease.in } }}
-        className="w-full md:max-w-2xl flex flex-col bg-slate-950 md:bg-white md:rounded-[2.5rem] overflow-hidden md:shadow-2xl h-dvh md:h-auto md:max-h-[90vh]"
+        className="w-full md:max-w-2xl flex flex-col bg-viola md:bg-white md:rounded-card overflow-hidden md:shadow-card h-dvh md:h-auto md:max-h-[90vh]"
       >
         <div className="pt-safe md:pt-0 shrink-0">
-          <div className="h-14 md:h-auto px-2 md:p-6 md:border-b border-slate-100 flex items-center justify-between gap-2">
+          <div className="h-14 md:h-auto px-2 md:p-6 md:border-b border-viola/15 flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               onClick={onCancel}
               aria-label="Chiudi"
-              className="pressable md:order-last rounded-full w-11 h-11 md:w-10 md:h-10 p-0 text-white md:text-slate-900 hover:bg-white/10 md:hover:bg-slate-100"
+              className="pressable md:order-last rounded-full w-11 h-11 md:w-10 md:h-10 p-0 text-white md:text-viola md:border-viola hover:bg-white/10 md:hover:bg-crema"
             >
               <X size={22} />
             </Button>
             <div className="flex-1 min-w-0 text-center md:text-left">
-              <h3 id="cropper-title" className="text-xl font-display font-bold italic text-white md:text-slate-950">Ritaglia Foto</h3>
-              <p className="hidden md:block text-xs text-slate-500 font-medium">Trascina per posizionare, usa lo zoom per regolare</p>
+              <h3 id="cropper-title" className="text-xl font-display font-bold text-white md:text-viola">Ritaglia la foto</h3>
+              <p className="hidden md:block text-label text-viola-500">Trascina per posizionare, usa lo zoom per regolare</p>
             </div>
             {/* Keeps the title centred on phones opposite the close button */}
             <span aria-hidden="true" className="w-11 shrink-0 md:hidden" />
           </div>
         </div>
 
-        <div className="relative flex-1 min-h-0 md:flex-none md:h-[400px] bg-slate-900">
+        <div className="relative flex-1 min-h-0 md:flex-none md:h-[400px] bg-viola">
           <Cropper
             image={image}
             crop={crop}
@@ -121,14 +121,14 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
           />
         </div>
 
-        <div className="shrink-0 px-4 pt-4 md:p-8 space-y-4 md:space-y-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-8 bg-slate-950 md:bg-white">
-          <p className="md:hidden text-center text-sm text-slate-400 font-medium">Trascina per posizionare, pizzica o usa lo zoom</p>
+        <div className="shrink-0 px-4 pt-4 md:p-8 space-y-4 md:space-y-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-8 bg-viola md:bg-white">
+          <p className="md:hidden text-center text-sm text-viola-200">Trascina per posizionare, pizzica o usa lo zoom</p>
           <div className="flex items-center gap-2 md:gap-4">
             <button
               type="button"
               onClick={() => onZoomChange(zoom - 0.25)}
               aria-label="Riduci zoom"
-              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-slate-300 md:text-slate-500 hover:bg-white/10 md:hover:bg-slate-100 transition-colors"
+              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-viola-200 md:text-viola hover:bg-white/10 md:hover:bg-crema transition-colors"
             >
               <ZoomOut size={18} />
             </button>
@@ -140,13 +140,13 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
               step={0.1}
               aria-label="Zoom"
               onChange={(e) => onZoomChange(Number(e.target.value))}
-              className="flex-1 min-w-0 h-11 accent-emerald-500 md:accent-emerald-600 cursor-pointer"
+              className="flex-1 min-w-0 h-11 accent-rosso cursor-pointer"
             />
             <button
               type="button"
               onClick={() => onZoomChange(zoom + 0.25)}
               aria-label="Aumenta zoom"
-              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-slate-300 md:text-slate-500 hover:bg-white/10 md:hover:bg-slate-100 transition-colors"
+              className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-viola-200 md:text-viola hover:bg-white/10 md:hover:bg-crema transition-colors"
             >
               <ZoomIn size={18} />
             </button>
@@ -156,13 +156,13 @@ export default function ImageCropperModal({ image, onCropComplete, onCancel }: I
             <Button
               variant="outline"
               onClick={onCancel}
-              className="pressable flex-1 rounded-2xl h-12 font-bold bg-transparent md:bg-white text-white md:text-slate-900 border-white/20 md:border-slate-200 hover:bg-white/10 md:hover:bg-slate-50 transition-colors"
+              className="pressable flex-1 h-12 bg-transparent md:bg-white text-white md:text-viola border-white/60 md:border-viola hover:bg-white/10 md:hover:bg-crema"
             >
               Annulla
             </Button>
             <Button
               onClick={handleComplete}
-              className="pressable flex-1 rounded-2xl h-12 font-bold bg-white md:bg-slate-950 text-slate-950 md:text-white hover:bg-emerald-50 md:hover:bg-emerald-600 gap-2 transition-colors"
+              className="pressable flex-1 h-12 gap-2"
             >
               <Check size={18} /> Conferma
             </Button>

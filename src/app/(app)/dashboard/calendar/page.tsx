@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Calendario | Skillr",
+  title: "Calendario | Helllo",
   description: "Gestisci i tuoi appuntamenti, interviste e smart interviews in un unico posto.",
 };
 

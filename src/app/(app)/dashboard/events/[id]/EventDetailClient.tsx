@@ -167,9 +167,9 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
   const backHref = isProfessional ? "/dashboard/smart-interviews" : "/dashboard/events";
 
   const progressBar = (track: string) => (
-    <div className={`w-full h-1.5 rounded-full overflow-hidden ${track}`} aria-hidden="true">
+    <div className={`w-full h-2 rounded-full overflow-hidden ${track}`} aria-hidden="true">
       <div
-        className="h-full bg-emerald-500 rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
+        className="h-full bg-rosso rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
         style={{ width: `${fillPct}%` }}
       />
     </div>
@@ -188,16 +188,16 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                 <Button
                   variant="outline"
                   onClick={() => setIsEditing(true)}
-                  className="pressable hidden md:inline-flex rounded-xl h-11 px-4 border-slate-200 hover:bg-slate-50 font-bold text-xs uppercase tracking-widest gap-2"
+                  className="hidden md:inline-flex h-11 px-5 gap-2"
                 >
-                  <Pencil size={14} /> Modifica
+                  <Pencil size={16} /> Modifica
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setConfirming("delete")}
-                  className="pressable hidden md:inline-flex rounded-xl h-11 px-4 border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 font-bold text-xs uppercase tracking-widest gap-2"
+                  className="hidden md:inline-flex h-11 px-5 gap-2 hover:bg-rosso-50 hover:text-rosso-700"
                 >
-                  <Trash2 size={14} /> Elimina
+                  <Trash2 size={16} /> Elimina
                 </Button>
               </>
             )}
@@ -205,9 +205,9 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
               type="button"
               onClick={shareEvent}
               aria-label="Condividi evento"
-              className="pressable w-11 h-11 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100"
+              className="pressable w-11 h-11 rounded-full border border-viola bg-white flex items-center justify-center text-viola hover:bg-crema"
             >
-              <Share2 size={19} />
+              <Share2 size={19} strokeWidth={1.75} />
             </button>
           </>
         }
@@ -216,14 +216,13 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
       <PageBody className="custom-scrollbar bg-white">
         {/* Phone hero: full-bleed cover, then the facts as a list */}
         <section className="md:hidden">
-          <div className="relative aspect-16/10 rounded-b-[2rem] overflow-hidden bg-slate-950">
+          <div className="relative aspect-16/10 rounded-b-card overflow-hidden bg-blu">
             {event.imageUrl ? (
               <Image src={event.imageUrl} alt="" fill priority sizes="100vw" className="object-cover" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="absolute -top-16 -right-16 w-64 h-64 bg-emerald-500/20 blur-[80px] rounded-full" />
-                <div className="relative w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-emerald-400 border border-white/10">
-                  <Zap size={30} fill="currentColor" />
+                <div className="w-16 h-16 rounded-full bg-rosa flex items-center justify-center text-viola">
+                  <Zap size={28} strokeWidth={1.75} />
                 </div>
               </div>
             )}
@@ -232,45 +231,45 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
           <div className="px-4 pt-5 space-y-5">
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
-                <Badge className="rounded-full bg-emerald-50 text-emerald-700 border-emerald-100 font-black text-[11px] uppercase tracking-wider px-2.5 py-0.5 max-w-full justify-start">
+                <Badge className="h-7 px-3 text-chip max-w-full justify-start">
                   {event.topic || "Matching"}
                 </Badge>
                 {event.format && (
-                  <Badge variant="outline" className="rounded-full border-slate-200 text-slate-600 font-bold text-[11px] uppercase tracking-wider px-2.5 py-0.5 max-w-full justify-start">
+                  <Badge variant="outline" className="h-7 px-3 text-chip max-w-full justify-start">
                     {event.format}
                   </Badge>
                 )}
               </div>
-              <h2 className="text-3xl font-display italic font-bold leading-tight text-slate-950 text-balance">{event.title}</h2>
+              <h2 className="text-title font-display text-viola text-balance">{event.title}</h2>
             </div>
 
-            <dl className="rounded-3xl ring-1 ring-slate-100 divide-y divide-slate-100 bg-white">
-              <div className="flex items-start gap-3 p-4">
-                <span className="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Calendar size={18} /></span>
+            <dl className="rounded-card ring-1 ring-viola/15 bg-white px-5 py-2 divide-y divide-viola/15">
+              <div className="flex items-start gap-3 py-3">
+                <Calendar size={24} strokeWidth={1.75} className="shrink-0 text-viola mt-1" aria-hidden="true" />
                 <div className="min-w-0">
-                  <dt className="text-xs font-semibold text-slate-500">Data e ora</dt>
-                  <dd className="text-[15px] font-semibold text-slate-950 first-letter:uppercase">
+                  <dt className="text-label text-viola">Data e ora</dt>
+                  <dd className="text-body font-medium text-viola first-letter:uppercase">
                     {dateStr}, {timeStr}{endTimeStr && ` – ${endTimeStr}`}
                   </dd>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4">
-                <span className="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><MapPin size={18} /></span>
+              <div className="flex items-start gap-3 py-3">
+                <MapPin size={24} strokeWidth={1.75} className="shrink-0 text-viola mt-1" aria-hidden="true" />
                 <div className="min-w-0">
-                  <dt className="text-xs font-semibold text-slate-500">Luogo</dt>
-                  <dd className="text-[15px] font-semibold text-slate-950 wrap-break-word">{event.location || "Online Session"}</dd>
+                  <dt className="text-label text-viola">Luogo</dt>
+                  <dd className="text-body font-medium text-viola wrap-break-word">{event.location || "Online"}</dd>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4">
-                <span className="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Users size={18} /></span>
+              <div className="flex items-start gap-3 py-3">
+                <Users size={24} strokeWidth={1.75} className="shrink-0 text-viola mt-1" aria-hidden="true" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <div>
-                    <dt className="text-xs font-semibold text-slate-500">Posti</dt>
-                    <dd className="text-[15px] font-semibold text-slate-950 tabular-nums">
+                    <dt className="text-label text-viola">Posti</dt>
+                    <dd className="text-body font-medium text-viola tabular-nums">
                       <SeatCount value={bookingCount} /> / {event.maxSlots} partecipanti
                     </dd>
                   </div>
-                  {progressBar("bg-slate-100")}
+                  {progressBar("bg-crema")}
                 </div>
               </div>
             </dl>
@@ -280,7 +279,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                 href={meetingLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="pressable flex items-center justify-center gap-2 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-[15px] font-bold"
+                className="pressable flex items-center justify-center gap-2 h-12 rounded-full bg-rosso hover:bg-rosso-600 text-white text-[15px] font-bold"
               >
                 <Video size={18} /> Entra nel meeting <ExternalLink size={15} />
               </a>
@@ -290,79 +289,75 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
 
         <main className="max-w-6xl w-full mx-auto px-4 pt-8 pb-6 md:p-8 lg:p-12">
           {/* Desktop hero */}
-          <div className="hidden md:flex mb-12 p-8 md:p-12 bg-slate-950 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-white/5 min-h-[400px] items-end">
-            {event.imageUrl && (
-              <>
-                <Image
-                  src={event.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1280px) 1100px, 100vw"
-                  className="object-cover opacity-30 group-hover:scale-105 transition-transform duration-3000 ease-out"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/80 to-slate-950/20 z-10" />
-                <div className="absolute inset-0 bg-linear-to-r from-slate-950/50 to-transparent z-10" />
-              </>
-            )}
-
-            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-110" />
-
-            <div className="relative z-20 flex flex-col lg:flex-row justify-between items-end w-full gap-12">
+          <div className="hidden md:block mb-12 p-8 lg:p-10 bg-blu rounded-[2.25rem] text-white">
+            <div className="flex flex-col lg:flex-row justify-between lg:items-end w-full gap-10">
               <div className="space-y-8 flex-1 min-w-0">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 shrink-0 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-400 border border-white/10 shadow-2xl">
-                    <Zap size={40} fill="currentColor" />
-                  </div>
+                  {event.imageUrl ? (
+                    <div className="relative w-40 aspect-16/10 shrink-0 rounded-2xl overflow-hidden bg-blu-700">
+                      <Image
+                        src={event.imageUrl}
+                        alt=""
+                        fill
+                        sizes="160px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 shrink-0 rounded-full bg-rosa flex items-center justify-center text-viola">
+                      <Zap size={36} strokeWidth={1.75} />
+                    </div>
+                  )}
                   <div className="min-w-0">
-                    <h2 className="text-4xl md:text-5xl font-display italic font-bold leading-tight tracking-tight">{event.title}</h2>
-                    <div className="flex items-center gap-2 mt-2">
-                       <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-black text-[10px] uppercase tracking-widest px-3">
-                         {event.topic || "Matching"}
-                       </Badge>
-                       <Badge variant="outline" className="border-white/10 text-white/60 font-bold text-[10px] uppercase tracking-widest">
-                         {event.format || "Standard"}
-                       </Badge>
+                    <h2 className="text-display font-display text-white text-balance">{event.title}</h2>
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      <Badge className="h-7 px-3 text-chip">
+                        {event.topic || "Matching"}
+                      </Badge>
+                      <Badge variant="outline" className="h-7 px-3 text-chip border-transparent">
+                        {event.format || "Standard"}
+                      </Badge>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-8 text-slate-300">
+                <div className="flex flex-wrap gap-x-10 gap-y-6">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Data e Ora</p>
-                    <div className="flex items-center gap-2 text-lg font-medium">
-                      <Calendar size={20} className="text-emerald-500" />
-                      <span className="capitalize">{dateStr} alle {timeStr}{endTimeStr && ` – ${endTimeStr}`}</span>
+                    <p className="text-label text-rosa">Data e ora</p>
+                    <div className="flex items-center gap-2 text-body font-medium">
+                      <Calendar size={22} strokeWidth={1.75} className="text-rosa" aria-hidden="true" />
+                      <span className="first-letter:uppercase">{dateStr} alle {timeStr}{endTimeStr && ` – ${endTimeStr}`}</span>
                     </div>
                     {meetingLink && (
                       <a
                         href={meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-2 px-4 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-sm font-bold hover:bg-emerald-500/25 transition-colors"
+                        className="pressable inline-flex items-center gap-2 mt-3 px-5 h-11 rounded-full bg-white text-viola text-sm font-bold hover:bg-crema transition-colors"
                       >
                         <Video size={16} /> Entra nel meeting <ExternalLink size={14} />
                       </a>
                     )}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Luogo / Link</p>
-                    <div className="flex items-center gap-2 text-lg font-medium">
-                      <MapPin size={20} className="text-emerald-500" />
-                      <span>{event.location || "Online Session"}</span>
+                    <p className="text-label text-rosa">Luogo</p>
+                    <div className="flex items-center gap-2 text-body font-medium">
+                      <MapPin size={22} strokeWidth={1.75} className="text-rosa" aria-hidden="true" />
+                      <span>{event.location || "Online"}</span>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Disponibilità</p>
-                    <div className="flex items-center gap-2 text-lg font-medium tabular-nums">
-                      <Users size={20} className="text-emerald-500" />
-                      <span><SeatCount value={bookingCount} /> / {event.maxSlots} Partecipanti</span>
+                    <p className="text-label text-rosa">Disponibilità</p>
+                    <div className="flex items-center gap-2 text-body font-medium tabular-nums">
+                      <Users size={22} strokeWidth={1.75} className="text-rosa" aria-hidden="true" />
+                      <span><SeatCount value={bookingCount} /> / {event.maxSlots} partecipanti</span>
                     </div>
                   </div>
                 </div>
 
                 {event.description && (
-                  <div className="pt-4 border-t border-white/5 max-w-3xl">
-                    <p className="text-slate-400 text-lg leading-relaxed font-medium italic line-clamp-4">
+                  <div className="pt-6 border-t border-white/20 max-w-3xl">
+                    <p className="font-prompt text-2xl leading-8 font-medium text-white line-clamp-4">
                       &quot;{event.description}&quot;
                     </p>
                   </div>
@@ -370,55 +365,55 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
               </div>
 
               <div className="w-full lg:w-80 shrink-0">
-                <Card className="p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl text-white">
-                   <div className="space-y-6">
-                      <div className="text-center">
-                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Stato Iscrizioni</p>
-                         <h3 className="text-2xl font-display italic font-bold">{isPast ? "Evento concluso" : "Posti Disponibili"}</h3>
-                      </div>
+                <Card className="p-6 gap-0 ring-0">
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-label text-viola-500 mb-1">Iscrizioni</p>
+                      <h3 className="text-title font-display text-viola">{isPast ? "Evento concluso" : isFull ? "Posti esauriti" : "Posti disponibili"}</h3>
+                    </div>
 
-                      {isOwner ? (
-                        <Button className="pressable w-full h-14 rounded-2xl text-sm font-bold bg-white text-slate-950 hover:bg-emerald-400 transition-all shadow-lg" onClick={openParticipants}>
-                          Gestisci Iscritti <ChevronRight size={18} />
-                        </Button>
-                      ) : booked ? (
-                        <div className="space-y-3">
-                          <div className="w-full h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center gap-3 font-bold shadow-lg shadow-emerald-500/20">
-                            <CheckCircle2 size={20} /> Iscritto
-                          </div>
-                          {!isPast && (
-                            <Button
-                              variant="ghost"
-                              onClick={() => setConfirming("cancel")}
-                              disabled={loading}
-                              className="w-full h-11 rounded-2xl text-sm font-bold text-slate-400 hover:text-red-300 hover:bg-white/5"
-                            >
-                              Annulla prenotazione
-                            </Button>
-                          )}
+                    {isOwner ? (
+                      <Button className="w-full h-14 text-base gap-2" onClick={openParticipants}>
+                        Gestisci iscritti <ChevronRight size={18} />
+                      </Button>
+                    ) : booked ? (
+                      <div className="space-y-2">
+                        <div className="w-full h-14 rounded-full bg-rosa text-viola flex items-center justify-center gap-2 font-bold">
+                          <CheckCircle2 size={20} /> Iscritto
                         </div>
-                      ) : isPast ? (
-                        <div className="w-full h-14 rounded-2xl bg-white/10 text-slate-400 flex items-center justify-center font-bold border border-white/10">
-                          Evento concluso
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={handleBooking}
-                          disabled={loading || isFull}
-                          className="pressable w-full h-14 rounded-2xl text-base font-bold bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 border-none"
-                        >
-                          {loading ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : isFull ? "Posti Esauriti" : "Riserva un posto"}
-                        </Button>
-                      )}
-
-                      <div className="pt-4 space-y-3">
-                         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                           <span>Occupazione</span>
-                           <span className="tabular-nums">{Math.round(fillPct)}%</span>
-                         </div>
-                         {progressBar("bg-white/10")}
+                        {!isPast && (
+                          <Button
+                            variant="link"
+                            onClick={() => setConfirming("cancel")}
+                            disabled={loading}
+                            className="w-full h-11 text-sm"
+                          >
+                            Annulla prenotazione
+                          </Button>
+                        )}
                       </div>
-                   </div>
+                    ) : isPast ? (
+                      <div className="w-full h-14 rounded-full border border-viola/30 text-viola-500 flex items-center justify-center font-bold">
+                        Evento concluso
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={handleBooking}
+                        disabled={loading || isFull}
+                        className="w-full h-14 text-base"
+                      >
+                        {loading ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : isFull ? "Posti esauriti" : "Riserva un posto"}
+                      </Button>
+                    )}
+
+                    <div className="pt-2 space-y-2">
+                      <div className="flex justify-between text-label text-viola-500">
+                        <span>Occupazione</span>
+                        <span className="tabular-nums">{Math.round(fillPct)}%</span>
+                      </div>
+                      {progressBar("bg-crema")}
+                    </div>
+                  </div>
                 </Card>
               </div>
             </div>
@@ -428,18 +423,18 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8 md:space-y-10">
                <div className="space-y-3 md:space-y-6">
-                  <h3 className="text-xl md:text-2xl font-display italic font-bold text-slate-950">Dettagli della sessione</h3>
-                  <p className="text-base md:text-lg text-slate-600 leading-relaxed whitespace-pre-wrap font-medium wrap-break-word">
+                  <h3 className="text-title font-display text-viola">Dettagli della sessione</h3>
+                  <p className="text-body md:text-lg text-viola leading-relaxed whitespace-pre-wrap wrap-break-word">
                     {event.description || "Nessuna descrizione aggiuntiva fornita."}
                   </p>
                </div>
 
                {!!event.tags?.length && (
                  <div className="space-y-3 md:space-y-6">
-                    <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-slate-500">Competenze Richieste / Topic</h3>
+                    <h3 className="text-label text-viola">Competenze e temi</h3>
                     <div className="flex flex-wrap gap-2">
                       {event.tags.map((tag: string) => (
-                        <Badge key={tag} variant="secondary" className="rounded-xl px-3.5 py-2 h-auto bg-slate-50 text-slate-700 border-slate-100 font-bold text-sm">
+                        <Badge key={tag} className="h-auto px-4 py-2 text-chip">
                           {tag}
                         </Badge>
                       ))}
@@ -450,56 +445,56 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
 
             <div className="space-y-5 md:space-y-8">
                {isOwner && (
-                 <section aria-label="Strumenti organizzatore" className="rounded-3xl md:rounded-[2.5rem] ring-1 ring-slate-100 bg-white p-2">
+                 <section aria-label="Strumenti organizzatore" className="rounded-card ring-1 ring-viola/15 bg-white p-2">
                    <button
                      type="button"
                      onClick={openParticipants}
-                     className="pressable w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-left"
+                     className="pressable w-full flex items-center gap-3 p-3 rounded-[1.25rem] hover:bg-crema text-left"
                    >
-                     <span className="w-10 h-10 shrink-0 rounded-xl bg-slate-950 text-white flex items-center justify-center"><Users size={18} /></span>
+                     <span className="w-10 h-10 shrink-0 rounded-full bg-blu text-white flex items-center justify-center"><Users size={18} strokeWidth={1.75} /></span>
                      <span className="flex-1 min-w-0">
-                       <span className="block text-[15px] font-bold text-slate-950">Iscritti</span>
-                       <span className="block text-[13px] text-slate-500 tabular-nums"><SeatCount value={bookingCount} /> su {event.maxSlots} posti</span>
+                       <span className="block text-body font-bold text-viola">Iscritti</span>
+                       <span className="block text-label text-viola-500 tabular-nums"><SeatCount value={bookingCount} /> su {event.maxSlots} posti</span>
                      </span>
-                     <ChevronRight size={18} className="text-slate-300" />
+                     <ChevronRight size={18} className="text-viola-400" />
                    </button>
                    <button
                      type="button"
                      onClick={() => setLinkOpen(true)}
-                     className="pressable w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-left"
+                     className="pressable w-full flex items-center gap-3 p-3 rounded-[1.25rem] hover:bg-crema text-left"
                    >
-                     <span className="w-10 h-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><LinkIcon size={18} /></span>
+                     <span className="w-10 h-10 shrink-0 rounded-full bg-rosa text-viola flex items-center justify-center"><LinkIcon size={18} strokeWidth={1.75} /></span>
                      <span className="flex-1 min-w-0">
-                       <span className="block text-[15px] font-bold text-slate-950">Link del meeting</span>
-                       <span className="block text-[13px] text-slate-500 truncate">{event.meetingLink || "Non ancora impostato"}</span>
+                       <span className="block text-body font-bold text-viola">Link del meeting</span>
+                       <span className="block text-label text-viola-500 truncate">{event.meetingLink || "Non ancora impostato"}</span>
                      </span>
-                     <ChevronRight size={18} className="text-slate-300" />
+                     <ChevronRight size={18} className="text-viola-400" />
                    </button>
                    <button
                      type="button"
                      onClick={() => setConfirming("delete")}
-                     className="pressable md:hidden w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-left"
+                     className="pressable md:hidden w-full flex items-center gap-3 p-3 rounded-[1.25rem] hover:bg-rosso-50 text-left"
                    >
-                     <span className="w-10 h-10 shrink-0 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"><Trash2 size={18} /></span>
-                     <span className="flex-1 text-[15px] font-bold text-red-600">Elimina evento</span>
+                     <span className="w-10 h-10 shrink-0 rounded-full bg-rosso-50 text-rosso-700 flex items-center justify-center"><Trash2 size={18} strokeWidth={1.75} /></span>
+                     <span className="flex-1 text-body font-bold text-rosso-700">Elimina evento</span>
                    </button>
                  </section>
                )}
 
-               <Card className="p-5 md:p-8 gap-0 rounded-3xl md:rounded-[2.5rem] border-slate-50 shadow-card bg-white overflow-hidden group">
+               <Card className="p-6 gap-0 ring-viola/15">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden relative shadow-sm shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-viola overflow-hidden relative shrink-0">
                        {event.companyImage ? (
                          <Image src={event.companyImage} alt="" fill sizes="56px" className="object-cover" />
                        ) : (
-                         <div className="w-full h-full flex items-center justify-center text-slate-300 font-bold text-2xl uppercase">
+                         <div className="w-full h-full flex items-center justify-center text-rosa font-bold text-2xl uppercase">
                            {event.companyName?.[0]}
                          </div>
                        )}
                     </div>
                     <div className="min-w-0">
-                       <p className="text-[11px] font-black text-emerald-600 uppercase tracking-widest mb-0.5">Organizzatore</p>
-                       <h4 className="font-bold text-slate-950 text-lg leading-tight truncate">{event.companyName}</h4>
+                       <p className="text-label text-viola-500 mb-0.5">Organizzatore</p>
+                       <h4 className="font-bold text-viola text-lg leading-tight truncate">{event.companyName}</h4>
                     </div>
                   </div>
                   {event.companyWebsite && (
@@ -507,19 +502,19 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                       href={event.companyWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="pressable mt-5 md:mt-6 flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50 border border-slate-50 text-slate-600 text-[15px] md:text-sm font-medium hover:bg-white hover:border-slate-100 hover:text-slate-950 transition-colors"
+                      className="pressable mt-5 flex items-center gap-3 h-12 px-5 rounded-full bg-crema text-viola text-[15px] md:text-sm font-medium hover:bg-rosa transition-colors"
                     >
-                       <Globe size={18} className="text-emerald-500" />
-                       <span>Sito Aziendale</span>
+                       <Globe size={18} strokeWidth={1.75} className="text-viola" />
+                       <span>Sito aziendale</span>
                        <ChevronRight size={14} className="ml-auto" />
                     </a>
                   )}
                </Card>
 
                {!isOwner && (
-                 <div className="p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-emerald-50/40 border border-emerald-100/50 md:text-center">
-                    <p className="text-[11px] font-black text-emerald-700 uppercase tracking-widest mb-2">Consiglio Skillr</p>
-                    <p className="text-[15px] md:text-sm font-bold text-slate-600 leading-relaxed">
+                 <div className="p-6 rounded-card bg-rosa">
+                    <p className="text-label text-viola mb-2">Consiglio Helllo</p>
+                    <p className="text-body font-medium text-viola">
                       Preparati con domande brevi e dirette. Hai poco tempo per fare una grande impressione!
                     </p>
                  </div>
@@ -529,26 +524,26 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
         </main>
 
         {/* Phone action bar: sticks just above the tab bar */}
-        <div className="md:hidden sticky bottom-0 z-30 border-t border-slate-100 bg-white/90 backdrop-blur-xl px-4 py-3">
+        <div className="md:hidden sticky bottom-0 z-30 border-t border-viola/15 bg-white px-4 py-3">
           {isOwner ? (
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={openParticipants}
-                className="pressable flex-1 h-12 rounded-2xl bg-slate-100 text-slate-900 font-bold text-[15px] inline-flex items-center justify-center gap-2 tabular-nums"
+                className="pressable flex-1 h-12 rounded-full border border-viola bg-white text-viola font-bold text-[15px] inline-flex items-center justify-center gap-2 tabular-nums"
               >
-                <Users size={18} /> Iscritti <span className="text-slate-500 font-semibold"><SeatCount value={bookingCount} />/{event.maxSlots}</span>
+                <Users size={18} /> Iscritti <span className="text-viola-500 font-semibold"><SeatCount value={bookingCount} />/{event.maxSlots}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="pressable flex-1 h-12 rounded-2xl bg-slate-950 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
+                className="pressable flex-1 h-12 rounded-full bg-rosso hover:bg-rosso-600 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
               >
                 <Pencil size={17} /> Modifica
               </button>
             </div>
           ) : isPast ? (
-            <div className="h-12 rounded-2xl bg-slate-100 text-slate-500 font-bold text-[15px] flex items-center justify-center">
+            <div className="h-12 rounded-full border border-viola/30 text-viola-500 font-bold text-[15px] flex items-center justify-center">
               Evento concluso
             </div>
           ) : booked ? (
@@ -557,7 +552,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                 type="button"
                 onClick={() => setConfirming("cancel")}
                 disabled={loading}
-                className="pressable h-12 px-4 rounded-2xl bg-red-50 text-red-600 font-bold text-[15px] disabled:opacity-50"
+                className="pressable h-12 px-4 rounded-full border border-viola bg-white text-viola font-bold text-[15px] disabled:opacity-50"
               >
                 Annulla prenotazione
               </button>
@@ -566,12 +561,12 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                   href={meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="pressable flex-1 min-w-0 h-12 rounded-2xl bg-emerald-500 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
+                  className="pressable flex-1 min-w-0 h-12 rounded-full bg-rosso hover:bg-rosso-600 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2"
                 >
                   <Video size={18} /> <span className="truncate">Entra</span>
                 </a>
               ) : (
-                <div className="flex-1 min-w-0 h-12 rounded-2xl bg-emerald-50 text-emerald-700 font-bold text-[15px] inline-flex items-center justify-center gap-2">
+                <div className="flex-1 min-w-0 h-12 rounded-full bg-rosa text-viola font-bold text-[15px] inline-flex items-center justify-center gap-2">
                   <CheckCircle2 size={18} /> Iscritto
                 </div>
               )}
@@ -579,16 +574,16 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
           ) : (
             <div className="flex items-center gap-4">
               <div className="shrink-0 leading-tight">
-                <p className="text-[17px] font-bold text-slate-950 tabular-nums">
-                  <SeatCount value={bookingCount} /><span className="text-slate-400 font-semibold">/{event.maxSlots}</span>
+                <p className="text-[17px] font-bold text-viola tabular-nums">
+                  <SeatCount value={bookingCount} /><span className="text-viola-400 font-semibold">/{event.maxSlots}</span>
                 </p>
-                <p className="text-xs font-semibold text-slate-500">iscritti</p>
+                <p className="text-label text-viola-500">iscritti</p>
               </div>
               <button
                 type="button"
                 onClick={handleBooking}
                 disabled={loading || isFull}
-                className="pressable flex-1 h-12 rounded-2xl bg-emerald-500 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
+                className="pressable flex-1 h-12 rounded-full bg-rosso hover:bg-rosso-600 text-white font-bold text-[15px] inline-flex items-center justify-center gap-2 disabled:bg-viola-100 disabled:text-viola-500"
               >
                 {loading ? <Loader2 size={18} className="animate-spin motion-reduce:animate-none" /> : isFull ? "Posti esauriti" : "Riserva un posto"}
               </button>
@@ -605,7 +600,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
               exit={{ opacity: 0, transition: { duration: duration.feedback } }}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-viola/40"
               onClick={() => setIsEditing(false)}
             />
             <motion.div
@@ -615,19 +610,19 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
               initial={{ x: "100%" }}
               animate={{ x: 0, transition: spring.sheet }}
               exit={{ x: "100%", transition: { duration: duration.state, ease: ease.in } }}
-              className="relative w-full md:max-w-3xl bg-white h-full shadow-2xl flex flex-col"
+              className="relative w-full md:max-w-3xl bg-white h-full shadow-card flex flex-col"
             >
-              <div className="shrink-0 pt-safe border-b border-slate-100 md:border-0">
+              <div className="shrink-0 pt-safe border-b border-viola/15 md:border-0">
                 <div className="h-14 md:h-auto px-4 md:px-16 md:pt-14 md:pb-4 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 id="edit-event-title" className="text-2xl md:text-3xl font-display italic font-bold text-slate-950 truncate">Modifica evento</h2>
-                    <p className="hidden md:block text-sm text-slate-400 font-medium mt-2">Gestisci i dettagli della sessione</p>
+                    <h2 id="edit-event-title" className="text-2xl md:text-title font-display font-bold text-viola truncate">Modifica evento</h2>
+                    <p className="hidden md:block text-body text-viola-500 mt-2">Gestisci i dettagli della sessione</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
                     aria-label="Chiudi"
-                    className="pressable shrink-0 -mr-2 w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100"
+                    className="pressable shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-full border border-viola bg-white flex items-center justify-center text-viola hover:bg-crema"
                   >
                     <X size={24} strokeWidth={1.75} />
                   </button>
@@ -638,7 +633,7 @@ export default function EventDetailClient({ event: initialEvent, isBooked, isPro
                   initialData={event}
                   onSubmit={handleUpdate}
                   loading={loading}
-                  buttonText="Salva Modifiche"
+                  buttonText="Salva modifiche"
                   stickyBar="edge"
                 />
               </div>

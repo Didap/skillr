@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { verificationCodes, users } from "@/db/schema";
 import { eq, and, lt, sql } from "drizzle-orm";
 import { sendEmail } from "@/lib/mail";
+import { EMAIL_TAGLINE, emailLogoUrl } from "@/emails/EmailBrand";
 
 const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -51,15 +52,19 @@ export async function generateVerificationCode(email: string): Promise<CodeResul
 
     const sent = await sendEmail({
       to: email,
-      subject: `${code} è il tuo codice di verifica Skillr`,
+      subject: `${code} è il tuo codice di verifica Helllo`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 24px;">
-          <h2 style="color: #020617; font-style: italic; font-weight: 800; font-size: 24px; margin-bottom: 24px;">Benvenuto su Skillr</h2>
-          <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">Per completare la tua registrazione e iniziare a fare swipe, inserisci il seguente codice di verifica:</p>
-          <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
-            <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #10b981;">${code}</span>
+        <div style="background-color: #F4E9E9; padding: 32px 16px; font-family: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+          <div style="max-width: 560px; margin: 0 auto; padding: 40px 32px; background-color: #FFFFFF; border: 1px solid #E4DAE6; border-radius: 28px;">
+            <img src="${emailLogoUrl()}" width="108" height="40" alt="Helllo" style="display: block; border: 0; margin: 0 0 28px; color: #E93D29; font-size: 24px; font-weight: 700;" />
+            <h1 style="color: #653171; font-weight: 700; font-size: 26px; line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 16px;">Benvenuto su Helllo</h1>
+            <p style="color: #653171; font-size: 16px; line-height: 1.5; margin: 0 0 24px;">Per completare la tua registrazione e iniziare a dire helllo, inserisci questo codice di verifica:</p>
+            <div style="background-color: #F4E9E9; border-radius: 20px; padding: 24px; text-align: center; margin: 0 0 24px;">
+              <span style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #653171;">${code}</span>
+            </div>
+            <p style="color: #80558A; font-size: 13px; line-height: 1.5; margin: 0;">Questo codice scadrà tra 10 minuti. Se non hai richiesto tu questo codice, ignora questa email.</p>
           </div>
-          <p style="color: #94a3b8; font-size: 12px; font-style: italic;">Questo codice scadrà tra 10 minuti. Se non hai richiesto tu questo codice, ignora questa email.</p>
+          <p style="color: #80558A; font-size: 13px; line-height: 1.5; text-align: center; margin: 24px 0 0;">${EMAIL_TAGLINE}</p>
         </div>
       `,
     });

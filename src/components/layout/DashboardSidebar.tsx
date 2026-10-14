@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Zap, User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
+import { LogoMark } from "@/components/brand/LogoMark";
 import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
 import { signOutAndClearDraft } from "@/lib/sign-out";
 
@@ -15,55 +17,52 @@ export function DashboardSidebar() {
   if (!session?.user) return null;
 
   return (
-    <aside className="hidden md:flex w-24 lg:w-72 border-r border-slate-100 bg-slate-50/40 backdrop-blur-xl flex-col p-6 z-40 shrink-0">
-      <div className="flex items-center gap-3 px-3 mb-12">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
-            <Zap size={20} fill="currentColor" />
-          </div>
-          <span className="hidden lg:block font-display text-2xl italic font-black tracking-tight text-slate-950">
-            Skillr<span className="text-emerald-600">.</span>
-          </span>
+    <aside className="hidden md:flex w-24 lg:w-72 border-r border-viola/15 bg-white flex-col p-6 z-40 shrink-0">
+      <div className="flex items-center justify-center lg:justify-start px-1 lg:px-3 mb-12">
+        <Link href="/dashboard" aria-label="Helllo" className="flex items-center rounded-full">
+          {/* Collapsed rail: the round "lll" badge; full sidebar: the wordmark */}
+          <LogoMark className="size-11 lg:hidden" />
+          <Logo title={null} className="hidden lg:block h-9" />
         </Link>
       </div>
-      
-      <nav className="flex-1 flex flex-col gap-2">
+
+      <nav className="flex-1 flex flex-col gap-1">
         {primaryNav(session.user.role).map((item) => (
           <SidebarLink
             key={item.href}
             href={item.href}
-            icon={<item.icon size={20} />}
+            icon={<item.icon size={22} strokeWidth={1.75} />}
             label={item.label}
             active={item.isActive(pathname)}
           />
         ))}
-        <SidebarLink 
-          href="/profile" 
-          icon={<User size={20} />} 
-          label="Profilo" 
+        <SidebarLink
+          href="/profile"
+          icon={<User size={22} strokeWidth={1.75} />}
+          label="Profilo"
           active={isOwnProfile(pathname, session.user.id)}
         />
       </nav>
 
-      <div className="pt-6 border-t border-slate-100 flex flex-col gap-2">
-        <SidebarLink 
-          href="/settings" 
-          icon={<Settings size={20} />} 
-          label="Impostazioni" 
+      <div className="pt-6 border-t border-viola/15 flex flex-col gap-1">
+        <SidebarLink
+          href="/settings"
+          icon={<Settings size={22} strokeWidth={1.75} />}
+          label="Impostazioni"
           active={pathname.startsWith("/settings")}
         />
-        <button 
+        <button
           onClick={() => signOutAndClearDraft()}
-          className="flex items-center gap-4 p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all font-bold text-sm group"
+          className="pressable flex items-center justify-center lg:justify-start gap-4 h-12 px-3.5 lg:px-4 rounded-full text-viola-500 hover:text-rosso-700 hover:bg-rosso-50 transition-colors font-semibold text-sm"
         >
-          <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
+          <LogOut size={22} strokeWidth={1.75} />
           <span className="hidden lg:block">Esci</span>
         </button>
       </div>
 
-      <div className="mt-auto pt-8 px-4 hidden lg:flex flex-wrap gap-x-4 gap-y-2 opacity-30 hover:opacity-100 transition-opacity">
+      <div className="mt-auto pt-8 px-4 hidden lg:flex flex-wrap gap-x-4 gap-y-2">
         {LEGAL_LINKS.map(({ href, label }) => (
-          <Link key={href} href={href} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">{label}</Link>
+          <Link key={href} href={href} className="text-label text-viola-400 hover:text-viola transition-colors">{label}</Link>
         ))}
       </div>
     </aside>
@@ -72,18 +71,15 @@ export function DashboardSidebar() {
 
 function SidebarLink({ href, icon, label, active = false }: { href: string, icon: React.ReactNode, label: string, active?: boolean }) {
   return (
-    <Link 
-      href={href} 
+    <Link
+      href={href}
       className={cn(
-        "flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-sm group",
-        active 
-          ? "bg-slate-950 text-white shadow-xl shadow-slate-200" 
-          : "text-slate-400 hover:text-slate-950 hover:bg-slate-50"
+        // Same language as the mobile tab bar: viola line icons, the active item in a rosa pill
+        "pressable flex items-center justify-center lg:justify-start gap-4 h-12 px-3.5 lg:px-4 rounded-full transition-colors font-semibold text-sm text-viola",
+        active ? "bg-rosa" : "hover:bg-crema"
       )}
     >
-      <span className={cn("transition-transform group-hover:scale-110", active ? "text-emerald-400" : "")}>
-        {icon}
-      </span>
+      {icon}
       <span className="hidden lg:block">{label}</span>
     </Link>
   );

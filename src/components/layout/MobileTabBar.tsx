@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CalendarRange, CircleUser, LogOut, Settings, User } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { spring } from "@/lib/motion";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
@@ -32,8 +31,9 @@ export function MobileTabBar() {
     <>
       <nav
         aria-label="Navigazione principale"
-        className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-100 bg-white/85 backdrop-blur-xl pb-safe"
+        className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-viola/15 bg-white pb-safe"
       >
+        {/* Icons only, as in the brand file: the label stays for screen readers */}
         <ul className="grid grid-cols-5 h-(--tabbar-h) px-2">
           {items.map((item) => {
             const active = item.isActive(pathname);
@@ -43,28 +43,12 @@ export function MobileTabBar() {
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className="pressable relative h-full flex flex-col items-center justify-center gap-1"
+                  className="pressable h-full flex items-center justify-center"
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="tabbar-pill"
-                      transition={spring.snappy}
-                      className="absolute top-1.5 h-8 w-14 rounded-full bg-emerald-50"
-                    />
-                  )}
-                  <Icon
-                    size={21}
-                    strokeWidth={active ? 2.4 : 2}
-                    className={cn("relative transition-colors", active ? "text-emerald-700" : "text-slate-400")}
-                  />
-                  <span
-                    className={cn(
-                      "relative text-[11px] font-bold tracking-tight transition-colors",
-                      active ? "text-slate-950" : "text-slate-500"
-                    )}
-                  >
-                    {item.short}
-                  </span>
+                  <TabPill active={active}>
+                    <Icon size={24} strokeWidth={1.75} className="relative text-viola" />
+                  </TabPill>
+                  <span className="sr-only">{item.short}</span>
                 </Link>
               </li>
             );
@@ -73,23 +57,12 @@ export function MobileTabBar() {
             <button
               onClick={() => setAccountOpen(true)}
               aria-haspopup="dialog"
-              className="pressable relative w-full h-full flex flex-col items-center justify-center gap-1"
+              className="pressable w-full h-full flex items-center justify-center"
             >
-              {accountActive && (
-                <motion.span
-                  layoutId="tabbar-pill"
-                  transition={spring.snappy}
-                  className="absolute top-1.5 h-8 w-14 rounded-full bg-emerald-50"
-                />
-              )}
-              <CircleUser
-                size={21}
-                strokeWidth={accountActive ? 2.4 : 2}
-                className={cn("relative", accountActive ? "text-emerald-700" : "text-slate-400")}
-              />
-              <span className={cn("relative text-[11px] font-bold tracking-tight", accountActive ? "text-slate-950" : "text-slate-500")}>
-                Tu
-              </span>
+              <TabPill active={accountActive}>
+                <CircleUser size={24} strokeWidth={1.75} className="relative text-viola" />
+              </TabPill>
+              <span className="sr-only">Tu</span>
             </button>
           </li>
         </ul>
@@ -98,21 +71,21 @@ export function MobileTabBar() {
       <BottomSheet open={accountOpen} onClose={() => setAccountOpen(false)} title={session.user.name || "Il tuo account"}>
         <ul className="flex flex-col gap-1">
           {calendarInSheet && (
-            <SheetLink href="/dashboard/calendar" icon={<CalendarRange size={20} />} label="Calendario" onNavigate={() => setAccountOpen(false)} />
+            <SheetLink href="/dashboard/calendar" icon={<CalendarRange size={22} strokeWidth={1.75} />} label="Calendario" onNavigate={() => setAccountOpen(false)} />
           )}
-          <SheetLink href="/profile" icon={<User size={20} />} label="Il mio profilo" onNavigate={() => setAccountOpen(false)} />
-          <SheetLink href="/settings" icon={<Settings size={20} />} label="Impostazioni" onNavigate={() => setAccountOpen(false)} />
+          <SheetLink href="/profile" icon={<User size={22} strokeWidth={1.75} />} label="Il mio profilo" onNavigate={() => setAccountOpen(false)} />
+          <SheetLink href="/settings" icon={<Settings size={22} strokeWidth={1.75} />} label="Impostazioni" onNavigate={() => setAccountOpen(false)} />
           <li>
             <button
               onClick={() => signOutAndClearDraft()}
-              className="pressable w-full flex items-center gap-4 h-14 px-4 rounded-2xl text-red-600 font-bold hover:bg-red-50"
+              className="pressable w-full flex items-center gap-4 h-14 px-4 rounded-full text-rosso-700 font-semibold hover:bg-rosso-50"
             >
-              <LogOut size={20} />
+              <LogOut size={22} strokeWidth={1.75} />
               Esci
             </button>
           </li>
         </ul>
-        <div className="mt-6 pt-4 border-t border-slate-100 flex gap-6 text-xs font-bold text-slate-500">
+        <div className="mt-6 pt-4 border-t border-viola/15 flex gap-6 text-label text-viola-500">
           {LEGAL_LINKS.map(({ href, label }) => (
             <Link key={href} href={href} onClick={() => setAccountOpen(false)}>{label}</Link>
           ))}
@@ -128,11 +101,27 @@ function SheetLink({ href, icon, label, onNavigate }: { href: string; icon: Reac
       <Link
         href={href}
         onClick={onNavigate}
-        className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl text-slate-900 font-bold hover:bg-slate-50"
+        className="pressable flex items-center gap-4 h-14 px-4 rounded-full text-viola font-semibold hover:bg-crema"
       >
-        <span className="text-slate-400">{icon}</span>
+        {icon}
         {label}
       </Link>
     </li>
+  );
+}
+
+/** The rosa pill behind the active tab; it slides between tabs (shared layoutId). */
+function TabPill({ active, children }: { active: boolean; children: React.ReactNode }) {
+  return (
+    <span className="relative flex h-11 w-16 items-center justify-center">
+      {active && (
+        <motion.span
+          layoutId="tabbar-pill"
+          transition={spring.snappy}
+          className="absolute inset-0 rounded-full bg-rosa"
+        />
+      )}
+      {children}
+    </span>
   );
 }

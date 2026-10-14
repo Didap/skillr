@@ -1,7 +1,7 @@
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata = {
-  title: "Cookie Policy | Skillr",
+  title: "Cookie Policy | Helllo",
 };
 
 export default function CookiesPage() {
@@ -41,7 +41,7 @@ export default function CookiesPage() {
       <section>
         <h2>Come gestire i Cookie</h2>
         <p>
-          Puoi controllare o eliminare i cookie tramite le impostazioni del tuo browser. Tieni presente che disabilitando i cookie tecnici alcune funzionalità di Skillr (come l&apos;accesso al profilo) potrebbero non essere disponibili.
+          Puoi controllare o eliminare i cookie tramite le impostazioni del tuo browser. Tieni presente che disabilitando i cookie tecnici alcune funzionalità di Helllo (come l&apos;accesso al profilo) potrebbero non essere disponibili.
         </p>
       </section>
 

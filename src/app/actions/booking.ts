@@ -158,8 +158,8 @@ export async function confirmSlot(slotId: string) {
     // professional can retry, so nobody ends up with a confirmed call and a missing or stale link.
     if (usesGoogleMeet) {
       const calendarResult = await createMeetEvent(
-        `Colloquio Skillr: ${profName} / ${compName}`,
-        `Colloquio conoscitivo pianificato tramite Skillr.\nPartecipanti: ${profName}, ${compName}`,
+        `Colloquio Helllo: ${profName} / ${compName}`,
+        `Colloquio conoscitivo pianificato tramite Helllo.\nPartecipanti: ${profName}, ${compName}`,
         slot.startTime,
         slot.endTime,
         [slot.match.professional.email, slot.match.company.email]
@@ -214,8 +214,8 @@ export async function confirmSlot(slotId: string) {
     });
 
     const icsContent = generateIcsString({
-      title: `Colloquio Skillr: ${profName} / ${compName}`,
-      description: `Colloquio conoscitivo pianificato tramite Skillr.\nLink call: ${meetingLink || 'Non disponibile'}`,
+      title: `Colloquio Helllo: ${profName} / ${compName}`,
+      description: `Colloquio conoscitivo pianificato tramite Helllo.\nLink call: ${meetingLink || 'Non disponibile'}`,
       startTime: slot.startTime,
       endTime: slot.endTime,
       location: meetingLink || undefined,

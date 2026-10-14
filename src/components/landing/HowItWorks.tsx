@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BadgeCheck,
+  Bookmark,
   Briefcase,
   Check,
-  Heart,
-  Sparkles,
   User,
   Video,
   X,
 } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
+import { LogoMark } from "@/components/brand/LogoMark";
+import { MockActionBar, MockChip } from "@/components/landing/MockParts";
 import { cn } from "@/lib/utils";
 
 type Role = "professional" | "company";
@@ -79,16 +82,15 @@ export function HowItWorks() {
   const steps = STEPS[role];
 
   return (
-    <section id="come-funziona" className="py-20 md:py-32 bg-white scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-3xl mb-16 space-y-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-widest border border-emerald-100">
-            <Sparkles size={12} /> Come funziona
-          </span>
-          <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight text-balance">
-            Dal profilo alla call, <span className="italic text-emerald-600">in quattro passi.</span>
+    <section id="come-funziona" className="py-20 md:py-32 bg-crema scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="max-w-3xl mb-10 md:mb-14 space-y-5">
+          <p className="text-label text-viola-500">Come funziona</p>
+          <h2 className="font-display text-display md:text-6xl md:leading-[1.05] tracking-[-0.03em] text-viola text-balance">
+            Dal profilo alla call, in quattro{" "}
+            <span className="font-script text-rosso">passi.</span>
           </h2>
-          <p className="text-lg text-slate-500 font-medium leading-relaxed">
+          <p className="text-lg text-viola-500 leading-relaxed">
             Stesso percorso, due lati. Scegli il tuo.
           </p>
         </div>
@@ -96,7 +98,7 @@ export function HowItWorks() {
         <div
           role="group"
           aria-label="Scegli il tuo ruolo"
-          className="inline-flex p-1.5 mb-14 rounded-full bg-slate-100 border border-slate-200"
+          className="inline-flex p-1 mb-10 md:mb-14 rounded-full bg-white border border-viola"
         >
           {ROLES.map(({ id, label, shortLabel, icon: Icon }) => (
             <button
@@ -107,50 +109,48 @@ export function HowItWorks() {
                 setActive(0);
               }}
               className={cn(
-                "inline-flex items-center gap-2 h-12 px-5 sm:px-7 rounded-full text-sm font-bold transition-all",
-                role === id
-                  ? "bg-slate-950 text-white shadow-lg shadow-slate-300"
-                  : "text-slate-500 hover:text-slate-900"
+                "pressable inline-flex items-center gap-2 h-12 px-5 sm:px-7 rounded-full text-sm font-semibold text-viola",
+                role === id ? "bg-rosa" : "hover:bg-crema"
               )}
             >
-              <Icon size={16} />
+              <Icon size={18} strokeWidth={1.75} />
               <span className="sm:hidden">{shortLabel}</span>
               <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          <ol className="space-y-4">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <ol className="space-y-3">
             {steps.map((step, i) => (
               <li key={`${role}-${i}`}>
                 <button
                   onClick={() => setActive(i)}
                   aria-current={active === i ? "step" : undefined}
                   className={cn(
-                    "w-full text-left rounded-3xl border-2 p-6 sm:p-8 transition-all",
+                    "pressable w-full text-left rounded-card p-5 sm:p-7",
                     active === i
-                      ? "border-emerald-500/30 bg-emerald-50/40 shadow-card"
-                      : "border-slate-100 hover:border-slate-200"
+                      ? "bg-viola text-white"
+                      : "bg-white text-viola border border-viola/15 hover:border-viola/40"
                   )}
                 >
-                  <div className="flex items-start gap-5">
+                  <div className="flex items-start gap-4 sm:gap-5">
                     <span
                       className={cn(
-                        "shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center font-display text-2xl transition-colors",
-                        active === i ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
+                        "shrink-0 size-11 rounded-full flex items-center justify-center text-lg font-bold text-viola",
+                        active === i ? "bg-rosa" : "bg-crema"
                       )}
                     >
                       {i + 1}
                     </span>
-                    <div className="space-y-2 min-w-0">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">
+                    <div className="space-y-1.5 min-w-0">
+                      <p className={cn("text-[13px] leading-4 font-medium", active === i ? "text-rosa" : "text-viola-500")}>
                         {step.label}
                       </p>
-                      <h3 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight">
-                        {step.title}
-                      </h3>
-                      <p className="text-slate-500 font-medium leading-relaxed">{step.body}</p>
+                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight">{step.title}</h3>
+                      <p className={cn("leading-relaxed", active === i ? "text-crema" : "text-viola-500")}>
+                        {step.body}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -164,7 +164,7 @@ export function HowItWorks() {
                       animate={{ opacity: 1, height: "auto", transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } }}
                       exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
                     >
-                      <div className="pt-4">
+                      <div className="pt-3">
                         <PreviewFrame>
                           <StepPreview role={role} step={i} />
                         </PreviewFrame>
@@ -197,11 +197,14 @@ export function HowItWorks() {
   );
 }
 
+/** Flat blu block, like the profile screen in the app: white cards sit on it. */
 function PreviewFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[2.5rem] bg-linear-to-b from-emerald-50 to-slate-50 border border-slate-100 p-6 sm:p-12 flex items-center justify-center min-h-[280px] lg:min-h-[480px] overflow-hidden">
-      <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-200/40 blur-[100px]" />
-      <div className="relative w-full max-w-sm">{children}</div>
+    <div
+      aria-hidden="true"
+      className="rounded-[2.25rem] bg-blu px-4 py-8 sm:p-12 flex items-center justify-center min-h-[280px] lg:min-h-[520px]"
+    >
+      <div className="w-full max-w-sm">{children}</div>
     </div>
   );
 }
@@ -213,18 +216,27 @@ function StepPreview({ role, step }: { role: Role; step: number }) {
   return <SlotsPreview role={role} />;
 }
 
-const mockCard = "rounded-3xl bg-white shadow-card p-6";
+const mockCard = "rounded-card bg-white p-6 text-viola";
+const mockLabel = "text-[13px] leading-4 font-medium text-viola-500";
 
-function Chip({ children, tone = "slate" }: { children: React.ReactNode; tone?: "slate" | "emerald" }) {
+function Avatar({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span
+    <div
       className={cn(
-        "px-3 py-1 rounded-lg text-[11px] font-bold",
-        tone === "emerald" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+        "size-14 shrink-0 rounded-full bg-rosa flex items-center justify-center text-2xl font-bold text-viola",
+        className
       )}
     >
       {children}
-    </span>
+    </div>
+  );
+}
+
+function CompanyMark() {
+  return (
+    <div className="size-10 shrink-0 rounded-full bg-viola text-white flex items-center justify-center font-bold text-sm">
+      TS
+    </div>
   );
 }
 
@@ -232,23 +244,21 @@ function ProfilePreview() {
   return (
     <div className={mockCard}>
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center font-display text-2xl text-emerald-700">
-          G
-        </div>
+        <Avatar>G</Avatar>
         <div>
-          <p className="font-bold text-slate-950">Giulia Bianchi</p>
-          <p className="text-sm text-slate-500 font-medium">UX/UI Designer</p>
+          <p className="text-lg font-bold">Giulia Bianchi</p>
+          <p className="text-sm text-viola-500">UX/UI Designer</p>
         </div>
       </div>
-      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Top 3 skill</p>
+      <p className={cn(mockLabel, "mb-3")}>Top 3 skill</p>
       <div className="flex flex-wrap gap-2 mb-6">
-        <Chip tone="emerald">Figma</Chip>
-        <Chip tone="emerald">Design System</Chip>
-        <Chip tone="emerald">User Research</Chip>
+        <MockChip>Figma</MockChip>
+        <MockChip>Design System</MockChip>
+        <MockChip>User Research</MockChip>
       </div>
-      <div className="flex items-center justify-between pt-5 border-t border-slate-100">
-        <span className="text-sm font-semibold text-slate-500">Tariffa</span>
-        <span className="font-bold text-slate-950">€350 / giorno</span>
+      <div className="flex items-center justify-between pt-5 border-t border-viola/15">
+        <span className="text-sm text-viola-500">Tariffa</span>
+        <span className="font-bold">€350 / giorno</span>
       </div>
     </div>
   );
@@ -258,40 +268,23 @@ function JobPostPreview() {
   return (
     <div className={mockCard}>
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-          TS
-        </div>
+        <CompanyMark />
         <div>
-          <p className="font-bold text-slate-950 text-sm">Tech Solutions S.r.l.</p>
-          <p className="text-xs text-slate-400 font-medium">P.IVA 01234567890</p>
+          <p className="font-bold text-sm">Tech Solutions S.r.l.</p>
+          <p className="text-xs text-viola-500">P.IVA 01234567890</p>
         </div>
       </div>
-      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Nuova offerta</p>
-      <p className="text-xl font-bold text-slate-950 mb-4">Senior React Developer</p>
+      <p className={cn(mockLabel, "mb-1")}>Nuova offerta</p>
+      <p className="text-xl font-bold mb-4">Senior React Developer</p>
       <div className="flex flex-wrap gap-2 mb-6">
-        <Chip>React</Chip>
-        <Chip>TypeScript</Chip>
-        <Chip>Next.js</Chip>
+        <MockChip tone="crema">React</MockChip>
+        <MockChip tone="crema">TypeScript</MockChip>
+        <MockChip tone="crema">Next.js</MockChip>
       </div>
-      <div className="rounded-2xl bg-slate-50 p-4">
-        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">
-          Budget · obbligatorio
-        </p>
-        <p className="font-bold text-slate-950">€45.000 – 55.000 RAL</p>
+      <div className="rounded-2xl bg-rosa p-4">
+        <p className="text-[13px] leading-4 font-medium mb-1">Budget · obbligatorio</p>
+        <p className="font-bold">€45.000 – 55.000 RAL</p>
       </div>
-    </div>
-  );
-}
-
-function SwipeButtons() {
-  return (
-    <div className="flex justify-center gap-6 mt-6">
-      <span className="w-14 h-14 rounded-full bg-white shadow-card flex items-center justify-center text-slate-400">
-        <X size={24} />
-      </span>
-      <span className="w-14 h-14 rounded-full bg-emerald-600 shadow-lg shadow-emerald-200 flex items-center justify-center text-white">
-        <Heart size={24} fill="currentColor" />
-      </span>
     </div>
   );
 }
@@ -299,30 +292,26 @@ function SwipeButtons() {
 function JobCardPreview() {
   return (
     <div>
-      <div className={cn(mockCard, "rotate-[-2deg]")}>
+      <div className={mockCard}>
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-            TS
-          </div>
+          <CompanyMark />
           <div>
-            <p className="font-bold text-slate-950 text-sm">Tech Solutions</p>
-            <p className="text-xs text-slate-400 font-medium">Milano · Ibrido</p>
+            <p className="font-bold text-sm">Tech Solutions</p>
+            <p className="text-xs text-viola-500">Milano · Ibrido</p>
           </div>
         </div>
-        <p className="text-xl font-bold text-slate-950 mb-4">Product Designer</p>
+        <p className="text-xl font-bold mb-4">Product Designer</p>
         <div className="flex flex-wrap gap-2 mb-6">
-          <Chip tone="emerald">Figma</Chip>
-          <Chip tone="emerald">Design System</Chip>
-          <Chip>Prototyping</Chip>
+          <MockChip>Figma</MockChip>
+          <MockChip>Design System</MockChip>
+          <MockChip tone="crema">Prototyping</MockChip>
         </div>
-        <div className="rounded-2xl bg-emerald-600 text-white p-4">
-          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-100 mb-1">
-            Budget
-          </p>
+        <div className="rounded-2xl bg-rosso text-white p-4">
+          <p className="text-[13px] leading-4 font-bold mb-1">Budget</p>
           <p className="font-bold text-lg">€300 – 400 / giorno</p>
         </div>
       </div>
-      <SwipeButtons />
+      <MockActionBar pass={X} save={Bookmark} />
     </div>
   );
 }
@@ -330,30 +319,28 @@ function JobCardPreview() {
 function TalentCardPreview() {
   return (
     <div>
-      <div className={cn(mockCard, "rotate-2")}>
-        <div className="flex items-center gap-4 mb-5">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center font-display text-2xl text-emerald-700">
-            M
-          </div>
-          <div>
-            <p className="font-bold text-slate-950">Mario Rossi</p>
-            <p className="text-sm text-slate-500 font-medium">Senior Fullstack Developer</p>
-          </div>
+      <div className="rounded-card overflow-hidden bg-white">
+        <div className="flex flex-wrap items-center gap-3 p-6 pb-5">
+          <Avatar>M</Avatar>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rosso px-3 h-8 text-xs font-bold text-white">
+            <BadgeCheck size={14} /> Competenze verificate
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1.5 mb-5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-widest">
-          <Check size={12} /> Competenze verificate
-        </span>
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Chip>React</Chip>
-          <Chip>Node.js</Chip>
-          <Chip>PostgreSQL</Chip>
-        </div>
-        <div className="flex items-center justify-between pt-5 border-t border-slate-100">
-          <span className="text-sm font-semibold text-slate-500">Tariffa</span>
-          <span className="font-bold text-slate-950">€500 / giorno</span>
+        <div className="bg-blu px-6 pt-5 pb-6 text-white">
+          <p className="text-xl font-bold">Mario Rossi</p>
+          <p className="text-sm text-rosa mb-4">Senior Fullstack Developer</p>
+          <div className="flex flex-wrap gap-2 mb-5">
+            <MockChip>React</MockChip>
+            <MockChip>Node.js</MockChip>
+            <MockChip>PostgreSQL</MockChip>
+          </div>
+          <div className="flex items-center justify-between pt-4 border-t border-white/25">
+            <span className="text-sm text-crema">Tariffa</span>
+            <span className="font-bold">€500 / giorno</span>
+          </div>
         </div>
       </div>
-      <SwipeButtons />
+      <MockActionBar pass={X} save={Bookmark} />
     </div>
   );
 }
@@ -361,19 +348,19 @@ function TalentCardPreview() {
 function MatchPreview() {
   return (
     <div className={cn(mockCard, "text-center py-10")}>
-      <div className="flex justify-center -space-x-4 mb-6">
-        <div className="w-16 h-16 rounded-full bg-emerald-100 border-4 border-white flex items-center justify-center font-display text-2xl text-emerald-700">
-          G
-        </div>
-        <div className="w-16 h-16 rounded-full bg-slate-900 border-4 border-white flex items-center justify-center font-bold text-white">
+      <p className="flex items-end justify-center gap-2 mb-6">
+        <span className="text-display">È un</span>
+        <Logo title="helllo" className="h-11 mb-0.5" />
+      </p>
+      <div className="flex items-center justify-center mb-6">
+        <Avatar className="size-16 border-4 border-white">G</Avatar>
+        <LogoMark className="size-12 -mx-3 relative z-10" />
+        <div className="size-16 rounded-full bg-viola border-4 border-white flex items-center justify-center font-bold text-white">
           TS
         </div>
       </div>
-      <p className="font-display text-4xl text-slate-950 mb-2">
-        It&apos;s a <span className="italic text-emerald-600">Match!</span>
-      </p>
-      <p className="text-sm text-slate-500 font-medium mb-8">Tu e Tech Solutions vi siete piaciuti.</p>
-      <span className="inline-flex h-12 items-center px-8 rounded-full bg-slate-950 text-white text-sm font-bold">
+      <p className="text-sm text-viola-500 mb-8">Tu e Tech Solutions vi siete scelti a vicenda.</p>
+      <span className="inline-flex h-12 items-center px-8 rounded-full bg-rosso text-white text-sm font-bold">
         Pianifica la call
       </span>
     </div>
@@ -387,24 +374,22 @@ function ApplicantsPreview() {
   ];
   return (
     <div className={mockCard}>
-      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Product Designer</p>
-      <p className="font-bold text-slate-950 mb-5">Candidati da valutare</p>
+      <p className={cn(mockLabel, "mb-1")}>Product Designer</p>
+      <p className="font-bold text-lg mb-5">Candidati da valutare</p>
       <div className="space-y-3">
         {applicants.map((a) => (
-          <div key={a.name} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-display text-lg text-emerald-700 shrink-0">
-              {a.initial}
-            </div>
+          <div key={a.name} className="flex items-center gap-3 rounded-2xl bg-crema p-3">
+            <Avatar className="size-10 text-lg">{a.initial}</Avatar>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-slate-950 text-sm truncate">{a.name}</p>
-              <p className="text-xs text-slate-400 font-semibold">{a.rate}</p>
+              <p className="font-bold text-sm truncate">{a.name}</p>
+              <p className="text-xs text-viola-500">{a.rate}</p>
             </div>
             {a.accepted ? (
-              <span className="inline-flex items-center gap-1 px-3 h-8 rounded-full bg-emerald-600 text-white text-xs font-bold">
-                <Heart size={12} fill="currentColor" /> Match
+              <span className="inline-flex items-center px-3 h-8 rounded-full bg-rosso text-white text-xs font-bold">
+                Match
               </span>
             ) : (
-              <span className="inline-flex items-center px-3 h-8 rounded-full bg-slate-950 text-white text-xs font-bold">
+              <span className="inline-flex items-center px-3 h-8 rounded-full border border-viola bg-white text-xs font-bold">
                 Accetta
               </span>
             )}
@@ -419,17 +404,17 @@ function SlotsPreview({ role }: { role: Role }) {
   const slots = ["Mar 14 · 10:00", "Mer 15 · 15:30", "Gio 16 · 11:00"];
   return (
     <div className={mockCard}>
-      <p className="font-bold text-slate-950 mb-1">
+      <p className="font-bold text-lg mb-1">
         {role === "professional" ? "Quando sei disponibile?" : "Proponi fino a 3 slot"}
       </p>
-      <p className="text-sm text-slate-500 font-medium mb-5">Call conoscitiva · 30 minuti</p>
+      <p className="text-sm text-viola-500 mb-5">Call conoscitiva · 30 minuti</p>
       <div className="space-y-2 mb-6">
         {slots.map((slot, i) => (
           <div
             key={slot}
             className={cn(
-              "flex items-center justify-between rounded-2xl border-2 px-4 h-12 text-sm font-bold",
-              i === 1 ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-slate-100 text-slate-600"
+              "flex items-center justify-between rounded-full px-5 h-12 text-sm font-semibold",
+              i === 1 ? "bg-rosa" : "border border-viola/15"
             )}
           >
             {slot}
@@ -437,9 +422,9 @@ function SlotsPreview({ role }: { role: Role }) {
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-3 rounded-2xl bg-slate-950 text-white p-4">
-        <Video size={18} className="text-emerald-400 shrink-0" />
-        <p className="text-sm font-semibold">Link Google Meet generato e invito nel calendario</p>
+      <div className="flex items-center gap-3 rounded-2xl bg-viola text-white p-4">
+        <Video size={18} className="text-rosa shrink-0" />
+        <p className="text-sm font-medium">Link Google Meet generato e invito nel calendario</p>
       </div>
     </div>
   );

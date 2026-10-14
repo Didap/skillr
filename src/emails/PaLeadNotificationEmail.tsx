@@ -11,6 +11,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface PaLeadNotificationEmailProps {
   fullName: string;
@@ -26,20 +27,14 @@ interface PaLeadNotificationEmailProps {
 
 const paStyles = {
   ...styles,
-  h1: {
-    ...styles.h1,
-    color: '#004c81', // PA Blue
-  },
   label: {
-    color: '#94a3b8',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
+    color: styles.colors.violaSoft,
+    fontSize: '13px',
+    fontWeight: '600',
     margin: '12px 0 4px',
   },
   value: {
-    color: '#0f172a',
+    color: styles.colors.viola,
     fontSize: '16px',
     margin: '0 0 12px',
   }
@@ -62,16 +57,17 @@ export const PaLeadNotificationEmail = ({
     <Body style={paStyles.main}>
       <Container style={paStyles.container}>
         <Section style={paStyles.header}>
-          <Heading style={paStyles.h1}>Nuovo Lead Istituzionale</Heading>
+          <EmailLogo />
+          <Heading style={paStyles.h1}>Nuovo lead istituzionale</Heading>
         </Section>
         <Section style={paStyles.content}>
           <Text style={paStyles.text}>
-            È stata ricevuta una nuova richiesta di contatto dalla landing page Skillr per la PA.
+            È stata ricevuta una nuova richiesta di contatto dalla landing page Helllo per la PA.
           </Text>
           
           <Section style={paStyles.card}>
             <div style={{ textAlign: 'left' }}>
-              <Text style={paStyles.label}>Ente / Organizzazione</Text>
+              <Text style={paStyles.label}>Ente / organizzazione</Text>
               <Text style={paStyles.value}>{organization} ({entityType})</Text>
               
               <Text style={paStyles.label}>Referente</Text>
@@ -80,12 +76,12 @@ export const PaLeadNotificationEmail = ({
               <Text style={paStyles.label}>Contatti</Text>
               <Text style={paStyles.value}>{email} {phone ? `— ${phone}` : ''}</Text>
               
-              <Text style={paStyles.label}>Servizio Richiesto</Text>
+              <Text style={paStyles.label}>Servizio richiesto</Text>
               <Text style={paStyles.value}>{service}</Text>
               
               {deadline && (
                 <>
-                  <Text style={paStyles.label}>Scadenza Bando</Text>
+                  <Text style={paStyles.label}>Scadenza bando</Text>
                   <Text style={paStyles.value}>{deadline}</Text>
                 </>
               )}
@@ -100,9 +96,7 @@ export const PaLeadNotificationEmail = ({
           </Section>
         </Section>
         <Hr style={paStyles.hr} />
-        <Section style={paStyles.footer}>
-          <Text style={paStyles.footerText}>Skillr PA Support Team — Notifica Interna</Text>
-        </Section>
+        <EmailFooter>Helllo per la PA — notifica interna</EmailFooter>
       </Container>
     </Body>
   </Html>

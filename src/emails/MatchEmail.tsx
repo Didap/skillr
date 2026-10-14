@@ -13,6 +13,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface MatchEmailProps {
   userName: string;
@@ -31,16 +32,17 @@ export const MatchEmail = ({
 }: MatchEmailProps) => (
   <Html>
     <Head />
-    <Preview>It&apos;s a Match! You matched with {matchedName} on Skillr</Preview>
+    <Preview>It&apos;s a Match! You matched with {matchedName} on Helllo</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
+          <EmailLogo />
           <Heading style={styles.h1}>It&apos;s a Match!</Heading>
         </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>Hi {userName},</Text>
           <Text style={styles.text}>
-            Great news! You have a new match on Skillr. Both you and {matchedName} have swiped right.
+            Great news! You have a new match on Helllo. Both you and {matchedName} have swiped right.
           </Text>
           <Section style={styles.card}>
              {matchedImage && (
@@ -64,9 +66,7 @@ export const MatchEmail = ({
           </Section>
         </Section>
         <Hr style={styles.hr} />
-        <Section style={styles.footer}>
-          <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
-        </Section>
+        <EmailFooter />
       </Container>
     </Body>
   </Html>

@@ -1,24 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Geist } from "next/font/google";
+import { Hanken_Grotesk, Bricolage_Grotesque, Pacifico } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  display: "swap",
+});
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-display",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const pacifico = Pacifico({
+  variable: "--font-pacifico",
   weight: "400",
   subsets: ["latin"],
-  style: ["normal", "italic"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Skillr | Transparent Professional Matching",
-  description: "The Tinder for work: transparent rates, quick matches, zero friction.",
+  title: "Helllo | Il lavoro parte da un ciao",
+  description: "Match di lavoro trasparenti: compensi in chiaro, swipe e una call per rompere il ghiaccio.",
   appleWebApp: {
     capable: true,
-    title: "Skillr",
+    title: "Helllo",
     statusBarStyle: "default",
   },
 };
@@ -28,7 +37,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Draw under the notch / home indicator; layouts pad with env(safe-area-inset-*)
   viewportFit: "cover",
-  themeColor: "#FDFDFC",
+  themeColor: "#FFFFFF",
 };
 
 import { SessionProvider } from "@/components/providers/session-provider";
@@ -44,9 +53,9 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      className={cn("h-full", "antialiased", instrumentSerif.variable, "font-sans", geist.variable)}
+      className={cn("h-full", "antialiased", hanken.variable, bricolage.variable, pacifico.variable, "font-sans")}
     >
-      <body className="min-h-full flex flex-col font-sans text-slate-900 bg-[#FDFDFC]">
+      <body className="min-h-full flex flex-col font-sans text-viola bg-background">
         <SessionProvider>
           <MotionProvider>{children}</MotionProvider>
         </SessionProvider>

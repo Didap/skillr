@@ -99,6 +99,6 @@ export async function generateKpiReportAction(startDate: Date, endDate: Date) {
   return {
     success: true as const,
     csv: csvContent,
-    filename: `report_skillr_pa_${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}.csv`
+    filename: `report_helllo_pa_${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}.csv`
   };
 }

@@ -81,7 +81,7 @@ export async function savePaLeadAction(data: PaLead) {
     // 4. Confirm to User (External)
     await sendEmail({
       to: validatedData.email,
-      subject: "Abbiamo ricevuto la tua richiesta - Skillr per la PA",
+      subject: "Abbiamo ricevuto la tua richiesta - Helllo per la PA",
       react: PaLeadConfirmationEmail({
         fullName: validatedData.fullName,
         organization: validatedData.organization,
@@ -131,7 +131,7 @@ export async function subscribeToNewsletterAction(email: string) {
 
     await sendEmail({
       to: validatedEmail,
-      subject: "Conferma iscrizione Newsletter Skillr PA",
+      subject: "Conferma iscrizione Newsletter Helllo PA",
       react: PaNewsletterVerificationEmail({ verificationLink })
     });
 

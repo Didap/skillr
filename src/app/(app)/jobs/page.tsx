@@ -33,6 +33,7 @@ import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { duration, ease, haptic, spring } from "@/lib/motion";
 import { cn, formatRate } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 interface JobWithStats extends JobData {
   id: string;
@@ -41,8 +42,9 @@ interface JobWithStats extends JobData {
   applicationCount: number;
 }
 
+// Brand icon button: white circle with a 1px viola outline
 const iconButton =
-  "pressable shrink-0 w-11 h-11 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40";
+  "pressable shrink-0 w-11 h-11 rounded-full border border-viola bg-white flex items-center justify-center text-viola transition-colors hover:bg-crema";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<JobWithStats[]>([]);
@@ -82,7 +84,7 @@ export default function JobsPage() {
       setJobs(prev => prev.filter(j => j.id !== deleteId));
       toast.success("Ricerca eliminata", {
         description: "L'annuncio e i relativi match sono stati archiviati.",
-        icon: <Trash2 size={16} className="text-red-500" />,
+        icon: <Trash2 size={16} className="text-rosso-500" />,
       });
       setDeleteId(null);
     } else {
@@ -107,7 +109,7 @@ export default function JobsPage() {
         description: currentStatus
           ? "I professionisti non vedranno più questo annuncio."
           : "L'annuncio è di nuovo visibile nel feed.",
-        icon: currentStatus ? <Power size={14} className="text-amber-500" /> : <Zap size={14} className="text-emerald-500" />,
+        icon: currentStatus ? <Power size={14} className="text-viola-500" /> : <Zap size={14} className="text-rosso-500" />,
       });
     } else {
       // Revert on error
@@ -141,16 +143,16 @@ export default function JobsPage() {
             <Link
               href="/jobs/new"
               aria-label="Nuova ricerca"
-              className="md:hidden pressable w-11 h-11 rounded-full bg-slate-950 text-white flex items-center justify-center shadow-premium"
+              className={cn(buttonVariants({ size: "icon" }), "md:hidden size-11")}
             >
               <Plus size={20} />
             </Link>
             <Link
               href="/jobs/new"
-              className="hidden md:inline-flex pressable items-center gap-2 rounded-xl h-12 px-6 bg-slate-950 hover:bg-emerald-600 text-white shadow-premium transition-colors group"
+              className={cn(buttonVariants(), "group hidden md:inline-flex h-12 px-6 gap-2 text-sm")}
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300 motion-reduce:transition-none" />
-              <span className="font-bold text-sm">Nuova ricerca</span>
+              <span>Nuova ricerca</span>
             </Link>
           </>
         }
@@ -159,8 +161,8 @@ export default function JobsPage() {
       <PageBody className="bg-white">
         <div className="max-w-4xl mx-auto px-4 pt-5 pb-8 md:p-12">
           <div className="hidden md:block mb-12">
-            <h2 className="text-3xl font-display italic font-bold text-slate-950">I tuoi annunci</h2>
-            <p className="text-slate-500 font-medium mt-1">Monitora i match e gestisci la visibilità.</p>
+            <h2 className="text-title text-viola">I tuoi annunci</h2>
+            <p className="text-body text-viola-500 mt-1">Monitora i match e gestisci la visibilità.</p>
           </div>
 
           {/* Search + filter: one compact row on every width */}
@@ -170,7 +172,7 @@ export default function JobsPage() {
                 size={18}
                 className={cn(
                   "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 pointer-events-none",
-                  searchQuery ? "text-primary" : "text-text-muted group-focus-within:text-primary"
+                  searchQuery ? "text-viola" : "text-viola-400 group-focus-within:text-viola"
                 )}
               />
               <Input
@@ -179,16 +181,16 @@ export default function JobsPage() {
                 placeholder="Cerca titolo o sede"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-12 rounded-2xl bg-white border-border-subtle focus-visible:ring-primary/20 transition-all duration-300 shadow-sm"
+                className="pl-11 pr-5 h-12"
               />
             </div>
-            <div className="shrink-0 flex items-center gap-2.5 px-3 md:px-4 h-12 bg-white rounded-2xl border border-border-subtle shadow-sm">
+            <div className="shrink-0 flex items-center gap-2.5 px-4 h-12 bg-crema rounded-full">
               <Switch
                 id="active-toggle"
                 checked={showOnlyActive}
                 onCheckedChange={setShowOnlyActive}
               />
-              <Label htmlFor="active-toggle" className="text-sm font-medium text-text-secondary whitespace-nowrap cursor-pointer">
+              <Label htmlFor="active-toggle" className="text-sm font-medium text-viola whitespace-nowrap cursor-pointer">
                 Solo attive
               </Label>
             </div>
@@ -215,54 +217,57 @@ export default function JobsPage() {
                       transition: { duration: duration.feedback * 1.5, ease: ease.in },
                     }}
                     className={cn(
-                      "p-5 md:p-6 rounded-3xl border transition-[background-color,border-color,box-shadow,filter,opacity] duration-300",
+                      "p-5 md:p-6 rounded-card transition-[background-color,box-shadow,opacity] duration-300",
                       job.isActive
-                        ? "bg-white border-border-subtle shadow-card md:shadow-none md:hover:shadow-xl md:hover:shadow-primary/5"
-                        : "bg-surface-warm/50 border-dashed border-border-strong grayscale opacity-75"
+                        ? "bg-white ring-1 ring-viola/15"
+                        : "bg-crema"
                     )}
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
-                      <div className="flex items-start md:items-center gap-4 md:gap-5 min-w-0 flex-1">
+                      <div className="flex items-start gap-4 md:gap-5 min-w-0 flex-1">
                         <div className={cn(
-                          "w-11 h-11 md:w-14 md:h-14 shrink-0 rounded-2xl flex items-center justify-center",
-                          job.isActive ? "bg-primary/5 text-primary" : "bg-text-muted/10 text-text-muted"
-                        )}>
-                          <Briefcase className="size-5 md:size-7" />
+                          "w-11 h-11 md:w-14 md:h-14 shrink-0 rounded-full flex items-center justify-center",
+                          job.isActive ? "bg-rosa text-viola" : "bg-white text-viola-400"
+                        )} aria-hidden="true">
+                          <Briefcase className="size-5 md:size-6" strokeWidth={1.75} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-lg md:text-xl leading-snug text-text-primary line-clamp-2 break-words">
+                          <h3 className={cn(
+                            "font-bold text-lg md:text-xl leading-snug line-clamp-2 break-words",
+                            job.isActive ? "text-viola" : "text-viola-500"
+                          )}>
                             {job.title}
                           </h3>
-                          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-text-secondary">
-                            <span className="inline-flex items-center gap-1 min-w-0">
-                              <MapPin size={14} className="shrink-0 text-text-muted" />
-                              <span className="truncate">{job.location || "Sede centrale"}</span>
-                            </span>
-                            <span className="tabular-nums whitespace-nowrap">
-                              {formatRate(job.rateType, job.budgetMinEur, job.budgetMaxEur)}
-                            </span>
+                          <p className="mt-1 inline-flex items-center gap-1 min-w-0 max-w-full text-sm text-viola-500">
+                            <MapPin size={14} className="shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                            <span className="truncate">{job.location || "Sede centrale"}</span>
+                          </p>
+                          {/* Budget in plain sight: transparency is the point */}
+                          <p className="mt-2 text-lg md:text-xl font-bold tabular-nums text-viola">
+                            <span className="sr-only">Budget: </span>
+                            {formatRate(job.rateType, job.budgetMinEur, job.budgetMaxEur)}
                           </p>
 
                           {(!job.isActive || job.matchCount > 0 || job.applicationCount > 0 || job.remoteOk) && (
                             <div className="mt-3 flex flex-wrap items-center gap-1.5">
                               {!job.isActive && (
-                                <span className="inline-flex items-center h-6 px-2.5 rounded-full bg-text-muted/10 text-text-muted text-xs font-semibold">
-                                  In pausa
+                                <span className="inline-flex items-center gap-1 h-7 px-3 rounded-full bg-white text-viola text-label">
+                                  <Power className="size-3.5" aria-hidden="true" /> In pausa
                                 </span>
                               )}
                               {job.matchCount > 0 && (
-                                <span className="inline-flex items-center h-6 px-2.5 rounded-full bg-emerald-500 text-white text-xs font-semibold tabular-nums">
+                                <span className="inline-flex items-center h-7 px-3 rounded-full bg-rosso text-white text-label font-bold tabular-nums">
                                   {job.matchCount} match
                                 </span>
                               )}
                               {job.applicationCount > 0 && (
-                                <span className="inline-flex items-center h-6 px-2.5 rounded-full bg-primary text-white text-xs font-semibold tabular-nums">
+                                <span className="inline-flex items-center h-7 px-3 rounded-full bg-blu text-white text-label font-bold tabular-nums">
                                   {job.applicationCount} nuovi candidati
                                 </span>
                               )}
                               {job.remoteOk && (
-                                <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold">
-                                  <Laptop className="size-3.5" /> Remote OK
+                                <span className="inline-flex items-center gap-1 h-7 px-3 rounded-full bg-white ring-1 ring-viola/15 text-viola text-label">
+                                  <Laptop className="size-3.5" aria-hidden="true" /> Remote OK
                                 </span>
                               )}
                             </div>
@@ -271,12 +276,12 @@ export default function JobsPage() {
                           {job.skills && job.skills.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               {job.skills.slice(0, 5).map((skill: string) => (
-                                <span key={skill} className="inline-flex items-center h-6 px-2.5 rounded-full border border-border-subtle bg-surface-warm/50 text-text-secondary text-xs font-medium capitalize">
+                                <span key={skill} className="inline-flex items-center h-8 px-3 rounded-full bg-rosa text-viola text-chip capitalize">
                                   {skill.replace(/-/g, " ")}
                                 </span>
                               ))}
                               {job.skills.length > 5 && (
-                                <span className="inline-flex items-center h-6 px-2.5 rounded-full border border-border-subtle text-text-muted text-xs font-medium">
+                                <span className="inline-flex items-center h-8 px-3 rounded-full bg-crema text-viola text-chip">
                                   +{job.skills.length - 5}
                                 </span>
                               )}
@@ -285,19 +290,22 @@ export default function JobsPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-border-subtle">
+                      <div className={cn(
+                        "flex items-center gap-2 md:gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0",
+                        job.isActive ? "border-viola/15" : "border-viola/10"
+                      )}>
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="pressable order-first md:order-last flex-1 md:flex-none min-w-0 h-11 px-4 md:px-5 rounded-full bg-slate-950 hover:bg-emerald-600 text-white text-sm font-bold inline-flex items-center justify-center gap-2 transition-colors"
+                          className={cn(buttonVariants(), "order-first md:order-last flex-1 md:flex-none min-w-0 h-11 px-4 md:px-5 gap-2 text-sm")}
                         >
                           <Users size={16} className="shrink-0" />
                           <span className="truncate">Candidati</span>
                           {job.applicationCount > 0 && (
-                            <span className="shrink-0 min-w-6 h-6 px-1.5 rounded-full bg-white/15 text-xs tabular-nums inline-flex items-center justify-center">
+                            <span className="shrink-0 min-w-6 h-6 px-1.5 rounded-full bg-white text-viola text-xs tabular-nums inline-flex items-center justify-center">
                               {job.applicationCount}
                             </span>
                           )}
-                          <ChevronRight size={16} className="shrink-0 -mr-1 opacity-60 md:hidden" />
+                          <ChevronRight size={16} className="shrink-0 -mr-1 md:hidden" />
                         </Link>
                         <button
                           type="button"
@@ -309,9 +317,9 @@ export default function JobsPage() {
                           className={cn(iconButton, isToggling && "opacity-60")}
                         >
                           {isToggling ? (
-                            <Loader2 size={18} className="animate-spin text-slate-400" />
+                            <Loader2 size={18} className="animate-spin text-viola-500" />
                           ) : (
-                            <Power size={18} className={job.isActive ? "text-emerald-600" : "text-text-muted"} />
+                            <Power size={18} className={job.isActive ? "text-rosso" : "text-viola-400"} />
                           )}
                         </button>
                         <Link
@@ -327,7 +335,7 @@ export default function JobsPage() {
                           onClick={() => setDeleteId(job.id)}
                           aria-label="Elimina ricerca"
                           title="Elimina"
-                          className={cn(iconButton, "hidden md:flex hover:bg-red-50 hover:text-red-600 hover:border-red-100")}
+                          className={cn(iconButton, "hidden md:flex hover:bg-rosso-50 hover:text-destructive hover:border-destructive")}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -348,15 +356,15 @@ export default function JobsPage() {
             </AnimatePresence>
 
             {!loading && jobs.length === 0 && (
-              <div className="text-center py-14 md:py-20 px-6 bg-white rounded-3xl border border-dashed border-border-strong">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-surface-warm rounded-full flex items-center justify-center mx-auto mb-5 md:mb-6 text-text-muted">
-                  <Briefcase className="size-8 md:size-10" />
+              <div className="text-center py-14 md:py-20 px-6 bg-crema rounded-card">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-rosa rounded-full flex items-center justify-center mx-auto mb-5 md:mb-6 text-viola" aria-hidden="true">
+                  <Briefcase className="size-8 md:size-9" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-xl font-bold text-text-primary mb-2">Ancora nessuna ricerca</h3>
-                <p className="text-text-secondary mb-8">Inizia creando la tua prima ricerca attiva per trovare talenti.</p>
+                <h3 className="text-title text-viola mb-2">Ancora nessuna ricerca</h3>
+                <p className="text-body text-viola-500 mb-8 max-w-sm mx-auto">Pubblica la prima ricerca: i professionisti giusti ti diranno helllo.</p>
                 <Link
                   href="/jobs/new"
-                  className="pressable inline-flex items-center gap-2 h-12 px-6 rounded-full bg-primary text-white font-bold text-sm"
+                  className={cn(buttonVariants(), "h-12 px-6 gap-2 text-sm")}
                 >
                   <Plus size={18} /> Crea la prima ricerca
                 </Link>
@@ -367,16 +375,16 @@ export default function JobsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
-                className="text-center py-14 md:py-20 px-6 bg-white rounded-3xl border border-dashed border-border-strong"
+                className="text-center py-14 md:py-20 px-6 bg-crema rounded-card"
               >
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-5 md:mb-6 text-primary/40">
-                  <XCircle className="size-8 md:size-10" />
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-5 md:mb-6 text-viola" aria-hidden="true">
+                  <XCircle className="size-8 md:size-9" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-xl font-bold text-text-primary mb-2">Nessun risultato</h3>
-                <p className="text-text-secondary mb-6">Non abbiamo trovato ricerche che corrispondano ai tuoi filtri.</p>
+                <h3 className="text-title text-viola mb-2">Nessun risultato</h3>
+                <p className="text-body text-viola-500 mb-6">Non abbiamo trovato ricerche che corrispondano ai tuoi filtri.</p>
                 <button
                   type="button"
-                  className="pressable h-11 px-6 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className={cn(buttonVariants({ variant: "outline" }), "h-11 px-6 text-sm")}
                   onClick={() => {
                     setSearchQuery("");
                     setShowOnlyActive(false);
@@ -390,7 +398,7 @@ export default function JobsPage() {
             {loading && (
               <div className="space-y-4" aria-busy="true" aria-label="Caricamento ricerche">
                 {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-44 md:h-28 bg-slate-50/50 rounded-3xl border border-slate-100" />
+                  <Skeleton key={i} className="h-52 md:h-36 bg-crema rounded-card" />
                 ))}
               </div>
             )}
@@ -405,9 +413,9 @@ export default function JobsPage() {
             <Link
               href={`/jobs/${menuJob.id}/edit`}
               onClick={() => setMenuId(null)}
-              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-slate-50 text-slate-900 font-semibold"
+              className="pressable flex items-center gap-4 h-14 px-5 rounded-full bg-crema text-viola font-medium"
             >
-              <Pencil size={20} className="text-slate-500" />
+              <Pencil size={20} strokeWidth={1.75} />
               Modifica ricerca
             </Link>
             <button
@@ -416,9 +424,9 @@ export default function JobsPage() {
                 setMenuId(null);
                 setDeleteId(menuJob.id);
               }}
-              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-red-50 text-red-600 font-semibold text-left"
+              className="pressable flex items-center gap-4 h-14 px-5 rounded-full bg-rosso-50 text-destructive font-medium text-left"
             >
-              <Trash2 size={20} />
+              <Trash2 size={20} strokeWidth={1.75} />
               Elimina ricerca
             </button>
           </div>

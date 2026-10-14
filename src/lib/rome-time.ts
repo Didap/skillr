@@ -1,4 +1,4 @@
-// Skillr runs on Italian time: call slots and Smart Interview events are entered and shown in
+// Helllo runs on Italian time: call slots and Smart Interview events are entered and shown in
 // Europe/Rome whatever the browser or the server (often UTC) is set to. Plain Intl, no tz library.
 export const ROME_TIME_ZONE = "Europe/Rome";
 
