@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { formatDayLabel, formatMessageTime } from "@/lib/chat/format";
+import { formatDayLabel, formatMessageTime, isSameRomeDay } from "@/lib/chat/format";
 import type { ThreadPage } from "@/lib/chat/types";
 import { ChatAttachment } from "./ChatAttachment";
 import { ChatComposer } from "./ChatComposer";
@@ -17,8 +17,6 @@ interface ChatThreadProps {
   otherName: string;
   initial: ThreadPage;
 }
-
-const sameDay = (a: string, b: string) => new Date(a).toDateString() === new Date(b).toDateString();
 
 export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThreadProps) {
   const visible = useChatVisible();
@@ -117,7 +115,7 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
                 const previous = thread.messages[i - 1];
                 return (
                   <Fragment key={m.clientId ?? m.id}>
-                    {(!previous || !sameDay(previous.createdAt, m.createdAt)) && (
+                    {(!previous || !isSameRomeDay(previous.createdAt, m.createdAt)) && (
                       <li className="self-center py-2 text-label font-semibold text-viola-500 first-letter:uppercase">
                         {formatDayLabel(new Date(m.createdAt))}
                       </li>
