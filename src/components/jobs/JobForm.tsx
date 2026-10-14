@@ -93,7 +93,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Briefcase size={20} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Informazioni Base</h2>
+              <h2 className="text-2xl md:text-3xl font-display text-text-primary leading-tight">Informazioni Base</h2>
             </div>
             
             <div className="space-y-5 md:space-y-6">
@@ -128,7 +128,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Euro size={20} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Budget e Tipo Contratto</h2>
+              <h2 className="text-2xl md:text-3xl font-display text-text-primary leading-tight">Budget e Tipo Contratto</h2>
             </div>
 
             <div className="space-y-5 md:space-y-6">
@@ -184,9 +184,9 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                   </div>
                 </div>
               </div>
-              <div className="p-4 md:p-6 bg-emerald-50/50 rounded-2xl md:rounded-[2rem] flex gap-3 md:gap-4 text-emerald-900 text-sm italic border border-emerald-100/50">
-                <Info size={20} className="shrink-0 text-emerald-600" />
-                <p>La trasparenza è obbligatoria. Skillr mostrerà questa fascia direttamente sulla card.</p>
+              <div className="p-4 md:p-6 bg-rosso-50/50 rounded-2xl md:rounded-[2rem] flex gap-3 md:gap-4 text-rosso-900 text-sm italic border border-rosso-100/50">
+                <Info size={20} className="shrink-0 text-rosso-600" />
+                <p>La trasparenza è obbligatoria. Helllo mostrerà questa fascia direttamente sulla card.</p>
               </div>
             </div>
           </section>
@@ -199,7 +199,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <MapPin size={20} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Location</h2>
+              <h2 className="text-2xl md:text-3xl font-display text-text-primary leading-tight">Location</h2>
             </div>
 
             <div className="space-y-5 md:space-y-6">
@@ -234,7 +234,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                 <Briefcase size={20} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-display italic text-text-primary leading-tight">Skill Richieste</h2>
+              <h2 className="text-2xl md:text-3xl font-display text-text-primary leading-tight">Skill Richieste</h2>
             </div>
             
             <div className="space-y-6 md:space-y-8">
@@ -295,7 +295,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
                               className={cn(
                                 "pressable min-h-11 md:min-h-9 px-4 py-2 rounded-full border text-sm md:text-xs font-bold transition-colors",
                                 selectedSkills.includes(skill.slug)
-                                  ? "bg-slate-950 border-slate-950 text-white shadow-md"
+                                  ? "bg-viola-950 border-viola-950 text-white shadow-md"
                                   : "bg-white border-border-strong text-text-secondary hover:bg-surface-warm",
                                 !selectedSkills.includes(skill.slug) && selectedSkills.length >= 10 && "opacity-40"
                               )}
@@ -315,7 +315,7 @@ export function JobForm({ initialData, onSubmit, submitLabel, loading }: JobForm
       </div>
 
       {/* Phones: sticky action bar above the tab bar. From md: in-flow centred button */}
-      <div className="sticky z-20 bottom-0 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
+      <div className="sticky z-20 bottom-0 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-viola-100 md:static md:mx-0 md:px-0 md:py-0 md:pt-12 md:bg-transparent md:backdrop-blur-none md:border-border-subtle/50 flex justify-center">
         <Button 
           type="submit" 
           disabled={loading} 

@@ -36,9 +36,9 @@ export function DatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "w-full justify-start text-left font-bold h-14 rounded-2xl border-2 border-transparent bg-slate-50 shadow-sm hover:bg-white hover:border-emerald-500 transition-all px-6",
-              !value && "text-slate-400",
-              value && "text-slate-950",
+              "w-full justify-start text-left font-bold h-14 rounded-2xl border-2 border-transparent bg-viola-50 shadow-sm hover:bg-white hover:border-rosso-500 transition-all px-6",
+              !value && "text-viola-400",
+              value && "text-viola-950",
               className
             )}
           >
@@ -48,7 +48,7 @@ export function DatePicker({
           </Button>
         }
       />
-      <PopoverContent className="w-auto p-0 border-slate-100 shadow-premium rounded-3xl overflow-hidden" align="start" side="top" sideOffset={8}>
+      <PopoverContent className="w-auto p-0 border-viola-100 shadow-premium rounded-3xl overflow-hidden" align="start" side="top" sideOffset={8}>
         <Calendar
           mode="single"
           selected={value}

@@ -319,7 +319,7 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
             sendInBackground(`match emails, match ${existingMatch.id}`, [
               () => sendEmail({
                 to: me.email,
-                subject: "Nuovo Match su Skillr!",
+                subject: "Nuovo Match su Helllo!",
                 react: MatchEmail({
                   userName,
                   matchedName: targetName,
@@ -330,7 +330,7 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
               }),
               () => sendEmail({
                 to: target.email,
-                subject: "Nuovo Match su Skillr!",
+                subject: "Nuovo Match su Helllo!",
                 react: MatchEmail({
                   userName: targetName,
                   matchedName: userName,

@@ -51,10 +51,10 @@ export async function generateVerificationCode(email: string): Promise<CodeResul
 
     const sent = await sendEmail({
       to: email,
-      subject: `${code} è il tuo codice di verifica Skillr`,
+      subject: `${code} è il tuo codice di verifica Helllo`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 24px;">
-          <h2 style="color: #020617; font-style: italic; font-weight: 800; font-size: 24px; margin-bottom: 24px;">Benvenuto su Skillr</h2>
+          <h2 style="color: #020617; font-style: italic; font-weight: 800; font-size: 24px; margin-bottom: 24px;">Benvenuto su Helllo</h2>
           <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">Per completare la tua registrazione e iniziare a fare swipe, inserisci il seguente codice di verifica:</p>
           <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
             <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #10b981;">${code}</span>

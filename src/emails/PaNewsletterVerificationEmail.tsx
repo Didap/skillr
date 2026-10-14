@@ -44,7 +44,7 @@ export const PaNewsletterVerificationEmail = ({
 }: PaNewsletterVerificationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Conferma la tua iscrizione alla Newsletter Skillr PA</Preview>
+    <Preview>Conferma la tua iscrizione alla Newsletter Helllo PA</Preview>
     <Body style={paStyles.main}>
       <Container style={paStyles.container}>
         <Section style={paStyles.header}>
@@ -72,13 +72,13 @@ export const PaNewsletterVerificationEmail = ({
           </Text>
           <Text style={paStyles.text}>
             A presto,<br />
-            Il team Skillr PA
+            Il team Helllo PA
           </Text>
         </Section>
         <Hr style={paStyles.hr} />
         <Section style={paStyles.footer}>
           <Text style={paStyles.footerText}>
-            Skillr PA - Tecnologia per l&apos;impiego pubblico in Puglia.
+            Helllo PA - Tecnologia per l&apos;impiego pubblico in Puglia.
           </Text>
         </Section>
       </Container>

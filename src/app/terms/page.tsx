@@ -1,7 +1,7 @@
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata = {
-  title: "Termini di Servizio | Skillr",
+  title: "Termini di Servizio | Helllo",
 };
 
 export default function TermsPage() {
@@ -10,20 +10,20 @@ export default function TermsPage() {
       <section>
         <h2>1. Accettazione dei Termini</h2>
         <p>
-          L&apos;accesso e l&apos;utilizzo di Skillr sono soggetti ai seguenti Termini di Servizio. Registrandoti o utilizzando la piattaforma, accetti di essere vincolato da questi termini.
+          L&apos;accesso e l&apos;utilizzo di Helllo sono soggetti ai seguenti Termini di Servizio. Registrandoti o utilizzando la piattaforma, accetti di essere vincolato da questi termini.
         </p>
       </section>
 
       <section>
         <h2>2. Descrizione del Servizio</h2>
         <p>
-          Skillr è una piattaforma di matching professionale basata sul modello &quot;doppio opt-in&quot; e &quot;zero chat&quot;. Il servizio permette a professionisti e aziende di incontrarsi tramite uno swipe reciproco e di fissare direttamente call conoscitive.
+          Helllo è una piattaforma di matching professionale basata sul modello &quot;doppio opt-in&quot; e &quot;zero chat&quot;. Il servizio permette a professionisti e aziende di incontrarsi tramite uno swipe reciproco e di fissare direttamente call conoscitive.
         </p>
       </section>
 
       <section>
         <h2>3. Obblighi dell&apos;Utente</h2>
-        <p>Utilizzando Skillr, ti impegni a:</p>
+        <p>Utilizzando Helllo, ti impegni a:</p>
         <ul>
           <li>Fornire informazioni veritiere e aggiornate nel tuo profilo.</li>
           <li>Utilizzare la piattaforma in modo professionale e rispettoso.</li>
@@ -35,14 +35,14 @@ export default function TermsPage() {
       <section>
         <h2>4. Trasparenza e Tariffe</h2>
         <p>
-          Skillr promuove la trasparenza radicale. Le aziende si impegnano a indicare budget reali e i professionisti a indicare le proprie tariffe o RAL desiderate. È vietato inserire dati fuorvianti al solo scopo di attirare l&apos;attenzione.
+          Helllo promuove la trasparenza radicale. Le aziende si impegnano a indicare budget reali e i professionisti a indicare le proprie tariffe o RAL desiderate. È vietato inserire dati fuorvianti al solo scopo di attirare l&apos;attenzione.
         </p>
       </section>
 
       <section>
         <h2>5. Responsabilità</h2>
         <p>
-          Skillr agisce esclusivamente come intermediario tecnologico per facilitare l&apos;incontro tra le parti. Non siamo responsabili per l&apos;esito dei colloqui, per la qualità del lavoro svolto o per eventuali controversie tra utenti.
+          Helllo agisce esclusivamente come intermediario tecnologico per facilitare l&apos;incontro tra le parti. Non siamo responsabili per l&apos;esito dei colloqui, per la qualità del lavoro svolto o per eventuali controversie tra utenti.
         </p>
       </section>
 

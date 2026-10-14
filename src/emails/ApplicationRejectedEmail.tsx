@@ -39,15 +39,15 @@ export const ApplicationRejectedEmail = ({
           <Text style={styles.text}>
             Ci sono altre ricerche in linea con il tuo profilo:{' '}
             <Link href={dashboardUrl} style={{ color: '#059669', fontWeight: 600 }}>
-              continua a cercare su Skillr
+              continua a cercare su Helllo
             </Link>
             .
           </Text>
-          <Text style={styles.text}>Il team Skillr</Text>
+          <Text style={styles.text}>Il team Helllo</Text>
         </Section>
         <Hr style={styles.hr} />
         <Section style={styles.footer}>
-          <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
+          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
         </Section>
       </Container>
     </Body>

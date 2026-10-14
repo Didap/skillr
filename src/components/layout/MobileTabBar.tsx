@@ -32,7 +32,7 @@ export function MobileTabBar() {
     <>
       <nav
         aria-label="Navigazione principale"
-        className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-100 bg-white/85 backdrop-blur-xl pb-safe"
+        className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-viola-100 bg-white/85 backdrop-blur-xl pb-safe"
       >
         <ul className="grid grid-cols-5 h-(--tabbar-h) px-2">
           {items.map((item) => {
@@ -49,18 +49,18 @@ export function MobileTabBar() {
                     <motion.span
                       layoutId="tabbar-pill"
                       transition={spring.snappy}
-                      className="absolute top-1.5 h-8 w-14 rounded-full bg-emerald-50"
+                      className="absolute top-1.5 h-8 w-14 rounded-full bg-rosso-50"
                     />
                   )}
                   <Icon
                     size={21}
                     strokeWidth={active ? 2.4 : 2}
-                    className={cn("relative transition-colors", active ? "text-emerald-700" : "text-slate-400")}
+                    className={cn("relative transition-colors", active ? "text-rosso-700" : "text-viola-400")}
                   />
                   <span
                     className={cn(
                       "relative text-[11px] font-bold tracking-tight transition-colors",
-                      active ? "text-slate-950" : "text-slate-500"
+                      active ? "text-viola-950" : "text-viola-500"
                     )}
                   >
                     {item.short}
@@ -79,15 +79,15 @@ export function MobileTabBar() {
                 <motion.span
                   layoutId="tabbar-pill"
                   transition={spring.snappy}
-                  className="absolute top-1.5 h-8 w-14 rounded-full bg-emerald-50"
+                  className="absolute top-1.5 h-8 w-14 rounded-full bg-rosso-50"
                 />
               )}
               <CircleUser
                 size={21}
                 strokeWidth={accountActive ? 2.4 : 2}
-                className={cn("relative", accountActive ? "text-emerald-700" : "text-slate-400")}
+                className={cn("relative", accountActive ? "text-rosso-700" : "text-viola-400")}
               />
-              <span className={cn("relative text-[11px] font-bold tracking-tight", accountActive ? "text-slate-950" : "text-slate-500")}>
+              <span className={cn("relative text-[11px] font-bold tracking-tight", accountActive ? "text-viola-950" : "text-viola-500")}>
                 Tu
               </span>
             </button>
@@ -105,14 +105,14 @@ export function MobileTabBar() {
           <li>
             <button
               onClick={() => signOutAndClearDraft()}
-              className="pressable w-full flex items-center gap-4 h-14 px-4 rounded-2xl text-red-600 font-bold hover:bg-red-50"
+              className="pressable w-full flex items-center gap-4 h-14 px-4 rounded-2xl text-rosso-600 font-bold hover:bg-rosso-50"
             >
               <LogOut size={20} />
               Esci
             </button>
           </li>
         </ul>
-        <div className="mt-6 pt-4 border-t border-slate-100 flex gap-6 text-xs font-bold text-slate-500">
+        <div className="mt-6 pt-4 border-t border-viola-100 flex gap-6 text-xs font-bold text-viola-500">
           {LEGAL_LINKS.map(({ href, label }) => (
             <Link key={href} href={href} onClick={() => setAccountOpen(false)}>{label}</Link>
           ))}
@@ -128,9 +128,9 @@ function SheetLink({ href, icon, label, onNavigate }: { href: string; icon: Reac
       <Link
         href={href}
         onClick={onNavigate}
-        className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl text-slate-900 font-bold hover:bg-slate-50"
+        className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl text-viola-900 font-bold hover:bg-viola-50"
       >
-        <span className="text-slate-400">{icon}</span>
+        <span className="text-viola-400">{icon}</span>
         {label}
       </Link>
     </li>

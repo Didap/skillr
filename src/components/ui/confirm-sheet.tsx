@@ -32,13 +32,13 @@ export function ConfirmSheet({
 
   return (
     <BottomSheet open={open} onClose={close} title={title}>
-      <p className="text-[15px] leading-relaxed text-slate-600">{description}</p>
+      <p className="text-[15px] leading-relaxed text-viola-600">{description}</p>
       <div className="mt-6 flex flex-col gap-2 md:flex-row-reverse">
         <button
           type="button"
           onClick={onConfirm}
           disabled={loading}
-          className="pressable h-12 md:flex-1 rounded-2xl bg-red-600 px-5 text-[15px] font-bold text-white hover:bg-red-700 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+          className="pressable h-12 md:flex-1 rounded-2xl bg-rosso-600 px-5 text-[15px] font-bold text-white hover:bg-rosso-700 disabled:opacity-60 inline-flex items-center justify-center gap-2"
         >
           {loading && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" />}
           {confirmText}
@@ -47,7 +47,7 @@ export function ConfirmSheet({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="pressable h-12 md:flex-1 rounded-2xl bg-slate-100 px-5 text-[15px] font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-60"
+          className="pressable h-12 md:flex-1 rounded-2xl bg-viola-100 px-5 text-[15px] font-bold text-viola-700 hover:bg-viola-200 disabled:opacity-60"
         >
           {cancelText}
         </button>

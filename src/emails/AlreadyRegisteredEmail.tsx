@@ -23,15 +23,15 @@ interface AlreadyRegisteredEmailProps {
 export const AlreadyRegisteredEmail = ({ loginUrl }: AlreadyRegisteredEmailProps) => (
   <Html>
     <Head />
-    <Preview>Hai già un account Skillr</Preview>
+    <Preview>Hai già un account Helllo</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
-          <Heading style={styles.h1}>Hai già un account Skillr</Heading>
+          <Heading style={styles.h1}>Hai già un account Helllo</Heading>
         </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>
-            Qualcuno ha provato a registrarsi su Skillr con questo indirizzo email, ma esiste già un account. Se eri tu,{' '}
+            Qualcuno ha provato a registrarsi su Helllo con questo indirizzo email, ma esiste già un account. Se eri tu,{' '}
             {loginUrl ? (
               <Link href={loginUrl} style={{ color: '#10b981', fontWeight: 700 }}>
                 accedi qui
@@ -47,7 +47,7 @@ export const AlreadyRegisteredEmail = ({ loginUrl }: AlreadyRegisteredEmailProps
         </Section>
         <Hr style={styles.hr} />
         <Section style={styles.footer}>
-          <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
+          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
         </Section>
       </Container>
     </Body>

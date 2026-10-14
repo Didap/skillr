@@ -58,7 +58,7 @@ export const InterviewLinkEmail = ({
         </Section>
         <Hr style={styles.hr} />
         <Section style={styles.footer}>
-          <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
+          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
         </Section>
       </Container>
     </Body>

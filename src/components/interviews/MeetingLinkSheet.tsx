@@ -61,9 +61,9 @@ function MeetingLinkForm({
       }}
       className="space-y-4"
     >
-      {subtitle && <p className="text-sm text-slate-500 truncate -mt-2">{subtitle}</p>}
+      {subtitle && <p className="text-sm text-viola-500 truncate -mt-2">{subtitle}</p>}
       <div className="relative">
-        <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <LinkIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none" />
         <Input
           type="url"
           inputMode="url"
@@ -73,14 +73,14 @@ function MeetingLinkForm({
           placeholder="https://meet.google.com/..."
           value={newLink}
           onChange={(e) => setNewLink(e.target.value)}
-          className="h-14 pl-12 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base"
+          className="h-14 pl-12 pr-4 rounded-2xl bg-viola-50 border-transparent focus:bg-white text-base"
         />
       </div>
-      <p className="text-[13px] text-slate-500">Solo i professionisti iscritti vedranno questo link.</p>
+      <p className="text-[13px] text-viola-500">Solo i professionisti iscritti vedranno questo link.</p>
       <button
         type="submit"
         disabled={loading || !newLink}
-        className="pressable w-full h-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+        className="pressable w-full h-12 rounded-2xl bg-rosso-500 hover:bg-rosso-600 text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {loading && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" />}
         Salva link

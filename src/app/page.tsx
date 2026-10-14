@@ -35,39 +35,39 @@ const PILLARS = [
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#FDFDFC] selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="flex flex-col min-h-screen bg-background selection:bg-rosso-100 selection:text-rosso-900">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-slate-100 bg-white/70 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-viola-100 bg-white/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <span className="font-display text-3xl italic font-bold tracking-tight text-slate-900">
-            Skillr<span className="text-emerald-600">.</span>
+          <span className="font-display text-3xl font-bold tracking-tight text-viola-900">
+            Helllo<span className="text-rosso-600">.</span>
           </span>
           <div className="hidden md:flex items-center gap-10">
             {NAV_LINKS.map(({ href, label }) => (
-              <Link key={href} href={href} className="text-sm font-semibold text-slate-500 hover:text-emerald-600 transition-colors">
+              <Link key={href} href={href} className="text-sm font-semibold text-viola-500 hover:text-rosso-600 transition-colors">
                 {label}
               </Link>
             ))}
-            <Link href="/login" className="text-sm font-semibold text-slate-900 hover:opacity-70 transition-opacity">
+            <Link href="/login" className="text-sm font-semibold text-viola-900 hover:opacity-70 transition-opacity">
               Accedi
             </Link>
             <Link
               href="/onboarding"
               className={cn(
                 buttonVariants({ variant: "default" }),
-                "rounded-full px-8 h-12 bg-slate-900 text-white hover:bg-emerald-800 transition-all shadow-xl shadow-slate-200"
+                "rounded-full px-8 h-12 bg-viola-900 text-white hover:bg-rosso-800 transition-all shadow-xl shadow-viola-200"
               )}
             >
               Inizia ora
             </Link>
           </div>
           <div className="flex md:hidden items-center gap-5">
-            <Link href="/login" className="pressable px-3 py-3 text-sm font-semibold text-slate-900">
+            <Link href="/login" className="pressable px-3 py-3 text-sm font-semibold text-viola-900">
               Accedi
             </Link>
             <Link
               href="/onboarding"
-              className="inline-flex h-10 items-center rounded-full bg-slate-900 px-5 text-sm font-bold text-white"
+              className="inline-flex h-10 items-center rounded-full bg-viola-900 px-5 text-sm font-bold text-white"
             >
               Inizia ora
             </Link>
@@ -81,19 +81,19 @@ export default function LandingPage() {
         <HowItWorks />
 
         {/* The "Three Pillars" Section */}
-        <section className="py-20 md:py-32 border-y border-slate-100">
+        <section className="py-20 md:py-32 border-y border-viola-100">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="font-display text-5xl md:text-7xl text-slate-950 leading-tight mb-20 max-w-3xl">
-              Tre regole <span className="italic text-emerald-600">che non cambiamo.</span>
+            <h2 className="font-display text-5xl md:text-7xl text-viola-950 leading-tight mb-20 max-w-3xl">
+              Tre regole <span className="italic text-rosso-600">che non cambiamo.</span>
             </h2>
             <div className="grid md:grid-cols-3 gap-16 md:gap-20">
               {PILLARS.map(({ icon: Icon, title, body }) => (
                 <div key={title} className="group space-y-6">
-                  <div className="w-16 h-16 rounded-3xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 rounded-3xl bg-rosso-50 flex items-center justify-center text-rosso-600 group-hover:scale-110 transition-transform">
                     <Icon size={32} />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-950 tracking-tight">{title}</h3>
-                  <p className="text-slate-500 leading-relaxed font-medium">{body}</p>
+                  <h3 className="text-2xl font-bold text-viola-950 tracking-tight">{title}</h3>
+                  <p className="text-viola-500 leading-relaxed font-medium">{body}</p>
                 </div>
               ))}
             </div>
@@ -107,14 +107,14 @@ export default function LandingPage() {
         <Faq />
 
         {/* CTA Section */}
-        <section className="py-24 md:py-40 bg-[#FDFDFC]">
+        <section className="py-24 md:py-40 bg-background">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="font-display text-5xl md:text-7xl text-slate-950 mb-12 leading-tight">
-              Pronto per il tuo <br /><span className="italic text-emerald-600 underline underline-offset-8 decoration-emerald-200">prossimo match?</span>
+            <h2 className="font-display text-5xl md:text-7xl text-viola-950 mb-12 leading-tight">
+              Pronto per il tuo <br /><span className="italic text-rosso-600 underline underline-offset-8 decoration-rosso-200">prossimo match?</span>
             </h2>
             <Link
               href="/onboarding"
-              className="inline-flex h-16 md:h-20 items-center justify-center rounded-full bg-slate-950 px-10 md:px-16 text-lg md:text-xl font-bold text-white transition-all hover:scale-105 hover:bg-emerald-900 shadow-2xl shadow-slate-300"
+              className="inline-flex h-16 md:h-20 items-center justify-center rounded-full bg-viola-950 px-10 md:px-16 text-lg md:text-xl font-bold text-white transition-all hover:scale-105 hover:bg-rosso-900 shadow-2xl shadow-viola-300"
             >
               Crea il profilo, è gratis
             </Link>
@@ -122,19 +122,19 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-20 border-t border-slate-100">
+      <footer className="py-20 border-t border-viola-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="font-display text-2xl italic font-bold text-slate-950">
-            Skillr<span className="text-emerald-600">.</span>
+          <div className="font-display text-2xl font-bold text-viola-950">
+            Helllo<span className="text-rosso-600">.</span>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-8 md:gap-x-12 gap-y-1 md:gap-y-4 text-sm font-bold text-slate-500 [&>a]:py-3 md:[&>a]:py-0">
-            <Link href="/pa" className="text-emerald-600 hover:text-emerald-700 transition-colors">Skillr per la PA</Link>
-            <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-slate-900 transition-colors">Termini</Link>
-            <Link href="/cookies" className="hover:text-slate-900 transition-colors">Cookies</Link>
+          <div className="flex flex-wrap justify-center gap-x-8 md:gap-x-12 gap-y-1 md:gap-y-4 text-sm font-bold text-viola-500 [&>a]:py-3 md:[&>a]:py-0">
+            <Link href="/pa" className="text-rosso-600 hover:text-rosso-700 transition-colors">Helllo per la PA</Link>
+            <Link href="/privacy" className="hover:text-viola-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-viola-900 transition-colors">Termini</Link>
+            <Link href="/cookies" className="hover:text-viola-900 transition-colors">Cookies</Link>
           </div>
-          <p className="text-sm font-medium text-slate-400">
-            © 2026 Skillr
+          <p className="text-sm font-medium text-viola-400">
+            © 2026 Helllo
           </p>
         </div>
       </footer>

@@ -89,16 +89,16 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
                   reviews={receivedReviews}
                 />
               ) : (
-                <div className="max-w-xl mx-auto text-center py-12 md:py-20 bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-premium px-6 md:px-8 mb-8">
-                  <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8">
-                    <span className="text-4xl text-slate-300">?</span>
+                <div className="max-w-xl mx-auto text-center py-12 md:py-20 bg-white rounded-[2rem] md:rounded-[3rem] border border-viola-100 shadow-premium px-6 md:px-8 mb-8">
+                  <div className="w-20 h-20 bg-viola-50 rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8">
+                    <span className="text-4xl text-viola-300">?</span>
                   </div>
-                  <h2 className="text-3xl font-display font-bold text-slate-950 mb-4 tracking-tight">Profilo in allestimento</h2>
-                  <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                  <h2 className="text-3xl font-display font-bold text-viola-950 mb-4 tracking-tight">Profilo in allestimento</h2>
+                  <p className="text-viola-500 font-medium leading-relaxed mb-8">
                     L&apos;utente non ha ancora completato la configurazione del suo profilo pubblico.
                     Torna a trovarci tra poco!
                   </p>
-                  <Link href="/dashboard" className="pressable inline-flex items-center justify-center h-12 px-8 rounded-xl bg-slate-950 text-white font-bold hover:bg-emerald-600 transition-colors">
+                  <Link href="/dashboard" className="pressable inline-flex items-center justify-center h-12 px-8 rounded-xl bg-viola-950 text-white font-bold hover:bg-rosso-600 transition-colors">
                     Torna alla Dashboard
                   </Link>
                 </div>

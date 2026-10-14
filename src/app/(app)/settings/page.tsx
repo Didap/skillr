@@ -252,7 +252,7 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } }}
                   exit={{ opacity: 0, transition: { duration: duration.feedback } }}
-                  className="flex items-center gap-2 text-emerald-700 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100"
+                  className="flex items-center gap-2 text-rosso-700 font-bold text-xs bg-rosso-50 px-3 py-1.5 rounded-full border border-rosso-100"
                 >
                   <CheckCircle2 size={14} />
                   Modifiche salvate
@@ -263,7 +263,7 @@ export default function SettingsPage() {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="pressable rounded-xl px-6 h-12 bg-slate-950 hover:bg-emerald-600 text-white shadow-premium gap-2 transition-colors group"
+              className="pressable rounded-xl px-6 h-12 bg-viola-950 hover:bg-rosso-600 text-white shadow-premium gap-2 transition-colors group"
             >
               {saveLabel ?? (
                 <>
@@ -283,9 +283,9 @@ export default function SettingsPage() {
         className="flex-1 min-h-0 flex flex-col md:flex-row gap-0"
       >
         {/* Section navigation: a scrolling segmented strip on phones, a side column from md up */}
-        <div className="shrink-0 border-b md:border-b-0 md:border-r border-slate-100 md:border-slate-50 bg-white md:bg-slate-50/30 md:w-64 md:p-6 md:flex md:flex-col md:gap-6 md:h-full md:overflow-y-auto no-scrollbar">
+        <div className="shrink-0 border-b md:border-b-0 md:border-r border-viola-100 md:border-viola-50 bg-white md:bg-viola-50/30 md:w-64 md:p-6 md:flex md:flex-col md:gap-6 md:h-full md:overflow-y-auto no-scrollbar">
           <div className="md:space-y-1">
-            <p className="hidden md:block text-[11px] text-slate-500 font-black uppercase tracking-[0.2em] mb-4 px-3">Menu</p>
+            <p className="hidden md:block text-[11px] text-viola-500 font-black uppercase tracking-[0.2em] mb-4 px-3">Menu</p>
             <TabsList
               ref={tabListRef}
               className="bg-transparent border-0 rounded-none p-0 h-auto! w-full flex flex-row! md:flex-col! items-stretch justify-start gap-1 overflow-x-auto no-scrollbar px-4 py-2 md:p-0 md:overflow-visible"
@@ -295,16 +295,16 @@ export default function SettingsPage() {
                   key={section.value}
                   value={section.value}
                   data-section={section.value}
-                  className="pressable group relative shrink-0 md:shrink flex-none md:flex-1 w-auto! md:w-full! flex items-center gap-2 md:gap-3 h-11 md:h-12 rounded-full md:rounded-xl px-4 justify-start font-bold text-sm text-slate-500 hover:text-slate-700 border-0 data-active:bg-transparent data-active:shadow-none! data-active:text-emerald-800 md:data-active:text-slate-950 transition-colors"
+                  className="pressable group relative shrink-0 md:shrink flex-none md:flex-1 w-auto! md:w-full! flex items-center gap-2 md:gap-3 h-11 md:h-12 rounded-full md:rounded-xl px-4 justify-start font-bold text-sm text-viola-500 hover:text-viola-700 border-0 data-active:bg-transparent data-active:shadow-none! data-active:text-rosso-800 md:data-active:text-viola-950 transition-colors"
                 >
                   {tab === section.value && (
                     <motion.span
                       layoutId="settings-section-pill"
                       transition={spring.snappy}
-                      className="absolute inset-0 rounded-full md:rounded-xl bg-emerald-50 ring-1 ring-emerald-100 md:bg-white md:ring-slate-100/80 md:shadow-premium"
+                      className="absolute inset-0 rounded-full md:rounded-xl bg-rosso-50 ring-1 ring-rosso-100 md:bg-white md:ring-viola-100/80 md:shadow-premium"
                     />
                   )}
-                  <span className="relative flex items-center justify-center md:w-7 md:h-7 md:rounded-lg md:bg-slate-100 md:group-data-active:bg-emerald-50 group-data-active:text-emerald-600 transition-colors">
+                  <span className="relative flex items-center justify-center md:w-7 md:h-7 md:rounded-lg md:bg-viola-100 md:group-data-active:bg-rosso-50 group-data-active:text-rosso-600 transition-colors">
                     <section.icon size={15} />
                   </span>
                   <span className="relative">{section.label}</span>
@@ -313,9 +313,9 @@ export default function SettingsPage() {
             </TabsList>
           </div>
 
-          <div className="hidden md:block mt-auto p-6 rounded-2xl bg-emerald-600 text-white relative overflow-hidden group shadow-lg shadow-emerald-100">
+          <div className="hidden md:block mt-auto p-6 rounded-2xl bg-rosso-600 text-white relative overflow-hidden group shadow-lg shadow-rosso-100">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-            <p className="text-[11px] text-emerald-50 font-black uppercase tracking-widest mb-2">Pro Tip</p>
+            <p className="text-[11px] text-rosso-50 font-black uppercase tracking-widest mb-2">Pro Tip</p>
             <p className="text-xs font-bold leading-snug">
               Mantieni il profilo aggiornato per il matching.
             </p>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
             {/* Profile Section */}
             <TabsContent value="profile" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
               <div className="space-y-6 md:space-y-8">
-                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-slate-50/50 p-5 md:p-8 rounded-[2rem] border border-slate-100">
+                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-viola-50/50 p-5 md:p-8 rounded-[2rem] border border-viola-100">
                   <div className="relative group shrink-0">
                     <input
                       type="file"
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={triggerUpload}
                       aria-label="Cambia immagine profilo"
-                      className="pressable w-28 h-28 md:w-32 md:h-32 rounded-[2.25rem] md:rounded-[2.5rem] bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center text-slate-200 cursor-pointer hover:border-emerald-100 transition-colors"
+                      className="pressable w-28 h-28 md:w-32 md:h-32 rounded-[2.25rem] md:rounded-[2.5rem] bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center text-viola-200 cursor-pointer hover:border-rosso-100 transition-colors"
                     >
                       {profileImage ? (
                         <Image src={profileImage} alt="Profile" width={128} height={128} className="w-full h-full object-cover" />
@@ -353,22 +353,22 @@ export default function SettingsPage() {
                       type="button"
                       onClick={triggerUpload}
                       aria-label="Carica una nuova foto"
-                      className="pressable absolute -right-2 -bottom-2 w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg md:hover:scale-110 transition-transform border-2 border-white"
+                      className="pressable absolute -right-2 -bottom-2 w-11 h-11 rounded-xl bg-rosso-600 text-white flex items-center justify-center shadow-lg md:hover:scale-110 transition-transform border-2 border-white"
                     >
                       <Camera size={16} />
                     </button>
                   </div>
 
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-xl font-display font-bold italic mb-2">Immagine Profilo</h3>
-                    <p className="text-sm text-slate-500 font-medium mb-5 md:mb-6">
+                    <h3 className="text-xl font-display font-bold mb-2">Immagine Profilo</h3>
+                    <p className="text-sm text-viola-500 font-medium mb-5 md:mb-6">
                       Carica una foto professionale. JPG o PNG, max 2MB.
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-3">
                       <Button
                         variant="outline"
                         onClick={triggerUpload}
-                        className="pressable rounded-xl border-slate-200 h-11 md:h-10 px-6 text-sm font-bold hover:bg-white transition-colors"
+                        className="pressable rounded-xl border-viola-200 h-11 md:h-10 px-6 text-sm font-bold hover:bg-white transition-colors"
                       >
                         Cambia Foto
                       </Button>
@@ -376,7 +376,7 @@ export default function SettingsPage() {
                         <Button
                           variant="ghost"
                           onClick={removeImage}
-                          className="pressable rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 h-11 md:h-10 px-6 text-sm font-bold transition-colors"
+                          className="pressable rounded-xl text-rosso-600 hover:text-rosso-700 hover:bg-rosso-50 h-11 md:h-10 px-6 text-sm font-bold transition-colors"
                         >
                           Rimuovi
                         </Button>
@@ -385,61 +385,61 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
+                <Card className="border-viola-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
                   <div className="flex items-center gap-4 mb-6 md:mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-rosso-50 flex items-center justify-center text-rosso-600 border border-rosso-100 shrink-0">
                       <Globe size={18} />
                     </div>
-                    <h3 className="text-lg font-display font-bold italic">Informazioni Pubbliche</h3>
+                    <h3 className="text-lg font-display font-bold ">Informazioni Pubbliche</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest">Nome completo</Label>
+                      <Label htmlFor="name" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Nome completo</Label>
                       <Input
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Il tuo nome"
-                        className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
+                        className="rounded-xl h-12 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="title" className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest">
+                      <Label htmlFor="title" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">
                         {session?.user?.role === 'company' ? 'Nome Azienda' : 'Titolo professionale'}
                       </Label>
                       <Input
                         id="title"
                         value={session?.user?.role === 'company' ? companyName : title}
                         onChange={(e) => session?.user?.role === 'company' ? setCompanyName(e.target.value) : setTitle(e.target.value)}
-                        placeholder={session?.user?.role === 'company' ? "Es. Skillr srl" : "Es. Senior Developer"}
-                        className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
+                        placeholder={session?.user?.role === 'company' ? "Es. Helllo srl" : "Es. Senior Developer"}
+                        className="rounded-xl h-12 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
                       />
                     </div>
                   </div>
 
                   <div className="mt-6 md:mt-8 space-y-2">
-                    <Label htmlFor="bio" className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest">Bio professionale</Label>
+                    <Label htmlFor="bio" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Bio professionale</Label>
                     <Textarea
                       id="bio"
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder="Racconta chi sei..."
-                      className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-colors font-medium p-5 md:p-6 resize-none text-base leading-relaxed"
+                      className="min-h-[160px] rounded-2xl border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-medium p-5 md:p-6 resize-none text-base leading-relaxed"
                     />
                   </div>
                 </Card>
 
-                <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-slate-950 text-white p-5 md:p-8 relative group">
-                  <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-500 rounded-full blur-[80px] opacity-10" />
+                <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-viola-950 text-white p-5 md:p-8 relative group">
+                  <div className="absolute bottom-0 right-0 w-64 h-64 bg-rosso-500 rounded-full blur-[80px] opacity-10" />
                   <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-8 relative z-10">
                     <div className="text-center md:text-left">
-                      <h4 className="font-display font-bold italic text-xl mb-2">Anteprima Profilo</h4>
-                      <p className="text-slate-300 text-sm leading-relaxed max-w-xs">
+                      <h4 className="font-display font-bold text-xl mb-2">Anteprima Profilo</h4>
+                      <p className="text-viola-300 text-sm leading-relaxed max-w-xs">
                         Controlla come appari nello swipe engine.
                       </p>
                     </div>
-                    <Button className="pressable w-full md:w-auto rounded-xl bg-white text-slate-950 hover:bg-emerald-500 hover:text-white gap-2 font-bold shadow-xl transition-colors shrink-0 h-12 px-8 text-sm">
+                    <Button className="pressable w-full md:w-auto rounded-xl bg-white text-viola-950 hover:bg-rosso-500 hover:text-white gap-2 font-bold shadow-xl transition-colors shrink-0 h-12 px-8 text-sm">
                       <Eye size={18} /> Anteprima Live
                     </Button>
                   </div>
@@ -451,21 +451,21 @@ export default function SettingsPage() {
             <TabsContent value="skills" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none overflow-visible">
               <div className="space-y-6 md:space-y-8">
                 {/* Skill Management Card */}
-                <Card className="border-slate-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
+                <Card className="border-viola-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
                   <div className="flex items-center gap-4 mb-6 md:mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-rosso-50 flex items-center justify-center text-rosso-600 border border-rosso-100 shrink-0">
                       <Zap size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-lg font-display font-bold italic">Gestione Competenze</h3>
-                      <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Configura il tuo arsenale tecnico</p>
+                      <h3 className="text-lg font-display font-bold ">Gestione Competenze</h3>
+                      <p className="text-[11px] text-viola-500 font-medium uppercase tracking-wider">Configura il tuo arsenale tecnico</p>
                     </div>
                   </div>
 
                   <div className="space-y-6">
                     <div className="flex flex-col gap-3">
-                      <Label htmlFor="skills-manage" className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest">Le tue Skill Attive</Label>
-                      <div className="flex flex-wrap gap-2 p-3 md:p-4 rounded-2xl bg-slate-50/50 border border-slate-100 min-h-[80px]">
+                      <Label htmlFor="skills-manage" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Le tue Skill Attive</Label>
+                      <div className="flex flex-wrap gap-2 p-3 md:p-4 rounded-2xl bg-viola-50/50 border border-viola-100 min-h-[80px]">
                         <AnimatePresence mode="popLayout">
                           {skills.length > 0 ? (
                             skills.map((skill) => (
@@ -476,14 +476,14 @@ export default function SettingsPage() {
                                 exit={{ opacity: 0, scale: 0.9, transition: { duration: duration.feedback } }}
                                 layout
                               >
-                                <Badge className="h-11 md:h-10 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-sm pl-4 pr-1 py-0 rounded-xl gap-2 shadow-sm group transition-colors">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <Badge className="h-11 md:h-10 bg-white border-viola-200 text-viola-700 hover:bg-viola-50 font-bold text-sm pl-4 pr-1 py-0 rounded-xl gap-2 shadow-sm group transition-colors">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rosso-500" />
                                   {labelOf(skill)}
                                   <button
                                     type="button"
                                     onClick={() => removeSkill(skill)}
                                     aria-label={`Rimuovi ${labelOf(skill)}`}
-                                    className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 rounded-lg"
+                                    className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-viola-400 hover:text-rosso-500 transition-colors hover:bg-rosso-50 rounded-lg"
                                   >
                                     <X size={14} />
                                   </button>
@@ -491,7 +491,7 @@ export default function SettingsPage() {
                               </motion.div>
                             ))
                           ) : (
-                            <div className="flex flex-col items-center justify-center w-full py-4 text-slate-500">
+                            <div className="flex flex-col items-center justify-center w-full py-4 text-viola-500">
                               <BrainCircuit size={24} className="mb-2 opacity-30" />
                               <p className="text-sm italic font-medium">Ancora nessuna competenza aggiunta</p>
                             </div>
@@ -501,7 +501,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="relative pt-2">
-                      <Label htmlFor="skills-search" className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest mb-2 block">Aggiungi Nuove Skill</Label>
+                      <Label htmlFor="skills-search" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest mb-2 block">Aggiungi Nuove Skill</Label>
                       <div className="relative">
                         <Input
                           id="skills-search"
@@ -515,9 +515,9 @@ export default function SettingsPage() {
                           }}
                           enterKeyHint="done"
                           placeholder="Cerca una tecnologia o soft skill..."
-                          className="rounded-xl h-14 border-slate-100 bg-slate-50/50 focus:bg-white transition-colors font-bold pl-12 text-base w-full shadow-inner"
+                          className="rounded-xl h-14 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold pl-12 text-base w-full shadow-inner"
                         />
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400" size={20} />
                       </div>
 
                       <AnimatePresence>
@@ -526,25 +526,25 @@ export default function SettingsPage() {
                             initial={{ opacity: 0, y: -6 }}
                             animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
                             exit={{ opacity: 0, y: -6, transition: { duration: duration.feedback } }}
-                            className="absolute top-full left-0 w-full mt-3 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                            className="absolute top-full left-0 w-full mt-3 bg-white border border-viola-100 rounded-2xl shadow-2xl z-50 overflow-hidden"
                           >
-                            <div className="p-2 border-b border-slate-50 bg-slate-50/30">
-                              <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] px-3 py-1">Risultati suggeriti</p>
+                            <div className="p-2 border-b border-viola-50 bg-viola-50/30">
+                              <p className="text-[11px] font-black text-viola-500 uppercase tracking-[0.2em] px-3 py-1">Risultati suggeriti</p>
                             </div>
                             {filteredSkills.map((s) => (
                               <button
                                 key={s.slug}
                                 type="button"
                                 onClick={() => selectSkill(s.slug)}
-                                className="w-full text-left px-5 py-3.5 md:py-4 hover:bg-emerald-50 hover:text-emerald-900 font-bold text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group"
+                                className="w-full text-left px-5 py-3.5 md:py-4 hover:bg-rosso-50 hover:text-rosso-900 font-bold text-sm text-viola-700 transition-colors border-b border-viola-50 last:border-0 flex items-center justify-between group"
                               >
                                 <span className="flex items-center gap-3 min-w-0">
-                                  <span className="w-8 h-8 shrink-0 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 group-hover:border-emerald-100 transition-colors shadow-sm">
+                                  <span className="w-8 h-8 shrink-0 rounded-lg bg-white border border-viola-100 flex items-center justify-center text-viola-400 group-hover:text-rosso-600 group-hover:border-rosso-100 transition-colors shadow-sm">
                                     <Zap size={14} />
                                   </span>
                                   <span className="truncate">{s.label}</span>
                                 </span>
-                                <span className="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                <span className="bg-rosso-100 text-rosso-700 p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                   <Plus size={14} />
                                 </span>
                               </button>
@@ -557,24 +557,24 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Monitoring & Insights Card */}
-                <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
+                <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
                   <div className="flex items-center justify-between gap-3 mb-6 md:mb-8">
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-blu-50 flex items-center justify-center text-blu-600 border border-blu-100 shrink-0">
                         <BarChart3 size={18} />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-lg font-display font-bold italic leading-tight">Monitoraggio & Insights</h3>
-                        <p className="hidden sm:block text-[11px] text-slate-500 font-medium uppercase tracking-wider">Analisi delle tue performance</p>
+                        <h3 className="text-lg font-display font-bold leading-tight">Monitoraggio & Insights</h3>
+                        <p className="hidden sm:block text-[11px] text-viola-500 font-medium uppercase tracking-wider">Analisi delle tue performance</p>
                       </div>
                     </div>
-                    <Badge className="shrink-0 h-auto bg-emerald-50 text-emerald-700 border-emerald-100 rounded-lg px-3 py-1 font-black text-[11px] uppercase tracking-widest">Live Sync</Badge>
+                    <Badge className="shrink-0 h-auto bg-rosso-50 text-rosso-700 border-rosso-100 rounded-lg px-3 py-1 font-black text-[11px] uppercase tracking-widest">Live Sync</Badge>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 md:gap-6 mb-6 md:mb-8">
                     {[
-                      { label: 'Match Frequency', value: 'High', color: 'text-emerald-700', bg: 'bg-emerald-50', icon: Target },
-                      { label: 'Skill Rank', value: 'Top 5%', color: 'text-indigo-700', bg: 'bg-indigo-50', icon: BarChart3 },
+                      { label: 'Match Frequency', value: 'High', color: 'text-rosso-700', bg: 'bg-rosso-50', icon: Target },
+                      { label: 'Skill Rank', value: 'Top 5%', color: 'text-blu-700', bg: 'bg-blu-50', icon: BarChart3 },
                       { label: 'Profile Strength', value: '85%', color: 'text-amber-700', bg: 'bg-amber-50', icon: Zap },
                     ].map((stat, i) => (
                       <div key={i} className={`${stat.bg} rounded-2xl p-3 md:p-5 border border-white shadow-sm min-w-0`}>
@@ -584,37 +584,37 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <p className={`text-[11px] font-black uppercase tracking-wide md:tracking-widest mb-1 leading-tight ${stat.color} opacity-80`}>{stat.label}</p>
-                        <p className={`text-xl md:text-2xl font-display font-bold italic ${stat.color}`}>{stat.value}</p>
+                        <p className={`text-xl md:text-2xl font-display font-bold ${stat.color}`}>{stat.value}</p>
                       </div>
                     ))}
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-[11px] font-black text-slate-500 ml-2 uppercase tracking-widest">Dettaglio Competenze</Label>
+                    <Label className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Dettaglio Competenze</Label>
                     <div className="space-y-2">
                       {skills.length > 0 ? skills.slice(0, 3).map((skill, i) => (
-                        <div key={skill} className="flex items-center justify-between gap-3 p-3 md:p-4 rounded-2xl border border-slate-50 bg-slate-50/30 group hover:bg-white hover:shadow-premium transition-[background-color,box-shadow]">
+                        <div key={skill} className="flex items-center justify-between gap-3 p-3 md:p-4 rounded-2xl border border-viola-50 bg-viola-50/30 group hover:bg-white hover:shadow-premium transition-[background-color,box-shadow]">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 group-hover:text-emerald-600 transition-colors font-bold text-xs">
+                            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-600 transition-colors font-bold text-xs">
                               {labelOf(skill).substring(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-900 truncate">{labelOf(skill)}</p>
+                              <p className="text-sm font-bold text-viola-900 truncate">{labelOf(skill)}</p>
                               <div className="flex items-center gap-2 mt-1">
-                                <div className="w-20 sm:w-32 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${80 - (i * 15)}%` }} />
+                                <div className="w-20 sm:w-32 h-1.5 rounded-full bg-viola-200 overflow-hidden">
+                                  <div className="h-full bg-rosso-500 rounded-full" style={{ width: `${80 - (i * 15)}%` }} />
                                 </div>
-                                <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">{80 - (i * 15)}% Match</span>
+                                <span className="text-[11px] font-bold text-viola-500 whitespace-nowrap">{80 - (i * 15)}% Match</span>
                               </div>
                             </div>
                           </div>
                           <div className="hidden sm:block text-right shrink-0">
-                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-tighter">Popolarità</p>
-                            <p className="text-xs font-bold text-emerald-600">+12% questo mese</p>
+                            <p className="text-[11px] font-black text-viola-500 uppercase tracking-tighter">Popolarità</p>
+                            <p className="text-xs font-bold text-rosso-600">+12% questo mese</p>
                           </div>
                         </div>
                       )) : (
-                        <p className="text-sm text-slate-500 italic text-center py-4 px-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                        <p className="text-sm text-viola-500 italic text-center py-4 px-4 bg-viola-50/50 rounded-2xl border border-dashed border-viola-200">
                           Aggiungi delle skill per vedere le analisi dettagliate
                         </p>
                       )}
@@ -626,34 +626,34 @@ export default function SettingsPage() {
 
             {/* Account Section */}
             <TabsContent value="account" className="m-0 space-y-6 md:space-y-8 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
-              <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
+              <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
                 <div className="flex items-center gap-4 mb-4 md:mb-8">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-900 border border-slate-200 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-viola-100 flex items-center justify-center text-viola-900 border border-viola-200 shrink-0">
                     <Lock size={18} />
                   </div>
-                  <h3 className="text-lg font-display font-bold italic">Sicurezza e Accesso</h3>
+                  <h3 className="text-lg font-display font-bold ">Sicurezza e Accesso</h3>
                 </div>
 
                 <div className="space-y-1 -mx-2 md:mx-0">
                   {[
                     { icon: Mail, label: 'Email', value: email, action: 'Cambia' },
                     { icon: Shield, label: 'Password', value: 'Ultima modifica: 3 mesi fa', action: 'Aggiorna' },
-                    { icon: CreditCard, label: 'Piano', value: 'Skillr Professional', action: 'Gestisci', badge: 'Premium' },
+                    { icon: CreditCard, label: 'Piano', value: 'Helllo Professional', action: 'Gestisci', badge: 'Premium' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between gap-3 py-4 md:py-5 px-2 md:px-5 rounded-2xl hover:bg-slate-50 transition-colors group">
+                    <div key={idx} className="flex items-center justify-between gap-3 py-4 md:py-5 px-2 md:px-5 rounded-2xl hover:bg-viola-50 transition-colors group">
                       <div className="flex gap-3 md:gap-4 items-center min-w-0">
-                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 group-hover:text-emerald-600 transition-colors shadow-sm">
+                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-600 transition-colors shadow-sm">
                           <item.icon size={20} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{item.label}</p>
-                            {item.badge && <span className="bg-emerald-100 text-emerald-800 text-[11px] leading-none font-black uppercase px-1.5 py-0.5 rounded-full">{item.badge}</span>}
+                            <p className="text-[11px] font-black text-viola-500 uppercase tracking-widest">{item.label}</p>
+                            {item.badge && <span className="bg-rosso-100 text-rosso-800 text-[11px] leading-none font-black uppercase px-1.5 py-0.5 rounded-full">{item.badge}</span>}
                           </div>
-                          <p className="text-sm text-slate-950 font-bold truncate">{item.value}</p>
+                          <p className="text-sm text-viola-950 font-bold truncate">{item.value}</p>
                         </div>
                       </div>
-                      <Button variant="outline" className="pressable shrink-0 rounded-xl font-bold h-11 md:h-9 px-4 text-xs border-slate-200 hover:bg-white transition-colors">
+                      <Button variant="outline" className="pressable shrink-0 rounded-xl font-bold h-11 md:h-9 px-4 text-xs border-viola-200 hover:bg-white transition-colors">
                         {item.action}
                       </Button>
                     </div>
@@ -661,15 +661,15 @@ export default function SettingsPage() {
                 </div>
               </Card>
 
-              <Card className="border-red-100 shadow-premium rounded-[2rem] overflow-hidden bg-red-50/20 p-5 md:p-8 border-dashed">
+              <Card className="border-rosso-100 shadow-premium rounded-[2rem] overflow-hidden bg-rosso-50/20 p-5 md:p-8 border-dashed">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6">
                   <div className="text-center md:text-left">
-                    <h4 className="text-lg font-bold text-red-950 mb-1 italic font-display flex items-center gap-2 justify-center md:justify-start">
+                    <h4 className="text-lg font-bold text-rosso-950 mb-1 font-display flex items-center gap-2 justify-center md:justify-start">
                       <Trash2 size={18} /> Zona Pericolo
                     </h4>
-                    <p className="text-sm text-red-800 font-medium">L&apos;eliminazione dell&apos;account è definitiva.</p>
+                    <p className="text-sm text-rosso-800 font-medium">L&apos;eliminazione dell&apos;account è definitiva.</p>
                   </div>
-                  <Button variant="ghost" className="pressable w-full md:w-auto text-red-600 hover:text-white hover:bg-red-600 gap-2 rounded-xl font-bold h-11 md:h-10 px-6 border border-red-100 transition-colors text-sm md:text-xs">
+                  <Button variant="ghost" className="pressable w-full md:w-auto text-rosso-600 hover:text-white hover:bg-rosso-600 gap-2 rounded-xl font-bold h-11 md:h-10 px-6 border border-rosso-100 transition-colors text-sm md:text-xs">
                     Elimina Account
                   </Button>
                 </div>
@@ -678,12 +678,12 @@ export default function SettingsPage() {
 
             {/* Notifications Section */}
             <TabsContent value="notifications" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
-              <Card className="border-slate-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
+              <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
                 <div className="flex items-center gap-4 mb-6 md:mb-8">
                   <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100 shrink-0">
                     <Bell size={18} />
                   </div>
-                  <h3 className="text-lg font-display font-bold italic">Notifiche</h3>
+                  <h3 className="text-lg font-display font-bold ">Notifiche</h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
@@ -692,17 +692,17 @@ export default function SettingsPage() {
                     { id: 'email-notif', icon: Mail, title: 'Notifiche Email', desc: 'Ricevi avvisi per nuovi match.' },
                     { id: 'push-notif', icon: Bell, title: 'Notifiche Push', desc: 'Avvisi in tempo reale nel browser.' }
                   ].map((notif) => (
-                    <div key={notif.id} className="flex items-center justify-between gap-3 p-4 md:p-6 rounded-2xl border border-slate-50 bg-slate-50/30 hover:bg-white hover:border-slate-100 hover:shadow-premium transition-[background-color,border-color,box-shadow] group">
+                    <div key={notif.id} className="flex items-center justify-between gap-3 p-4 md:p-6 rounded-2xl border border-viola-50 bg-viola-50/30 hover:bg-white hover:border-viola-100 hover:shadow-premium transition-[background-color,border-color,box-shadow] group">
                       <div className="flex gap-3 md:gap-4 items-center min-w-0">
-                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 group-hover:text-emerald-500 transition-colors shadow-sm">
+                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-500 transition-colors shadow-sm">
                           <notif.icon size={20} />
                         </div>
                         <div className="min-w-0">
-                          <Label htmlFor={notif.id} className="text-base font-bold text-slate-950 cursor-pointer block mb-0.5 group-hover:text-emerald-600 transition-colors">{notif.title}</Label>
-                          <p className="text-sm md:text-xs text-slate-500 font-medium">{notif.desc}</p>
+                          <Label htmlFor={notif.id} className="text-base font-bold text-viola-950 cursor-pointer block mb-0.5 group-hover:text-rosso-600 transition-colors">{notif.title}</Label>
+                          <p className="text-sm md:text-xs text-viola-500 font-medium">{notif.desc}</p>
                         </div>
                       </div>
-                      <Switch id={notif.id} defaultChecked className="shrink-0 scale-100 data-active:bg-emerald-600" />
+                      <Switch id={notif.id} defaultChecked className="shrink-0 scale-100 data-active:bg-rosso-600" />
                     </div>
                   ))}
                 </div>
@@ -714,13 +714,13 @@ export default function SettingsPage() {
             <AnimatePresence>
               {isDirty && (
                 <BottomActionBar variant="floating" desktop="hidden">
-                  <div className="flex items-center gap-3 rounded-2xl bg-slate-950 text-white p-2 pl-4 shadow-premium">
+                  <div className="flex items-center gap-3 rounded-2xl bg-viola-950 text-white p-2 pl-4 shadow-premium">
                     <p className="flex-1 min-w-0 text-sm font-semibold truncate">Modifiche non salvate</p>
                     <Button
                       onClick={handleSave}
                       disabled={isSaving}
                       className={cn(
-                        "pressable h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm gap-2 transition-colors",
+                        "pressable h-11 px-5 rounded-xl bg-rosso-500 hover:bg-rosso-400 text-viola-950 font-bold text-sm gap-2 transition-colors",
                         isSaving && "text-white"
                       )}
                     >

@@ -82,12 +82,12 @@ export const InterviewEventChangeEmail = ({
               </Section>
             )}
             {cancelled && (
-              <Text style={styles.text}>Puoi trovare altre Smart Interview in programma su Skillr.</Text>
+              <Text style={styles.text}>Puoi trovare altre Smart Interview in programma su Helllo.</Text>
             )}
           </Section>
           <Hr style={styles.hr} />
           <Section style={styles.footer}>
-            <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
+            <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
           </Section>
         </Container>
       </Body>

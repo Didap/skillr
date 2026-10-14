@@ -25,7 +25,7 @@ export function PageHeader({ title, loading, subtitle, backHref, actions, classN
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 shrink-0 border-b border-slate-100/80 bg-white/80 backdrop-blur-xl pt-safe",
+        "sticky top-0 z-40 shrink-0 border-b border-viola-100/80 bg-white/80 backdrop-blur-xl pt-safe",
         className
       )}
     >
@@ -34,7 +34,7 @@ export function PageHeader({ title, loading, subtitle, backHref, actions, classN
           <Link
             href={backHref}
             aria-label="Indietro"
-            className="pressable shrink-0 -ml-2 w-11 h-11 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100"
+            className="pressable shrink-0 -ml-2 w-11 h-11 rounded-full flex items-center justify-center text-viola-600 hover:bg-viola-100"
           >
             <ChevronLeft size={22} />
           </Link>
@@ -43,10 +43,10 @@ export function PageHeader({ title, loading, subtitle, backHref, actions, classN
           {loading ? (
             <Skeleton className="h-7 w-40 md:w-56 rounded-full" />
           ) : (
-            <h1 className="font-display text-2xl md:text-3xl text-slate-950 truncate leading-tight">{title}</h1>
+            <h1 className="font-display text-2xl md:text-3xl text-viola-950 truncate leading-tight">{title}</h1>
           )}
           {subtitle && (
-            <p className="hidden md:block text-sm font-semibold text-slate-500 truncate">{subtitle}</p>
+            <p className="hidden md:block text-sm font-semibold text-viola-500 truncate">{subtitle}</p>
           )}
         </div>
         {actions && <div className="shrink-0 flex items-center gap-2">{actions}</div>}

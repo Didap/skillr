@@ -31,7 +31,7 @@ export const MatchEmail = ({
 }: MatchEmailProps) => (
   <Html>
     <Head />
-    <Preview>It&apos;s a Match! You matched with {matchedName} on Skillr</Preview>
+    <Preview>It&apos;s a Match! You matched with {matchedName} on Helllo</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
@@ -40,7 +40,7 @@ export const MatchEmail = ({
         <Section style={styles.content}>
           <Text style={styles.text}>Hi {userName},</Text>
           <Text style={styles.text}>
-            Great news! You have a new match on Skillr. Both you and {matchedName} have swiped right.
+            Great news! You have a new match on Helllo. Both you and {matchedName} have swiped right.
           </Text>
           <Section style={styles.card}>
              {matchedImage && (
@@ -65,7 +65,7 @@ export const MatchEmail = ({
         </Section>
         <Hr style={styles.hr} />
         <Section style={styles.footer}>
-          <Text style={styles.footerText}>Skillr - The next-gen job matching platform</Text>
+          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
         </Section>
       </Container>
     </Body>

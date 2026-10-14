@@ -40,7 +40,7 @@ export function BottomActionBar({
         className={cn(
           "fixed inset-x-0 bottom-tabbar z-40",
           variant === "bar"
-            ? "flex flex-wrap items-stretch gap-2 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-slate-100 [&>*]:flex-auto"
+            ? "flex flex-wrap items-stretch gap-2 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-viola-100 [&>*]:flex-auto"
             : "px-4 pb-3",
           desktop === "hidden"
             ? "md:hidden"

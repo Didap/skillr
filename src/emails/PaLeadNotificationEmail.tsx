@@ -66,7 +66,7 @@ export const PaLeadNotificationEmail = ({
         </Section>
         <Section style={paStyles.content}>
           <Text style={paStyles.text}>
-            È stata ricevuta una nuova richiesta di contatto dalla landing page Skillr per la PA.
+            È stata ricevuta una nuova richiesta di contatto dalla landing page Helllo per la PA.
           </Text>
           
           <Section style={paStyles.card}>
@@ -101,7 +101,7 @@ export const PaLeadNotificationEmail = ({
         </Section>
         <Hr style={paStyles.hr} />
         <Section style={paStyles.footer}>
-          <Text style={paStyles.footerText}>Skillr PA Support Team — Notifica Interna</Text>
+          <Text style={paStyles.footerText}>Helllo PA Support Team — Notifica Interna</Text>
         </Section>
       </Container>
     </Body>

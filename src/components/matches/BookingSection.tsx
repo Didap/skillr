@@ -23,11 +23,11 @@ const PHONE_CARD =
 
 // Buttons: compact sans on phones (thumb bar), the original display-italic look from md.
 const PRIMARY_BTN =
-  "pressable h-12 md:h-16 rounded-2xl px-6 md:px-12 text-base md:text-xl font-bold md:font-display md:italic gap-2 md:gap-3 bg-slate-950 text-white hover:bg-emerald-600 shadow-premium transition-colors";
+  "pressable h-12 md:h-16 rounded-2xl px-6 md:px-12 text-base md:text-xl font-bold md:font-display md:italic gap-2 md:gap-3 bg-viola-950 text-white hover:bg-rosso-600 shadow-premium transition-colors";
 const SECONDARY_BTN =
-  "pressable h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors";
+  "pressable h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 border-viola-200 text-viola-700 bg-white hover:bg-viola-50 transition-colors";
 
-const LABEL = "text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 pl-1";
+const LABEL = "text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 pl-1";
 
 // Every action bar here sits inside a phone card, where BottomActionBar's own spacer would
 // show up as blank card space: each state's wrapper reserves the room on phones instead
@@ -46,13 +46,13 @@ function DateTile({ date, active = false, className }: { date: Date; active?: bo
     <div
       className={cn(
         "w-14 h-14 shrink-0 rounded-2xl flex flex-col items-center justify-center border transition-colors",
-        active ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-50 border-slate-100 text-slate-950",
+        active ? "bg-rosso-500 border-rosso-500 text-white" : "bg-viola-50 border-viola-100 text-viola-950",
         className
       )}
       aria-hidden="true"
     >
       <span className="text-xl font-bold leading-none tabular-nums">{formatRomeDate(date, { day: "numeric" })}</span>
-      <span className={cn("mt-1 text-[11px] font-black uppercase tracking-wider leading-none", active ? "text-emerald-50" : "text-slate-500")}>
+      <span className={cn("mt-1 text-[11px] font-black uppercase tracking-wider leading-none", active ? "text-rosso-50" : "text-viola-500")}>
         {formatRomeDate(date, { month: "short" }).replace(".", "")}
       </span>
     </div>
@@ -202,7 +202,7 @@ export function BookingSection({
     // Same UID as the emailed invite, so calendars treat both as one event.
     const downloadICS = () => {
       const icsContent = generateIcsString({
-        title: "Colloquio Skillr",
+        title: "Colloquio Helllo",
         description: `Link Meet: ${meetingLink || 'N/A'}`,
         startTime,
         endTime,
@@ -213,7 +213,7 @@ export function BookingSection({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "intervista_skillr.ics");
+      link.setAttribute("download", "colloquio_helllo.ics");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -229,41 +229,41 @@ export function BookingSection({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: duration.view, ease: ease.out } }}
-          className="bg-white rounded-3xl border border-border-subtle md:border-slate-100 shadow-card md:shadow-sm p-5 md:p-8"
+          className="bg-white rounded-3xl border border-border-subtle md:border-viola-100 shadow-card md:shadow-sm p-5 md:p-8"
         >
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-5 md:gap-10">
             <div className="flex-1 min-w-0 space-y-4">
               <div className={cn(
                 "hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-[0.2em]",
-                isCompleted ? "bg-slate-100 text-slate-600" : "bg-emerald-500/10 text-emerald-700"
+                isCompleted ? "bg-viola-100 text-viola-600" : "bg-rosso-500/10 text-rosso-700"
               )}>
                  {isCompleted ? <Check size={12} strokeWidth={3} /> : <Clock size={12} />}
                  {isCompleted ? 'Incontro Concluso' : 'Appuntamento Fissato'}
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
+                <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
                   {isCompleted ? 'Com\'è andato l\'incontro?' : 'Ci vediamo presto!'}
                 </h3>
                 {isCompleted && (
-                  <p className="text-[15px] md:text-lg text-slate-500 max-w-xl leading-relaxed">
+                  <p className="text-[15px] md:text-lg text-viola-500 max-w-xl leading-relaxed">
                     {`L'incontro con ${targetName} si è concluso. Lascia un feedback per completare il match.`}
                   </p>
                 )}
               </div>
 
               {/* When: the one thing to remember */}
-              <div className="flex items-center gap-4 p-3 md:p-4 rounded-2xl bg-slate-50/70 border border-slate-100 max-w-md">
+              <div className="flex items-center gap-4 p-3 md:p-4 rounded-2xl bg-viola-50/70 border border-viola-100 max-w-md">
                 <DateTile date={startTime} active={!isCompleted} />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-slate-500">
+                  <p className="text-xs font-semibold text-viola-500">
                     {isCompleted ? "Incontro concluso" : "Il tuo incontro è programmato per"}
                   </p>
-                  <p className="font-bold text-slate-950 first-letter:uppercase truncate">
+                  <p className="font-bold text-viola-950 first-letter:uppercase truncate">
                     {formatRomeDate(startTime, { weekday: 'long', day: 'numeric', month: 'long' })}
                   </p>
-                  <p className="text-sm font-semibold text-slate-600 tabular-nums">
+                  <p className="text-sm font-semibold text-viola-600 tabular-nums">
                     {formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}–{formatRomeDate(endTime, { hour: '2-digit', minute: '2-digit' })}
-                    <span className="text-slate-400 font-medium"> · ora italiana</span>
+                    <span className="text-viola-400 font-medium"> · ora italiana</span>
                   </p>
                 </div>
               </div>
@@ -302,8 +302,8 @@ export function BookingSection({
                           buttonVariants({ variant: "default" }),
                           "h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
                           isActive
-                            ? "pressable bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
-                            : "bg-slate-100 text-slate-500 cursor-not-allowed"
+                            ? "pressable bg-rosso-600 hover:bg-rosso-700 text-white shadow-lg shadow-rosso-500/20"
+                            : "bg-viola-100 text-viola-500 cursor-not-allowed"
                         )}
                       >
                         <Video size={20} /> {isActive ? 'Entra in Meet' : 'Link non ancora attivo'}
@@ -343,14 +343,14 @@ export function BookingSection({
           {formStep === 0 ? (
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-10">
               <div className="flex-1 space-y-4">
-                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em]">
+                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em]">
                    Scheduling
                 </div>
                 <div className="space-y-2 md:space-y-3">
-                  <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
+                  <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
                     Pianifica la tua call conoscitiva
                   </h3>
-                  <p className="text-[15px] md:text-lg text-slate-500 max-w-xl leading-relaxed font-medium">
+                  <p className="text-[15px] md:text-lg text-viola-500 max-w-xl leading-relaxed font-medium">
                     Proponi fino a 3 slot orari. Il match verrà ufficializzato appena lo slot verrà confermato.
                   </p>
                 </div>
@@ -364,7 +364,7 @@ export function BookingSection({
             </div>
           ) : (
             <div className="space-y-5 md:space-y-8">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 md:pb-6">
+              <div className="flex items-center justify-between gap-3 border-b border-viola-100 pb-4 md:pb-6">
                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
                     <button
                       type="button"
@@ -377,20 +377,20 @@ export function BookingSection({
                         }
                         setFormStep(formStep - 1);
                       }}
-                      className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-950 transition-colors"
+                      className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center border border-viola-200 text-viola-500 hover:bg-viola-50 hover:text-viola-950 transition-colors"
                     >
                       {formStep === 2 ? <ChevronLeft size={20} /> : <X size={18} />}
                     </button>
                     <div className="min-w-0">
-                      <h4 className="text-lg md:text-xl font-display italic text-slate-950 truncate">
+                      <h4 className="text-lg md:text-xl font-display text-viola-950 truncate">
                         {formStep === 1 ? "Selezione Disponibilità" : "Metodo Incontro"}
                       </h4>
-                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Step {formStep} di 2</p>
+                      <p className="text-[11px] font-bold text-viola-500 uppercase tracking-widest">Step {formStep} di 2</p>
                     </div>
                  </div>
                  <div className="flex gap-1.5 shrink-0" aria-hidden="true">
                     {[1, 2].map(s => (
-                      <div key={s} className={cn("w-6 md:w-8 h-1.5 rounded-full transition-colors duration-300", formStep >= s ? "bg-emerald-500" : "bg-slate-100")} />
+                      <div key={s} className={cn("w-6 md:w-8 h-1.5 rounded-full transition-colors duration-300", formStep >= s ? "bg-rosso-500" : "bg-viola-100")} />
                     ))}
                  </div>
               </div>
@@ -400,19 +400,19 @@ export function BookingSection({
                   <motion.div key="step1" {...stepMotion} className="space-y-3 md:space-y-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                       {newSlots.map((s, idx) => (
-                        <div key={idx} className="bg-white border border-slate-100 rounded-2xl md:rounded-3xl p-4 md:p-6 md:shadow-sm hover:border-emerald-100 transition-colors">
+                        <div key={idx} className="bg-white border border-viola-100 rounded-2xl md:rounded-3xl p-4 md:p-6 md:shadow-sm hover:border-rosso-100 transition-colors">
                           <div className="space-y-4 md:space-y-6">
                             <div className="flex justify-between items-center min-h-11">
                               <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-black">{idx + 1}</div>
-                                <span className="text-lg font-display italic text-slate-950">Disponibilità</span>
+                                <div className="w-7 h-7 rounded-lg bg-rosso-50 text-rosso-700 flex items-center justify-center text-xs font-black">{idx + 1}</div>
+                                <span className="text-lg font-display text-viola-950">Disponibilità</span>
                               </div>
                               {newSlots.length > 1 && (
                                 <button
                                   type="button"
                                   aria-label={`Rimuovi disponibilità ${idx + 1}`}
                                   onClick={() => setNewSlots(newSlots.filter((_, i) => i !== idx))}
-                                  className="pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                  className="pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-viola-400 hover:text-rosso-500 hover:bg-rosso-50 transition-colors"
                                 >
                                   <Trash2 size={18} />
                                 </button>
@@ -435,7 +435,7 @@ export function BookingSection({
                                 />
                                 {/* disablePast only blocks past days: today's earlier hours are caught here. */}
                                 {isPastSlot(s, now.getTime()) && (
-                                  <p role="alert" className="text-xs font-bold text-rose-600 pl-1">
+                                  <p role="alert" className="text-xs font-bold text-rosso-600 pl-1">
                                     Orario già passato: scegline uno successivo.
                                   </p>
                                 )}
@@ -448,9 +448,9 @@ export function BookingSection({
                         <button
                           type="button"
                           onClick={() => setNewSlots([...newSlots, EMPTY_SLOT])}
-                          className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-2xl md:rounded-3xl border-2 border-dashed border-slate-200 md:border-slate-100 bg-white md:bg-slate-50/50 hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 group text-slate-700 md:text-slate-500 hover:text-emerald-700"
+                          className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-2xl md:rounded-3xl border-2 border-dashed border-viola-200 md:border-viola-100 bg-white md:bg-viola-50/50 hover:border-rosso-200 hover:bg-rosso-50/30 transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 group text-viola-700 md:text-viola-500 hover:text-rosso-700"
                         >
-                          <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform">
+                          <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white border border-viola-100 flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform">
                              <Plus className="size-[18px] md:size-6" />
                           </span>
                           <span className="font-bold text-base md:font-display md:italic md:text-lg">Aggiungi slot</span>
@@ -477,18 +477,18 @@ export function BookingSection({
                             onClick={() => setMeetingMethod(value)}
                             className={cn(
                               "pressable relative w-full flex sm:flex-col items-center sm:items-start gap-4 p-4 pr-12 sm:pr-8 md:p-8 rounded-3xl md:rounded-[2.5rem] text-left border-2 transition-colors group",
-                              selected ? "border-emerald-500 bg-emerald-50/50 md:shadow-premium" : "border-slate-100 bg-white hover:border-emerald-200"
+                              selected ? "border-rosso-500 bg-rosso-50/50 md:shadow-premium" : "border-viola-100 bg-white hover:border-rosso-200"
                             )}
                           >
                             <div className={cn(
                               "w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-colors",
-                              selected ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-50 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-700"
+                              selected ? "bg-rosso-500 text-white shadow-lg" : "bg-viola-50 text-viola-500 group-hover:bg-rosso-100 group-hover:text-rosso-700"
                             )}>
                               <Icon size={24} />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-display italic text-lg md:text-xl text-slate-950">{title}</p>
-                              <p className="text-sm md:text-xs text-slate-500 leading-relaxed font-medium">{desc}</p>
+                              <p className="font-display text-lg md:text-xl text-viola-950">{title}</p>
+                              <p className="text-sm md:text-xs text-viola-500 leading-relaxed font-medium">{desc}</p>
                             </div>
                             <AnimatePresence initial={false}>
                               {selected && (
@@ -496,7 +496,7 @@ export function BookingSection({
                                   initial={{ scale: 0, opacity: 0 }}
                                   animate={{ scale: 1, opacity: 1, transition: spring.snappy }}
                                   exit={{ scale: 0, opacity: 0, transition: { duration: duration.feedback } }}
-                                  className="absolute top-1/2 -mt-2.5 right-4 sm:top-6 sm:mt-0 sm:right-6 text-emerald-600"
+                                  className="absolute top-1/2 -mt-2.5 right-4 sm:top-6 sm:mt-0 sm:right-6 text-rosso-600"
                                 >
                                   <Check size={20} strokeWidth={3} />
                                 </motion.span>
@@ -526,7 +526,7 @@ export function BookingSection({
                             placeholder="https://zoom.us/j/..."
                             value={customMeetingLink}
                             onChange={(e) => setCustomMeetingLink(e.target.value)}
-                            className="w-full h-14 px-4 md:px-6 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 outline-none transition-colors font-bold text-base text-slate-950"
+                            className="w-full h-14 px-4 md:px-6 rounded-2xl border-2 border-viola-100 focus:border-rosso-500 outline-none transition-colors font-bold text-base text-viola-950"
                           />
                         </motion.div>
                       )}
@@ -563,13 +563,13 @@ export function BookingSection({
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-4xl mx-auto md:text-center space-y-5 md:space-y-12")}>
            <div className="space-y-2 md:space-y-4">
-              <div className="hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em] mb-4">
+              <div className="hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em] mb-4">
                  <Check size={12} strokeWidth={3} /> Proposta Inviata
               </div>
-              <h3 className="text-2xl md:text-4xl font-display italic text-slate-950 tracking-tight">
+              <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
                 {allExpired ? "Gli orari proposti sono passati" : "Proposta inviata!"}
               </h3>
-              <p className="text-[15px] md:text-lg text-slate-500 max-w-lg md:mx-auto leading-relaxed font-medium">
+              <p className="text-[15px] md:text-lg text-viola-500 max-w-lg md:mx-auto leading-relaxed font-medium">
                 {allExpired
                   ? "Nessuno slot è stato confermato in tempo. Proponi nuovi orari per fissare la call."
                   : "Le tue disponibilità sono state inviate. Riceverai una notifica appena lo slot verrà confermato."}
@@ -583,17 +583,17 @@ export function BookingSection({
                  <li
                    key={idx}
                    className={cn(
-                     "flex items-center justify-between gap-3 md:block bg-white border border-slate-100 p-4 md:p-6 rounded-2xl md:rounded-3xl md:shadow-sm text-left",
+                     "flex items-center justify-between gap-3 md:block bg-white border border-viola-100 p-4 md:p-6 rounded-2xl md:rounded-3xl md:shadow-sm text-left",
                      expired && "opacity-50"
                    )}
                  >
                    <div className="min-w-0">
-                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 md:mb-2">
+                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 md:mb-2">
                        Opzione {idx + 1}{expired && " · Scaduto"}
                      </p>
-                     <p className="text-base md:text-lg font-bold text-slate-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
+                     <p className="text-base md:text-lg font-bold text-viola-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
                    </div>
-                   <p className="text-base md:text-sm font-bold md:font-medium text-slate-600 md:text-slate-500 tabular-nums">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
+                   <p className="text-base md:text-sm font-bold md:font-medium text-viola-600 md:text-viola-500 tabular-nums">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
                  </li>
                );
              })}
@@ -612,7 +612,7 @@ export function BookingSection({
                }}
                className={cn(
                  "pressable h-12 md:h-14 rounded-2xl px-6 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
-                 allExpired ? "bg-slate-950 text-white hover:bg-emerald-600" : "border-slate-200 text-slate-700 bg-white hover:bg-slate-50"
+                 allExpired ? "bg-viola-950 text-white hover:bg-rosso-600" : "border-viola-200 text-viola-700 bg-white hover:bg-viola-50"
                )}
              >
                <CalendarRange size={20} /> {allExpired ? "Proponi nuovi orari" : "Modifica proposta"}
@@ -623,16 +623,16 @@ export function BookingSection({
              <motion.div
                initial={{ opacity: 0, y: 8 }}
                animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
-               className="max-w-md mx-auto p-4 md:p-6 rounded-2xl md:rounded-3xl bg-slate-50 border border-slate-100 space-y-3"
+               className="max-w-md mx-auto p-4 md:p-6 rounded-2xl md:rounded-3xl bg-viola-50 border border-viola-100 space-y-3"
              >
-               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Dettagli Incontro</p>
+               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500">Dettagli Incontro</p>
                <div className="flex items-center md:justify-center gap-3">
-                 <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600">
+                 <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-rosso-600">
                     <Video size={20} />
                  </div>
                  <div className="text-left min-w-0">
-                    <p className="font-bold text-slate-950">Link della call</p>
-                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-sm md:text-xs text-emerald-700 hover:underline font-medium break-all">
+                    <p className="font-bold text-viola-950">Link della call</p>
+                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-sm md:text-xs text-rosso-700 hover:underline font-medium break-all">
                       {meetingLink}
                     </a>
                  </div>
@@ -650,14 +650,14 @@ export function BookingSection({
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-5xl mx-auto space-y-5 md:space-y-16")}>
           <div className="md:text-center space-y-2 md:space-y-4">
-            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-black uppercase tracking-[0.2em]">
+            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em]">
                Scheduling
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl md:text-5xl font-display italic text-slate-950 tracking-tight">
+              <h3 className="text-2xl md:text-5xl font-display text-viola-950 tracking-tight">
                 Quando sei disponibile?
               </h3>
-              <p className="text-[15px] md:text-xl text-slate-500 max-w-2xl md:mx-auto leading-relaxed font-medium">
+              <p className="text-[15px] md:text-xl text-viola-500 max-w-2xl md:mx-auto leading-relaxed font-medium">
                 {allExpired
                   ? "Gli orari proposti sono passati: l'azienda dovrà proporne di nuovi."
                   : `L'azienda ha proposto questi slot ${meetingLink ? "con un link alla call" : "per un incontro su Google Meet"}. Seleziona quello che preferisci per confermare.`}
@@ -684,23 +684,23 @@ export function BookingSection({
                 }}
                 className={cn(
                   "relative w-full min-h-16 flex items-center gap-4 p-3 pr-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 text-left outline-none",
-                  "transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
+                  "transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-rosso-500 focus-visible:ring-offset-2",
                   expired
-                    ? "border-slate-100 bg-white opacity-50 cursor-not-allowed"
+                    ? "border-viola-100 bg-white opacity-50 cursor-not-allowed"
                     : selected
-                      ? "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-500/15 md:shadow-premium"
-                      : "border-slate-100 bg-white hover:border-emerald-200"
+                      ? "border-rosso-500 bg-rosso-50 ring-4 ring-rosso-500/15 md:shadow-premium"
+                      : "border-viola-100 bg-white hover:border-rosso-200"
                 )}
               >
                 <DateTile date={start} active={selected} className="md:w-16 md:h-16" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 truncate">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 truncate">
                     {formatRomeDate(start, { weekday: 'long' })}{expired && " · Scaduto"}
                   </p>
-                  <p className="text-lg md:text-2xl font-display italic text-slate-950 truncate">
+                  <p className="text-lg md:text-2xl font-display text-viola-950 truncate">
                     {formatRomeDate(start, { day: 'numeric', month: 'long' })}
                   </p>
-                  <p className="text-base md:text-lg font-bold text-slate-600 tabular-nums">
+                  <p className="text-base md:text-lg font-bold text-viola-600 tabular-nums">
                     {formatRomeDate(start, { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -708,7 +708,7 @@ export function BookingSection({
                   aria-hidden="true"
                   className={cn(
                     "w-7 h-7 shrink-0 rounded-full border-2 flex items-center justify-center text-white transition-colors duration-200",
-                    selected ? "bg-emerald-500 border-emerald-500" : "bg-white border-slate-200"
+                    selected ? "bg-rosso-500 border-rosso-500" : "bg-white border-viola-200"
                   )}
                 >
                   <AnimatePresence initial={false}>
@@ -753,12 +753,12 @@ export function BookingSection({
     <div className="md:p-24">
       <div className={cn(PHONE_CARD, "py-8 text-center")}>
         <div className="max-w-md mx-auto space-y-4 md:space-y-6">
-           <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-slate-500">
+           <div className="w-16 h-16 md:w-20 md:h-20 bg-viola-50 border border-viola-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-viola-500">
               <Calendar size={28} strokeWidth={1.5} />
            </div>
            <div className="space-y-2">
-             <h3 className="text-2xl font-display italic text-slate-950">In attesa dell&apos;azienda</h3>
-             <p className="text-[15px] md:text-lg text-slate-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
+             <h3 className="text-2xl font-display text-viola-950">In attesa dell&apos;azienda</h3>
+             <p className="text-[15px] md:text-lg text-viola-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
            </div>
         </div>
       </div>

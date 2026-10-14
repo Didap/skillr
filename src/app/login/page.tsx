@@ -18,7 +18,7 @@ import { duration, ease } from "@/lib/motion";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-[#FDFDFC]" />}>
+    <Suspense fallback={<div className="min-h-dvh bg-background" />}>
       <LoginPageInner />
     </Suspense>
   );
@@ -100,14 +100,14 @@ function LoginPageInner() {
   };
 
   return (
-    <div className="min-h-dvh bg-[#FDFDFC] flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-dvh bg-background flex flex-col selection:bg-rosso-100 selection:text-rosso-900">
       {/* Top bar: the back link owns its own row on phones, so it never collides with the logo */}
       <div className="pt-safe shrink-0 md:absolute md:top-12 md:left-12 md:pt-0">
         <div className="h-14 md:h-auto px-2 md:px-0 flex items-center">
           <Link
             href="/"
             aria-label="Torna alla Home"
-            className="pressable w-11 h-11 md:w-auto md:h-auto rounded-full flex items-center justify-center md:justify-start gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-100 md:hover:bg-transparent transition-colors"
+            className="pressable w-11 h-11 md:w-auto md:h-auto rounded-full flex items-center justify-center md:justify-start gap-2 text-sm font-bold text-viola-500 hover:text-viola-900 hover:bg-viola-100 md:hover:bg-transparent transition-colors"
           >
             <ArrowLeft className="w-5 h-5 md:w-4 md:h-4" />
             <span className="hidden md:inline">Torna alla Home</span>
@@ -123,17 +123,17 @@ function LoginPageInner() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-6 md:mb-12">
-           <span className="font-display text-4xl md:text-5xl italic font-bold text-slate-950">
-              Skillr<span className="text-emerald-600">.</span>
+           <span className="font-display text-4xl md:text-5xl font-bold text-viola-950">
+              Helllo<span className="text-rosso-600">.</span>
            </span>
         </div>
         
-        <Card className="border-slate-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] rounded-[2rem] overflow-hidden bg-white">
+        <Card className="border-viola-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] rounded-[2rem] overflow-hidden bg-white">
           <CardHeader className="text-center pt-8 md:pt-10 pb-4 md:pb-8 px-6 md:px-10">
-            <CardTitle className="text-3xl font-bold tracking-tight text-slate-950 mb-2">
+            <CardTitle className="text-3xl font-bold tracking-tight text-viola-950 mb-2">
               Bentornato
             </CardTitle>
-            <CardDescription className="text-slate-500 font-medium text-[15px] md:text-sm">
+            <CardDescription className="text-viola-500 font-medium text-[15px] md:text-sm">
               Accedi per riprendere la tua ricerca di talenti o lavoro.
             </CardDescription>
           </CardHeader>
@@ -142,7 +142,7 @@ function LoginPageInner() {
               variant="outline" 
               disabled={isLoading}
               onClick={() => signIn("google", { callbackUrl })}
-              className="pressable w-full h-12 md:h-14 rounded-2xl border-slate-100 bg-white hover:bg-slate-50 hover:border-emerald-200 transition-colors font-bold text-[15px] md:text-sm text-slate-700 flex items-center justify-center gap-3 md:gap-4 shadow-sm group"
+              className="pressable w-full h-12 md:h-14 rounded-2xl border-viola-100 bg-white hover:bg-viola-50 hover:border-rosso-200 transition-colors font-bold text-[15px] md:text-sm text-viola-700 flex items-center justify-center gap-3 md:gap-4 shadow-sm group"
             >
               <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                 <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
@@ -155,16 +155,16 @@ function LoginPageInner() {
             
             <div className="relative my-2 md:my-4">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-100"></span>
+                <span className="w-full border-t border-viola-100"></span>
               </div>
-              <div className="relative flex justify-center text-[11px] uppercase tracking-widest font-black text-slate-500">
+              <div className="relative flex justify-center text-[11px] uppercase tracking-widest font-black text-viola-500">
                 <span className="bg-white px-4">Oppure via email</span>
               </div>
             </div>
 
             <form onSubmit={showPassword ? handleCredentialsLogin : handleMagicLink} className="grid gap-3">
                <div className="space-y-1.5">
-                 <Label htmlFor="login-email" className="text-xs font-bold text-slate-500 ml-1">Email</Label>
+                 <Label htmlFor="login-email" className="text-xs font-bold text-viola-500 ml-1">Email</Label>
                  <Input 
                     id="login-email"
                     type="email" 
@@ -173,12 +173,12 @@ function LoginPageInner() {
                     placeholder="La tua email"
                     required
                     autoComplete="email"
-                    className="h-12 md:h-14 rounded-2xl border-slate-100 bg-slate-50/50 px-4"
+                    className="h-12 md:h-14 rounded-2xl border-viola-100 bg-viola-50/50 px-4"
                  />
                </div>
                {showPassword && (
                  <div className="space-y-1.5">
-                   <Label htmlFor="login-password" className="text-xs font-bold text-slate-500 ml-1">Password</Label>
+                   <Label htmlFor="login-password" className="text-xs font-bold text-viola-500 ml-1">Password</Label>
                    <Input 
                       id="login-password"
                       type="password" 
@@ -187,7 +187,7 @@ function LoginPageInner() {
                       placeholder="La tua password"
                       required
                       autoComplete="current-password"
-                      className="h-12 md:h-14 rounded-2xl border-slate-100 bg-slate-50/50 px-4"
+                      className="h-12 md:h-14 rounded-2xl border-viola-100 bg-viola-50/50 px-4"
                    />
                  </div>
                )}
@@ -207,26 +207,26 @@ function LoginPageInner() {
                <Button 
                 type="submit"
                 disabled={isLoading || !turnstileToken}
-                className="pressable w-full h-14 rounded-2xl bg-slate-950 text-white hover:bg-emerald-800 transition-colors font-bold text-lg shadow-xl shadow-slate-200"
+                className="pressable w-full h-14 rounded-2xl bg-viola-950 text-white hover:bg-rosso-800 transition-colors font-bold text-lg shadow-xl shadow-viola-200"
                >
                  {isLoading ? "Invio in corso..." : showPassword ? "Accedi" : "Invia Magic Link"}
                </Button>
                <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="min-h-11 px-3 mx-auto text-sm md:text-xs text-slate-500 hover:text-emerald-600 font-bold transition-colors"
+                className="min-h-11 px-3 mx-auto text-sm md:text-xs text-viola-500 hover:text-rosso-600 font-bold transition-colors"
                >
                  {showPassword ? "Usa il Magic Link (senza password)" : "Preferisci usare una password?"}
                </button>
             </form>
           </CardContent>
           <CardFooter className="pb-6 md:pb-10 pt-2 md:pt-6 px-6 md:px-10">
-            <div className="px-4 py-1.5 md:py-2 bg-emerald-50/50 rounded-2xl w-full border border-emerald-100/50 text-center">
-              <p className="text-sm text-slate-600 font-medium">
-                Nuovo su Skillr?{" "}
+            <div className="px-4 py-1.5 md:py-2 bg-rosso-50/50 rounded-2xl w-full border border-rosso-100/50 text-center">
+              <p className="text-sm text-viola-600 font-medium">
+                Nuovo su Helllo?{" "}
                 <Link 
                   href="/onboarding"
-                  className="inline-flex items-center min-h-11 px-1 text-emerald-700 hover:underline font-bold"
+                  className="inline-flex items-center min-h-11 px-1 text-rosso-700 hover:underline font-bold"
                 >
                   Crea un account
                 </Link>
@@ -235,13 +235,13 @@ function LoginPageInner() {
           </CardFooter>
         </Card>
         
-        <div className="px-4 md:px-10 text-center text-xs md:text-[11px] text-slate-500 mt-6 md:mt-10 leading-relaxed font-medium">
+        <div className="px-4 md:px-10 text-center text-xs md:text-[11px] text-viola-500 mt-6 md:mt-10 leading-relaxed font-medium">
           Accedendo, confermi di aver letto e accettato i nostri{" "}
-          <Link href="/terms" className="text-slate-600 hover:text-emerald-600 font-bold underline decoration-slate-200 underline-offset-4">
+          <Link href="/terms" className="text-viola-600 hover:text-rosso-600 font-bold underline decoration-viola-200 underline-offset-4">
             Termini
           </Link>{" "}
           e la{" "}
-          <Link href="/privacy" className="text-slate-600 hover:text-emerald-600 font-bold underline decoration-slate-200 underline-offset-4">
+          <Link href="/privacy" className="text-viola-600 hover:text-rosso-600 font-bold underline decoration-viola-200 underline-offset-4">
             Privacy Policy
           </Link>.
         </div>

@@ -52,19 +52,19 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Badge variant="secondary" className="bg-pa-blue/10 text-pa-blue border-none font-bold">V2 Preview</Badge>
+            <Badge variant="secondary" className="bg-blu/10 text-blu border-none font-bold">V2 Preview</Badge>
             <span className="text-xs font-bold text-text-muted uppercase tracking-widest">Dashboard Operatore</span>
           </div>
-          <h1 className="text-4xl font-display font-bold text-pa-blue">Impatto Territoriale Puglia</h1>
+          <h1 className="text-4xl font-display font-bold text-blu">Impatto Territoriale Puglia</h1>
           <p className="text-text-secondary mt-1 font-medium">Monitoraggio in tempo reale delle politiche attive e del placement NEET.</p>
         </div>
         
         <div className="flex gap-3">
-          <Button variant="outline" className="border-pa-blue/20 text-pa-blue bg-white shadow-sm hover:bg-pa-gray-cold h-11">
+          <Button variant="outline" className="border-blu/20 text-blu bg-white shadow-sm hover:bg-viola-50 h-11">
             <Filter className="mr-2 h-4 w-4" />
             Filtra Area
           </Button>
-          <Button className="bg-pa-blue text-white hover:bg-pa-blue-dark shadow-lg shadow-pa-blue/20 h-11">
+          <Button className="bg-blu text-white hover:bg-blu-800 shadow-lg shadow-blu/20 h-11">
             <Download className="mr-2 h-4 w-4" />
             Esporta Report
           </Button>
@@ -79,10 +79,10 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
       >
         {/* KPI Cards */}
         {[
-          { title: "NEET Registrati", value: initialStats.totalNeet, icon: Users, trend: "+12%", color: "text-blue-600", bg: "bg-blue-50" },
+          { title: "NEET Registrati", value: initialStats.totalNeet, icon: Users, trend: "+12%", color: "text-blu-600", bg: "bg-blu-50" },
           { title: "Match Avviati", value: initialStats.totalMatches, icon: Zap, trend: "+8%", color: "text-amber-600", bg: "bg-amber-50" },
-          { title: "Colloqui Fissati", value: initialStats.totalBookings, icon: Calendar, trend: "+15%", color: "text-emerald-600", bg: "bg-emerald-50" },
-          { title: "Placement Avg", value: `${initialStats.avgPlacementDays}gg`, icon: Clock, trend: "-2gg", color: "text-purple-600", bg: "bg-purple-50" },
+          { title: "Colloqui Fissati", value: initialStats.totalBookings, icon: Calendar, trend: "+15%", color: "text-rosso-600", bg: "bg-rosso-50" },
+          { title: "Placement Avg", value: `${initialStats.avgPlacementDays}gg`, icon: Clock, trend: "-2gg", color: "text-viola-600", bg: "bg-viola-50" },
         ].map((kpi, i) => (
           <motion.div key={i} variants={item}>
             <Card className="border-none shadow-premium bg-white overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
@@ -91,17 +91,17 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                   <div className={`p-3 rounded-xl ${kpi.bg}`}>
                     <kpi.icon className={`h-6 w-6 ${kpi.color}`} />
                   </div>
-                  <Badge variant="outline" className="border-none bg-green-50 text-green-700 text-[10px] font-bold">
+                  <Badge variant="outline" className="border-none bg-blu-50 text-blu-700 text-[10px] font-bold">
                     <TrendingUp className="mr-1 h-3 w-3" />
                     {kpi.trend}
                   </Badge>
                 </div>
                 <div className="mt-4">
                   <p className="text-sm font-bold text-text-muted uppercase tracking-wider">{kpi.title}</p>
-                  <h3 className="text-3xl font-bold text-pa-blue mt-1">{kpi.value}</h3>
+                  <h3 className="text-3xl font-bold text-blu mt-1">{kpi.value}</h3>
                 </div>
               </CardContent>
-              <div className={`h-1 w-full bg-linear-to-r from-transparent via-pa-blue/20 to-transparent absolute bottom-0 opacity-0 group-hover:opacity-100 transition-opacity`} />
+              <div className={`h-1 w-full bg-linear-to-r from-transparent via-blu/20 to-transparent absolute bottom-0 opacity-0 group-hover:opacity-100 transition-opacity`} />
             </Card>
           </motion.div>
         ))}
@@ -112,10 +112,10 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
         {/* Geographic Distribution (2/3) */}
         <motion.div variants={item} initial="hidden" animate="show" className="lg:col-span-2 space-y-8">
           <Card className="border-none shadow-premium bg-white">
-            <CardHeader className="border-b border-pa-gray-cold/50 pb-6">
+            <CardHeader className="border-b border-viola-50/50 pb-6">
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-pa-blue" />
-                <CardTitle className="text-xl font-bold text-pa-blue">Distribuzione per Provincia</CardTitle>
+                <MapPin className="h-5 w-5 text-blu" />
+                <CardTitle className="text-xl font-bold text-blu">Distribuzione per Provincia</CardTitle>
               </div>
               <CardDescription>Numero di iscritti attivi suddivisi per distretto provinciale.</CardDescription>
             </CardHeader>
@@ -129,15 +129,15 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                     return (
                       <div key={prov.name} className="space-y-2">
                         <div className="flex justify-between text-sm font-bold">
-                          <span className="text-pa-blue">{prov.name}</span>
+                          <span className="text-blu">{prov.name}</span>
                           <span className="text-text-muted">{prov.value}</span>
                         </div>
-                        <div className="h-3 w-full bg-pa-gray-cold rounded-full overflow-hidden">
+                        <div className="h-3 w-full bg-viola-50 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${percentage * 2}%` }} // Adjusted for visibility
                             transition={{ duration: 1, delay: i * 0.1 }}
-                            className="h-full bg-pa-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                            className="h-full bg-blu rounded-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"
                           />
                         </div>
                       </div>
@@ -146,7 +146,7 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                 </div>
 
                 {/* Simplified Puglia SVG Map (Mock Visual) */}
-                <div className="flex flex-col items-center justify-center bg-pa-gray-cold/30 rounded-2xl p-6 border border-pa-gray-cold">
+                <div className="flex flex-col items-center justify-center bg-viola-50/30 rounded-2xl p-6 border border-viola-50">
                   <div className="relative">
                     <svg width="200" height="240" viewBox="0 0 200 300" className="drop-shadow-2xl">
                       <path 
@@ -163,7 +163,7 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                       <circle cx="150" cy="150" r="4" fill="#fbbf24" />
                       <circle cx="90" cy="220" r="5" fill="#fbbf24" />
                     </svg>
-                    <div className="absolute top-0 right-0 bg-white p-2 rounded-lg shadow-sm border border-pa-gray-cold text-[10px] font-bold">
+                    <div className="absolute top-0 right-0 bg-white p-2 rounded-lg shadow-sm border border-viola-50 text-[10px] font-bold">
                       LIVE COVERAGE: 94%
                     </div>
                   </div>
@@ -180,10 +180,10 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
         {/* Growth & Activity (1/3) */}
         <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
           <Card className="border-none shadow-premium bg-white h-full">
-            <CardHeader className="border-b border-pa-gray-cold/50 pb-6">
+            <CardHeader className="border-b border-viola-50/50 pb-6">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-pa-blue" />
-                <CardTitle className="text-xl font-bold text-pa-blue">Trend Settimanale</CardTitle>
+                <BarChart3 className="h-5 w-5 text-blu" />
+                <CardTitle className="text-xl font-bold text-blu">Trend Settimanale</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -194,7 +194,7 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                     initial={{ height: 0 }}
                     animate={{ height: `${h}%` }}
                     transition={{ duration: 0.8, delay: i * 0.05 }}
-                    className={`w-full rounded-t-md ${i === 6 ? 'bg-pa-blue' : 'bg-pa-blue/20'}`}
+                    className={`w-full rounded-t-md ${i === 6 ? 'bg-blu' : 'bg-blu/20'}`}
                   />
                 ))}
               </div>
@@ -202,15 +202,15 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
               <div className="space-y-4">
                 <h4 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3">Ultime Attività</h4>
                 {[
-                  { user: "Luigi V.", action: "Match Confermato", time: "2h fa", color: "bg-emerald-500" },
-                  { user: "Maria R.", action: "Profilo Verificato", time: "5h fa", color: "bg-blue-500" },
+                  { user: "Luigi V.", action: "Match Confermato", time: "2h fa", color: "bg-rosso-500" },
+                  { user: "Maria R.", action: "Profilo Verificato", time: "5h fa", color: "bg-blu-500" },
                   { user: "CPI Lecce", action: "Nuova Ricerca", time: "12h fa", color: "bg-amber-500" },
-                  { user: "Sonia G.", action: "Colloquio Fissato", time: "1g fa", color: "bg-purple-500" },
+                  { user: "Sonia G.", action: "Colloquio Fissato", time: "1g fa", color: "bg-viola-500" },
                 ].map((act, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-pa-gray-cold transition-colors">
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-viola-50 transition-colors">
                     <div className={`h-2 w-2 rounded-full ${act.color}`} />
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-pa-blue">{act.user}</p>
+                      <p className="text-sm font-bold text-blu">{act.user}</p>
                       <p className="text-[10px] text-text-muted font-medium uppercase tracking-tighter">{act.action}</p>
                     </div>
                     <span className="text-[10px] text-text-tertiary font-bold">{act.time}</span>
@@ -218,7 +218,7 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
                 ))}
               </div>
               
-              <Button variant="ghost" className="w-full mt-6 text-pa-blue font-bold text-xs hover:bg-pa-blue/5">
+              <Button variant="ghost" className="w-full mt-6 text-blu font-bold text-xs hover:bg-blu/5">
                 VEDI TUTTI I LOG
               </Button>
             </CardContent>
@@ -229,14 +229,14 @@ export function PaDashboardClient({ initialStats }: { initialStats: DashboardSta
       
       {/* Disclaimer Section */}
       <div className="mt-12 bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-white flex items-start gap-4">
-        <div className="shrink-0 p-2 bg-pa-blue/10 rounded-lg">
-          <Clock className="h-5 w-5 text-pa-blue" />
+        <div className="shrink-0 p-2 bg-blu/10 rounded-lg">
+          <Clock className="h-5 w-5 text-blu" />
         </div>
         <div>
           <p className="text-xs text-text-muted font-medium leading-relaxed">
-            I dati visualizzati in questa dashboard demo sono estratti dal database reale di Skillr (Puglia Region). 
+            I dati visualizzati in questa dashboard demo sono estratti dal database reale di Helllo (Puglia Region). 
             Alcuni KPI potrebbero essere simulati dove i dati storici sono insufficienti per l&apos;elaborazione statistica.
-            Ultimo aggiornamento: <span className="font-bold text-pa-blue">{new Date().toLocaleString('it-IT')}</span>
+            Ultimo aggiornamento: <span className="font-bold text-blu">{new Date().toLocaleString('it-IT')}</span>
           </p>
         </div>
       </div>

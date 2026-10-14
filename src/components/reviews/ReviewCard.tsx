@@ -18,15 +18,15 @@ export function ReviewCard({ authorName, authorImage, stars, text, createdAt }: 
   // Obfuscate name: Alessandro Rossi -> Alessandro R.
   const displayName = authorName 
     ? authorName.split(' ')[0] + (authorName.split(' ').length > 1 ? ` ${authorName.split(' ')[1][0]}.` : "")
-    : "Utente Skillr";
+    : "Utente Helllo";
 
   const dateToFormat = createdAt ? new Date(createdAt) : new Date();
 
   return (
-    <div className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-premium transition-all duration-300">
+    <div className="p-8 rounded-[2.5rem] bg-white border border-viola-100 shadow-sm hover:shadow-premium transition-all duration-300">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 overflow-hidden shrink-0 relative">
+          <div className="w-12 h-12 rounded-2xl bg-viola-50 flex items-center justify-center text-viola-300 border border-viola-100 overflow-hidden shrink-0 relative">
             {authorImage ? (
               <Image 
                 src={authorImage} 
@@ -39,8 +39,8 @@ export function ReviewCard({ authorName, authorImage, stars, text, createdAt }: 
             )}
           </div>
           <div>
-            <p className="font-bold text-slate-900">{displayName}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+            <p className="font-bold text-viola-900">{displayName}</p>
+            <p className="text-[10px] text-viola-400 font-black uppercase tracking-widest">
               {format(dateToFormat, "MMMM yyyy", { locale: it })}
             </p>
           </div>

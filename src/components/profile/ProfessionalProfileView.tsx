@@ -94,9 +94,9 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       rel="noopener noreferrer"
       title="Vedi CV"
       aria-label="Vedi CV"
-      className="pressable inline-flex shrink-0 items-center justify-center rounded-2xl w-12 h-12 md:w-14 md:h-14 border border-slate-100 bg-white shadow-sm hover:bg-slate-50 transition-colors"
+      className="pressable inline-flex shrink-0 items-center justify-center rounded-2xl w-12 h-12 md:w-14 md:h-14 border border-viola-100 bg-white shadow-sm hover:bg-viola-50 transition-colors"
     >
-      <FileText size={22} className="text-slate-600" />
+      <FileText size={22} className="text-viola-600" />
     </a>
   ) : null;
 
@@ -107,9 +107,9 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       rel="noopener noreferrer"
       title="Vedi Portfolio"
       aria-label="Vedi Portfolio"
-      className="pressable inline-flex shrink-0 items-center justify-center rounded-2xl w-12 h-12 md:w-14 md:h-14 border border-slate-100 bg-white shadow-sm hover:bg-slate-50 transition-colors"
+      className="pressable inline-flex shrink-0 items-center justify-center rounded-2xl w-12 h-12 md:w-14 md:h-14 border border-viola-100 bg-white shadow-sm hover:bg-viola-50 transition-colors"
     >
-      <Layout size={22} className="text-slate-600" />
+      <Layout size={22} className="text-viola-600" />
     </a>
   ) : null;
 
@@ -118,7 +118,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       {/* Hero Section */}
       <section className="flex flex-col md:flex-row gap-6 md:gap-12 items-start mb-10 md:mb-16">
         <div className="relative group shrink-0">
-          <div className="w-28 h-28 md:w-56 md:h-56 rounded-[2rem] md:rounded-[2.5rem] bg-linear-to-br from-emerald-600 to-slate-900 overflow-hidden shadow-2xl relative z-10 transition-transform duration-500 md:group-hover:scale-[1.02]">
+          <div className="w-28 h-28 md:w-56 md:h-56 rounded-[2rem] md:rounded-[2.5rem] bg-linear-to-br from-rosso-600 to-viola-900 overflow-hidden shadow-2xl relative z-10 transition-transform duration-500 md:group-hover:scale-[1.02]">
             {profile.photoUrl ? (
               <Image
                 src={profile.photoUrl}
@@ -129,23 +129,23 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/20 font-display text-6xl md:text-8xl italic font-bold">
+              <div className="w-full h-full flex items-center justify-center text-white/20 font-display text-6xl md:text-8xl font-bold">
                 {fullName[0]}
               </div>
             )}
           </div>
-          <div className="absolute -inset-4 bg-emerald-500/10 blur-3xl rounded-full z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute -inset-4 bg-rosso-500/10 blur-3xl rounded-full z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         </div>
 
         <div className="flex-1 min-w-0 w-full space-y-5 md:space-y-6">
           <div>
-            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-widest mb-4">
+            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-50 text-rosso-700 text-[11px] font-black uppercase tracking-widest mb-4">
               <Zap size={10} fill="currentColor" /> Disponibile per Match
             </div>
-            <h2 className="font-display text-4xl md:text-6xl font-bold text-slate-950 leading-[1.05] md:leading-tight tracking-tight wrap-break-word">
+            <h2 className="font-display text-4xl md:text-6xl font-bold text-viola-950 leading-[1.05] md:leading-tight tracking-tight wrap-break-word">
               {fullName}
             </h2>
-            <p className="text-xl md:text-2xl text-emerald-600 font-semibold mt-1 md:mt-2 italic font-display">
+            <p className="text-xl md:text-2xl text-rosso-600 font-semibold mt-1 md:mt-2 font-display">
               {profile.title || "Professionista esperto"}
             </p>
             <div className="flex items-center gap-3 mt-3 md:mt-4">
@@ -153,17 +153,17 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
                 <Star size={16} className="fill-amber-400 text-amber-400" />
                 <span className="font-bold text-amber-900">{profile.averageRating || "0.0"}</span>
               </div>
-              <span className="text-sm font-bold text-slate-500">({profile.reviewCount || 0} recensioni)</span>
+              <span className="text-sm font-bold text-viola-500">({profile.reviewCount || 0} recensioni)</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 md:gap-6 text-slate-600 font-bold text-sm md:uppercase md:tracking-wider">
-            <div className="flex items-center gap-2 h-9 md:h-auto px-3 md:px-0 rounded-full bg-slate-50 md:bg-transparent border border-slate-100 md:border-0">
-              <MapPin size={16} className="text-emerald-500 shrink-0" />
+          <div className="flex flex-wrap gap-2 md:gap-6 text-viola-600 font-bold text-sm md:uppercase md:tracking-wider">
+            <div className="flex items-center gap-2 h-9 md:h-auto px-3 md:px-0 rounded-full bg-viola-50 md:bg-transparent border border-viola-100 md:border-0">
+              <MapPin size={16} className="text-rosso-500 shrink-0" />
               {profile.city || "Remote / Italia"}
             </div>
-            <div className="flex items-center gap-2 h-9 md:h-auto px-3 md:px-0 rounded-full bg-slate-50 md:bg-transparent border border-slate-100 md:border-0">
-              <DollarSign size={16} className="text-emerald-500 shrink-0" />
+            <div className="flex items-center gap-2 h-9 md:h-auto px-3 md:px-0 rounded-full bg-viola-50 md:bg-transparent border border-viola-100 md:border-0">
+              <DollarSign size={16} className="text-rosso-500 shrink-0" />
               {formatRate(profile.rateType, profile.rateAmountEur || 0)}
             </div>
           </div>
@@ -173,7 +173,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
             <Button
               onClick={handleBooking}
               disabled={isBooking}
-              className="pressable rounded-2xl px-10 h-14 text-lg font-black bg-slate-950 hover:bg-emerald-800 text-white transition-colors shadow-xl shadow-slate-200"
+              className="pressable rounded-2xl px-10 h-14 text-lg font-black bg-viola-950 hover:bg-rosso-800 text-white transition-colors shadow-xl shadow-viola-200"
             >
               {bookLabel}
             </Button>
@@ -184,26 +184,26 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       </section>
 
       {/* Main Content Grid */}
-      <section className="grid md:grid-cols-3 gap-10 md:gap-12 border-t border-slate-100 pt-8 md:pt-12">
+      <section className="grid md:grid-cols-3 gap-10 md:gap-12 border-t border-viola-100 pt-8 md:pt-12">
         <div className="md:col-span-2 space-y-10 md:space-y-12">
           <div className="space-y-3 md:space-y-4">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Biografia</h3>
-            <p className="text-base md:text-xl text-slate-700 leading-relaxed font-medium">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500">Biografia</h3>
+            <p className="text-base md:text-xl text-viola-700 leading-relaxed font-medium">
               {profile.bioLong || profile.bioShort || "Il professionista non ha ancora inserito una descrizione dettagliata."}
             </p>
           </div>
 
           <div className="space-y-5 md:space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Timeline & Esperienza</h3>
-            <div className="relative pl-8 space-y-8 md:space-y-10 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500">Timeline & Esperienza</h3>
+            <div className="relative pl-8 space-y-8 md:space-y-10 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-viola-100">
               <div className="relative">
-                <div className="absolute left-[-29px] top-1.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-white" />
+                <div className="absolute left-[-29px] top-1.5 w-3.5 h-3.5 rounded-full bg-rosso-500 ring-4 ring-white" />
                 <div className="space-y-1">
-                  <p className="font-black text-slate-950 text-lg md:text-xl tracking-tight">{profile.title || "In cerca di nuove sfide"}</p>
-                  <p className="text-slate-500 font-bold text-sm uppercase tracking-wide">Attuale • Libero Professionista</p>
+                  <p className="font-black text-viola-950 text-lg md:text-xl tracking-tight">{profile.title || "In cerca di nuove sfide"}</p>
+                  <p className="text-viola-500 font-bold text-sm uppercase tracking-wide">Attuale • Libero Professionista</p>
                 </div>
               </div>
-              <div className="p-5 md:p-8 bg-slate-50 rounded-3xl md:rounded-[2rem] border border-slate-100 italic text-slate-500 font-medium">
+              <div className="p-5 md:p-8 bg-viola-50 rounded-3xl md:rounded-[2rem] border border-viola-100 italic text-viola-500 font-medium">
                 La cronologia dettagliata delle esperienze lavorative sarà disponibile nella prossima versione della piattaforma.
               </div>
             </div>
@@ -211,33 +211,33 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
         </div>
 
         <div className="space-y-10 md:space-y-12">
-          <div className="bg-slate-50 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 border border-slate-100 shadow-sm">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700 mb-5 md:mb-8 flex items-center gap-2">
+          <div className="bg-viola-50 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 border border-viola-100 shadow-sm">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-rosso-700 mb-5 md:mb-8 flex items-center gap-2">
               <Zap size={12} fill="currentColor" /> Top Skills
             </h3>
             <div className="flex flex-col gap-3">
               {profile.topSkills?.map((skill) => (
-                <div key={skill} className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm transition-transform md:hover:translate-x-1">
-                  <span className="font-bold text-slate-800 text-sm min-w-0 truncate">{skill}</span>
-                  <div className="w-2 h-2 shrink-0 rounded-full bg-emerald-500" />
+                <div key={skill} className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-viola-100 shadow-sm transition-transform md:hover:translate-x-1">
+                  <span className="font-bold text-viola-800 text-sm min-w-0 truncate">{skill}</span>
+                  <div className="w-2 h-2 shrink-0 rounded-full bg-rosso-500" />
                 </div>
               ))}
               {(!profile.topSkills || profile.topSkills.length === 0) && (
-                <p className="text-sm text-slate-500 font-bold italic">Nessuna skill principale impostata.</p>
+                <p className="text-sm text-viola-500 font-bold italic">Nessuna skill principale impostata.</p>
               )}
             </div>
           </div>
 
           <div className="md:px-4">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 md:mb-6">Competenze Extra</h3>
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 mb-4 md:mb-6">Competenze Extra</h3>
             <div className="flex flex-wrap gap-2">
               {profile.secondarySkills?.map((skill) => (
-                <Badge key={skill} variant="outline" className="h-auto rounded-xl px-4 py-2 border-slate-200 bg-white text-slate-600 font-bold text-[11px] uppercase tracking-wider hover:bg-slate-50 transition-colors">
+                <Badge key={skill} variant="outline" className="h-auto rounded-xl px-4 py-2 border-viola-200 bg-white text-viola-600 font-bold text-[11px] uppercase tracking-wider hover:bg-viola-50 transition-colors">
                   {skill}
                 </Badge>
               ))}
               {(!profile.secondarySkills || profile.secondarySkills.length === 0) && (
-                <p className="text-sm text-slate-500 font-bold italic">Nessuna competenza secondaria.</p>
+                <p className="text-sm text-viola-500 font-bold italic">Nessuna competenza secondaria.</p>
               )}
             </div>
           </div>
@@ -245,11 +245,11 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
       </section>
 
       {/* Reviews Section */}
-      <section className="mt-12 md:mt-24 border-t border-slate-100 pt-10 md:pt-16 pb-8 md:pb-12">
+      <section className="mt-12 md:mt-24 border-t border-viola-100 pt-10 md:pt-16 pb-8 md:pb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-8 mb-8 md:mb-12">
           <div className="space-y-3">
-            <h3 className="hidden md:block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 md:text-left">Social Proof</h3>
-            <h2 className="text-3xl md:text-4xl font-display italic font-bold text-slate-950 tracking-tight">Cosa dicono di {profile.firstName}</h2>
+            <h3 className="hidden md:block text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 md:text-left">Social Proof</h3>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-viola-950 tracking-tight">Cosa dicono di {profile.firstName}</h2>
           </div>
           <div className="flex flex-col items-start md:items-end gap-1">
             <div className="flex items-center gap-3">
@@ -262,14 +262,14 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
                       "transition-all duration-300",
                       s <= Math.round(Number(profile.averageRating))
                         ? "fill-amber-400 text-amber-400 scale-110"
-                        : "text-slate-200 fill-slate-50"
+                        : "text-viola-200 fill-viola-50"
                     )}
                   />
                 ))}
               </div>
-              <span className="text-3xl font-black text-slate-950 tabular-nums">{profile.averageRating || "0.0"}</span>
+              <span className="text-3xl font-black text-viola-950 tabular-nums">{profile.averageRating || "0.0"}</span>
             </div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Media su {profile.reviewCount || 0} incontri</p>
+            <p className="text-[11px] font-black uppercase tracking-widest text-viola-500">Media su {profile.reviewCount || 0} incontri</p>
           </div>
         </div>
 
@@ -278,7 +278,7 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
             {reviews.map((review) => (
               <ReviewCard
                 key={review.id}
-                authorName={review.author?.name ?? "Utente Skillr"}
+                authorName={review.author?.name ?? "Utente Helllo"}
                 authorImage={review.author?.image ?? undefined}
                 stars={review.stars}
                 text={review.text}
@@ -287,12 +287,12 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
             ))}
           </div>
         ) : (
-          <div className="py-12 md:py-24 bg-slate-50 rounded-[2rem] md:rounded-[3.5rem] border-2 border-dashed border-slate-200 text-center px-6 md:px-8 shadow-inner">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 text-slate-200 shadow-sm">
+          <div className="py-12 md:py-24 bg-viola-50 rounded-[2rem] md:rounded-[3.5rem] border-2 border-dashed border-viola-200 text-center px-6 md:px-8 shadow-inner">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 text-viola-200 shadow-sm">
               <Star size={36} />
             </div>
-            <h4 className="text-2xl font-display font-bold text-slate-950 mb-3 tracking-tight">Nuovo talento sulla piattaforma</h4>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
+            <h4 className="text-2xl font-display font-bold text-viola-950 mb-3 tracking-tight">Nuovo talento sulla piattaforma</h4>
+            <p className="text-viola-500 font-medium max-w-sm mx-auto leading-relaxed">
               Questo professionista non ha ancora concluso incontri certificati. Le recensioni appariranno qui automaticamente.
             </p>
           </div>
@@ -301,11 +301,11 @@ export function ProfessionalProfileView({ profile, reviews, matchId, professiona
 
       {/* Phones: primary action in thumb reach, above the tab bar */}
       <BottomActionBar variant="floating" desktop="hidden">
-        <div className="flex items-center gap-2 rounded-[1.25rem] bg-white/90 backdrop-blur-xl border border-slate-100 p-2 shadow-premium">
+        <div className="flex items-center gap-2 rounded-[1.25rem] bg-white/90 backdrop-blur-xl border border-viola-100 p-2 shadow-premium">
           <Button
             onClick={handleBooking}
             disabled={isBooking}
-            className="pressable flex-1 min-w-0 rounded-2xl h-12 text-base font-black bg-slate-950 hover:bg-emerald-800 text-white transition-colors"
+            className="pressable flex-1 min-w-0 rounded-2xl h-12 text-base font-black bg-viola-950 hover:bg-rosso-800 text-white transition-colors"
           >
             {bookLabel}
           </Button>

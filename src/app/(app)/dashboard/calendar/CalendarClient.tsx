@@ -115,14 +115,14 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
         subtitle="Gestisci i tuoi appuntamenti"
         actions={
           <>
-            <Badge variant="outline" className="hidden md:inline-flex h-9 rounded-full border-slate-200 text-slate-500 font-semibold px-4 text-sm tabular-nums">
+            <Badge variant="outline" className="hidden md:inline-flex h-9 rounded-full border-viola-200 text-viola-500 font-semibold px-4 text-sm tabular-nums">
               {events.length} eventi totali
             </Badge>
             <button
               type="button"
               onClick={goToToday}
               disabled={viewingToday}
-              className="pressable h-11 px-4 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              className="pressable h-11 px-4 rounded-full border border-viola-200 bg-white text-sm font-semibold text-viola-700 hover:bg-viola-50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
             >
               Oggi
             </button>
@@ -137,10 +137,10 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
           {/* Month grid */}
           <section
             aria-label="Mese"
-            className="relative lg:col-span-7 xl:col-span-8 lg:h-full lg:min-h-0 flex flex-col md:p-6 md:bg-white md:border md:border-slate-100 md:rounded-[2.5rem] md:shadow-premium overflow-hidden"
+            className="relative lg:col-span-7 xl:col-span-8 lg:h-full lg:min-h-0 flex flex-col md:p-6 md:bg-white md:border md:border-viola-100 md:rounded-[2.5rem] md:shadow-premium overflow-hidden"
           >
             <div className="flex items-center justify-between gap-3 mb-3 md:mb-6 shrink-0">
-              <h2 className="text-2xl font-display italic text-slate-950 capitalize truncate" aria-live="polite">
+              <h2 className="text-2xl font-display text-viola-950 capitalize truncate" aria-live="polite">
                 {format(currentMonth, "MMMM yyyy", { locale: it })}
               </h2>
               <div className="flex items-center gap-1 md:gap-2 -mr-1.5 md:mr-0">
@@ -148,7 +148,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                   type="button"
                   onClick={prevMonth}
                   aria-label="Mese precedente"
-                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-viola-100 flex items-center justify-center text-viola-700 hover:bg-viola-50 transition-colors"
                 >
                   <ChevronLeft size={20} />
                 </button>
@@ -156,7 +156,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                   type="button"
                   onClick={nextMonth}
                   aria-label="Mese successivo"
-                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="pressable w-11 h-11 rounded-full md:rounded-xl md:border md:border-viola-100 flex items-center justify-center text-viola-700 hover:bg-viola-50 transition-colors"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -166,7 +166,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
             <div className="grid grid-cols-7 md:gap-2 mb-1 md:mb-2 shrink-0" aria-hidden="true">
               {WEEKDAYS.map(day => (
                 <div key={day} className="text-center py-1">
-                  <span className="text-[11px] md:text-[10px] font-bold md:font-black uppercase tracking-wider md:tracking-widest text-slate-400 md:text-slate-300">{day}</span>
+                  <span className="text-[11px] md:text-[10px] font-bold md:font-black uppercase tracking-wider md:tracking-widest text-viola-400 md:text-viola-300">{day}</span>
                 </div>
               ))}
             </div>
@@ -197,24 +197,24 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                       aria-current={today ? "date" : undefined}
                       aria-label={`${format(day, "EEEE d MMMM", { locale: it })}${dayEvents.length ? `, ${dayEvents.length} ${dayEvents.length === 1 ? "evento" : "eventi"}` : ""}`}
                       className={cn(
-                        "pressable relative h-12 sm:h-14 lg:h-auto lg:min-h-0 flex flex-col items-center justify-center gap-0.5 rounded-xl md:rounded-2xl md:p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-[background-color,box-shadow,transform] duration-200",
+                        "pressable relative h-12 sm:h-14 lg:h-auto lg:min-h-0 flex flex-col items-center justify-center gap-0.5 rounded-xl md:rounded-2xl md:p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-rosso-500/50 transition-[background-color,box-shadow,transform] duration-200",
                         // Desktop keeps the tiled look; phones use a circle on the number instead
                         isSelected
-                          ? "md:bg-slate-950 md:shadow-xl md:shadow-slate-200 md:scale-105 md:z-10"
+                          ? "md:bg-viola-950 md:shadow-xl md:shadow-viola-200 md:scale-105 md:z-10"
                           : today
-                            ? "md:bg-emerald-50 md:ring-2 md:ring-emerald-100 md:ring-offset-2"
+                            ? "md:bg-rosso-50 md:ring-2 md:ring-rosso-100 md:ring-offset-2"
                             : isCurrentMonth
-                              ? "md:bg-white md:hover:bg-slate-50 md:border md:border-slate-100"
+                              ? "md:bg-white md:hover:bg-viola-50 md:border md:border-viola-100"
                               : "opacity-25 md:bg-white"
                       )}
                     >
                       <span className={cn(
                         "w-9 h-9 sm:w-10 sm:h-10 md:w-auto md:h-auto rounded-full flex items-center justify-center text-[15px] md:text-xs font-semibold md:font-bold tabular-nums transition-colors duration-200",
                         isSelected
-                          ? "bg-slate-950 text-white md:bg-transparent"
+                          ? "bg-viola-950 text-white md:bg-transparent"
                           : today
-                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 md:bg-transparent md:ring-0"
-                            : isCurrentMonth ? "text-slate-900" : "text-slate-300"
+                            ? "bg-rosso-50 text-rosso-700 ring-1 ring-rosso-200 md:bg-transparent md:ring-0"
+                            : isCurrentMonth ? "text-viola-900" : "text-viola-300"
                       )}>
                         {format(day, "d")}
                       </span>
@@ -225,7 +225,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                             key={e.id}
                             className={cn(
                               "w-1 h-1 rounded-full",
-                              isSelected ? "bg-emerald-500 md:bg-emerald-400" : e.type === 'smart' ? "bg-emerald-500" : "bg-primary"
+                              isSelected ? "bg-rosso-500 md:bg-rosso-400" : e.type === 'smart' ? "bg-rosso-500" : "bg-primary"
                             )}
                           />
                         ))}
@@ -243,10 +243,10 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
             className="lg:col-span-5 xl:col-span-4 lg:h-full flex flex-col lg:min-h-0"
           >
             <div className="flex items-center justify-between gap-3 md:px-2 mb-3 md:mb-4 shrink-0">
-              <h3 id="agenda-heading" className="text-xl md:text-lg font-display italic text-slate-950 first-letter:uppercase truncate">
+              <h3 id="agenda-heading" className="text-xl md:text-lg font-display text-viola-950 first-letter:uppercase truncate">
                 {isToday(selectedDate) ? "Oggi" : format(selectedDate, "EEEE d MMMM", { locale: it })}
               </h3>
-              <span className="shrink-0 inline-flex items-center h-7 px-3 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs tabular-nums">
+              <span className="shrink-0 inline-flex items-center h-7 px-3 rounded-full bg-viola-100 text-viola-600 font-semibold text-xs tabular-nums">
                 {selectedDateEvents.length} {selectedDateEvents.length === 1 ? "evento" : "eventi"}
               </span>
             </div>
@@ -264,24 +264,24 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                     selectedDateEvents.map((event) => (
                       <article
                         key={event.id}
-                        className="relative overflow-hidden bg-white border border-slate-100/80 rounded-3xl md:rounded-[2rem] shadow-card md:shadow-premium md:hover:shadow-2xl md:hover:border-emerald-200/50 transition-[box-shadow,border-color] duration-500 group"
+                        className="relative overflow-hidden bg-white border border-viola-100/80 rounded-3xl md:rounded-[2rem] shadow-card md:shadow-premium md:hover:shadow-2xl md:hover:border-rosso-200/50 transition-[box-shadow,border-color] duration-500 group"
                       >
                         {/* Decorative background element */}
                         <div className={cn(
                           "absolute top-0 right-0 w-32 h-32 blur-3xl opacity-5 transition-opacity group-hover:opacity-10 pointer-events-none",
-                          event.type === 'smart' ? "bg-emerald-500" : "bg-blue-500"
+                          event.type === 'smart' ? "bg-rosso-500" : "bg-blu-500"
                         )} />
 
                         <div className="p-4 md:p-6 relative z-10 flex flex-col gap-4 md:gap-5">
                           <div className="flex items-start gap-3 md:gap-4 min-w-0">
                             <div className={cn(
                               "w-12 h-12 md:w-16 md:h-16 rounded-2xl shrink-0 flex items-center justify-center relative",
-                              event.type === 'smart' ? "bg-emerald-50" : "bg-slate-50"
+                              event.type === 'smart' ? "bg-rosso-50" : "bg-viola-50"
                             )}>
                               {event.image ? (
                                 <Image src={event.image} alt="" width={64} height={64} className="w-full h-full object-cover rounded-2xl shadow-md border-2 border-white" />
                               ) : (
-                                <div className="text-slate-300">
+                                <div className="text-viola-300">
                                   {event.type === 'smart' ? <Zap className="size-6 md:size-7" /> : <User className="size-6 md:size-7" />}
                                 </div>
                               )}
@@ -289,23 +289,23 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
 
                             <div className="flex flex-col min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                                <span className="inline-flex items-center gap-1 text-sm font-bold text-slate-900 tabular-nums">
-                                  <Clock size={14} className="text-slate-400" />
+                                <span className="inline-flex items-center gap-1 text-sm font-bold text-viola-900 tabular-nums">
+                                  <Clock size={14} className="text-viola-400" />
                                   {hhmm(event.start)}
-                                  <span className="text-slate-400 font-medium">– {hhmm(event.end)}</span>
+                                  <span className="text-viola-400 font-medium">– {hhmm(event.end)}</span>
                                 </span>
                                 <span className={cn(
                                   "inline-flex items-center h-5 text-[11px] font-bold uppercase tracking-wider rounded-md px-1.5",
-                                  event.type === 'smart' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
+                                  event.type === 'smart' ? "bg-rosso-100 text-rosso-700" : "bg-viola-100 text-viola-700"
                                 )}>
                                   {event.type === 'smart' ? 'Smart' : 'Match'}
                                 </span>
                               </div>
-                              <h4 className="font-display italic text-slate-950 text-lg md:text-base leading-snug line-clamp-2 break-words md:group-hover:text-emerald-600 transition-colors">
+                              <h4 className="font-display text-viola-950 text-lg md:text-base leading-snug line-clamp-2 break-words md:group-hover:text-rosso-600 transition-colors">
                                 {event.title}
                               </h4>
                               {event.description && (
-                                <p className="mt-1 text-sm md:text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                                <p className="mt-1 text-sm md:text-xs text-viola-500 font-medium line-clamp-2 leading-relaxed">
                                   {event.description}
                                 </p>
                               )}
@@ -325,7 +325,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                     href={event.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl bg-slate-950 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 transition-colors shadow-lg"
+                                    className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl bg-viola-950 hover:bg-rosso-600 text-white flex items-center justify-center gap-2 transition-colors shadow-lg"
                                   >
                                     <Video size={18} />
                                     <span className="text-sm font-bold">Partecipa</span>
@@ -333,7 +333,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                                 );
                               } else if (join === "over") {
                                 return (
-                                  <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center gap-2">
+                                  <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-viola-100 text-viola-500 flex items-center justify-center gap-2">
                                     <Check size={16} className="shrink-0" />
                                     <span className="text-sm font-bold">Concluso</span>
                                   </div>
@@ -350,11 +350,11 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
 
                                 return (
                                   <CustomTooltip content="I pulsanti delle chiamate si sbloccano 5 minuti prima della chiamata">
-                                    <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center gap-3 cursor-help">
+                                    <div className="h-12 w-full sm:w-auto px-4 rounded-2xl md:rounded-xl bg-viola-100 text-viola-500 flex items-center justify-center gap-3 cursor-help">
                                       <Lock size={16} className="shrink-0" />
                                       <div className="flex flex-col leading-tight min-w-0">
                                         <span className="text-sm font-bold truncate">{label}</span>
-                                        <span className="text-[11px] font-medium text-slate-500 truncate">Il link si attiva 5 min prima</span>
+                                        <span className="text-[11px] font-medium text-viola-500 truncate">Il link si attiva 5 min prima</span>
                                       </div>
                                     </div>
                                   </CustomTooltip>
@@ -364,7 +364,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                           ) : (
                             <button
                               type="button"
-                              className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50"
+                              className="pressable h-12 w-full sm:w-auto sm:self-end px-5 rounded-2xl md:rounded-xl border border-viola-200 text-viola-600 font-semibold text-sm hover:bg-viola-50"
                             >
                               Dettagli
                             </button>
@@ -373,9 +373,9 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                       </article>
                     ))
                   ) : (
-                    <div className="h-28 md:h-32 flex flex-col items-center justify-center gap-1 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100 px-6">
-                      <p className="text-slate-500 text-sm font-semibold">Giornata libera</p>
-                      <p className="text-slate-400 text-xs">Nessun appuntamento in programma</p>
+                    <div className="h-28 md:h-32 flex flex-col items-center justify-center gap-1 text-center bg-viola-50/50 rounded-2xl border-2 border-dashed border-viola-100 px-6">
+                      <p className="text-viola-500 text-sm font-semibold">Giornata libera</p>
+                      <p className="text-viola-400 text-xs">Nessun appuntamento in programma</p>
                     </div>
                   )}
                 </motion.div>

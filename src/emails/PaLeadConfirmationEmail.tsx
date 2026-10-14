@@ -31,7 +31,7 @@ export const PaLeadConfirmationEmail = ({
 }: PaLeadConfirmationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Grazie per aver contattato Skillr per la PA</Preview>
+    <Preview>Grazie per aver contattato Helllo per la PA</Preview>
     <Body style={paStyles.main}>
       <Container style={paStyles.container}>
         <Section style={paStyles.header}>
@@ -40,7 +40,7 @@ export const PaLeadConfirmationEmail = ({
         <Section style={paStyles.content}>
           <Text style={paStyles.text}>Gentile {fullName},</Text>
           <Text style={paStyles.text}>
-            La ringraziamo per aver manifestato interesse verso le soluzioni Skillr dedicate alla Pubblica Amministrazione per conto di <strong>{organization}</strong>.
+            La ringraziamo per aver manifestato interesse verso le soluzioni Helllo dedicate alla Pubblica Amministrazione per conto di <strong>{organization}</strong>.
           </Text>
           <Text style={paStyles.text}>
             Un nostro esperto in politiche attive del lavoro e bandi FSE+/PNRR esaminerà la Sua richiesta e La ricontatterà entro le prossime 24 ore lavorative per approfondire le necessità del Suo ente.
@@ -52,7 +52,7 @@ export const PaLeadConfirmationEmail = ({
           </Section>
           <Text style={paStyles.text}>
             A presto,<br />
-            Il team Skillr PA
+            Il team Helllo PA
           </Text>
         </Section>
         <Hr style={paStyles.hr} />

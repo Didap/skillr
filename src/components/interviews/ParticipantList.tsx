@@ -18,8 +18,8 @@ export function ParticipantList({ loading, participants }: { loading: boolean; p
   if (loading) {
     return (
       <div className="py-14 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="animate-spin motion-reduce:animate-none text-emerald-500 size-7" />
-        <p className="text-sm text-slate-500 font-medium">Caricamento...</p>
+        <Loader2 className="animate-spin motion-reduce:animate-none text-rosso-500 size-7" />
+        <p className="text-sm text-viola-500 font-medium">Caricamento...</p>
       </div>
     );
   }
@@ -27,23 +27,23 @@ export function ParticipantList({ loading, participants }: { loading: boolean; p
   if (participants.length === 0) {
     return (
       <div className="py-12 text-center">
-        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-3">
+        <div className="w-14 h-14 bg-viola-50 rounded-2xl flex items-center justify-center text-viola-300 mx-auto mb-3">
           <Users size={26} />
         </div>
-        <p className="text-[15px] text-slate-500 font-medium">Nessun iscritto per ora.</p>
+        <p className="text-[15px] text-viola-500 font-medium">Nessun iscritto per ora.</p>
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-slate-100 -mx-2">
+    <ul className="divide-y divide-viola-100 -mx-2">
       {participants.map((p) => (
         <li key={p.id}>
           <Link
             href={`/profile/${p.id}`}
-            className="pressable flex items-center gap-3 px-2 py-3 rounded-2xl hover:bg-slate-50 transition-colors"
+            className="pressable flex items-center gap-3 px-2 py-3 rounded-2xl hover:bg-viola-50 transition-colors"
           >
-            <div className="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shrink-0 relative">
+            <div className="w-11 h-11 rounded-xl bg-viola-100 overflow-hidden shrink-0 relative">
               {(p.photoUrl || p.image) ? (
                 <Image
                   src={(p.photoUrl || p.image) as string}
@@ -53,16 +53,16 @@ export function ParticipantList({ loading, participants }: { loading: boolean; p
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <div className="w-full h-full flex items-center justify-center text-viola-400">
                   <Users size={18} />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-bold text-slate-950 truncate">{p.name || p.email}</p>
-              <p className="text-[13px] text-slate-500 truncate">{p.title || "Professionista"}</p>
+              <p className="text-[15px] font-bold text-viola-950 truncate">{p.name || p.email}</p>
+              <p className="text-[13px] text-viola-500 truncate">{p.title || "Professionista"}</p>
             </div>
-            <ExternalLink size={16} className="text-slate-300 shrink-0" aria-hidden="true" />
+            <ExternalLink size={16} className="text-viola-300 shrink-0" aria-hidden="true" />
           </Link>
         </li>
       ))}

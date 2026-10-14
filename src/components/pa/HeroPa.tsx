@@ -42,8 +42,8 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
   return (
     <section className="relative overflow-hidden bg-white pt-24 pb-32">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-linear-to-b from-pa-gray-warm/30 to-transparent pointer-events-none" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-pa-blue/5 rounded-full blur-3xl opacity-50 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-crema/30 to-transparent pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-blu/5 rounded-full blur-3xl opacity-50 pointer-events-none" />
       
       <div className="max-w-7xl w-full mx-auto px-6 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
@@ -57,18 +57,18 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
           >
             <motion.div 
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pa-blue/5 border border-pa-blue/10 text-[10px] font-black uppercase tracking-[0.2em] text-pa-blue"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blu/5 border border-blu/10 text-[10px] font-black uppercase tracking-[0.2em] text-blu"
             >
-              <Target size={12} className="text-pa-blue" /> Partner Tecnologico per la PA
+              <Target size={12} className="text-blu" /> Partner Tecnologico per la PA
             </motion.div>
             
             <div className="space-y-6">
               <motion.h1 
                 variants={itemVariants}
-                className="text-5xl md:text-7xl font-serif font-bold text-slate-900 leading-[1.1] tracking-tight"
+                className="text-5xl md:text-7xl font-display font-bold text-viola-900 leading-[1.1] tracking-tight"
               >
-                Skillr per la PA in Puglia: <br />
-                <span className="text-slate-400">Portiamo i NEET al lavoro.</span>
+                Helllo per la PA in Puglia: <br />
+                <span className="text-viola-400">Portiamo i NEET al lavoro.</span>
               </motion.h1>
               <motion.p 
                 variants={itemVariants}
@@ -87,11 +87,11 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
                   if (onServiceClick) onServiceClick('demo');
                   document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="h-14 px-8 rounded-full bg-pa-blue text-white font-black uppercase tracking-widest text-sm shadow-xl shadow-pa-blue/20 hover:bg-pa-blue-dark transition-all flex items-center justify-center gap-3 active:scale-95"
+                className="h-14 px-8 rounded-full bg-blu text-white font-black uppercase tracking-widest text-sm shadow-xl shadow-blu/20 hover:bg-blu-800 transition-all flex items-center justify-center gap-3 active:scale-95"
               >
                 Richiedi Demo Operativa <ArrowRight size={20} />
               </button>
-              <button className="h-14 px-8 rounded-full bg-white border border-pa-blue/20 text-pa-blue font-bold text-lg hover:bg-pa-gray-warm transition-all flex items-center justify-center gap-3 active:scale-95">
+              <button className="h-14 px-8 rounded-full bg-white border border-blu/20 text-blu font-bold text-lg hover:bg-crema transition-all flex items-center justify-center gap-3 active:scale-95">
                 Scarica Scheda Tecnica <FileText size={20} />
               </button>
             </motion.div>
@@ -102,16 +102,16 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
             >
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-pa-gray-warm flex items-center justify-center overflow-hidden">
-                    <div className="w-full h-full bg-pa-blue/10 flex items-center justify-center">
-                       <Users size={16} className="text-pa-blue/30" />
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-crema flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-blu/10 flex items-center justify-center">
+                       <Users size={16} className="text-blu/30" />
                     </div>
                   </div>
                 ))}
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Consigliato dai progettisti</p>
-                <p className="text-xs font-bold text-pa-blue italic">Ideale per bandi FSE+, PNRR e GOL</p>
+                <p className="text-xs font-bold text-blu italic">Ideale per bandi FSE+, PNRR e GOL</p>
               </div>
             </motion.div>
           </motion.div>
@@ -123,35 +123,35 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
             initial="hidden"
             animate="visible"
           >
-            <div className="bg-white rounded-[2.5rem] border border-pa-blue/10 shadow-premium overflow-hidden aspect-square lg:aspect-4/5 relative z-10">
+            <div className="bg-white rounded-[2.5rem] border border-blu/10 shadow-premium overflow-hidden aspect-square lg:aspect-4/5 relative z-10">
               {/* Browser Header */}
-              <div className="h-12 bg-pa-gray-warm border-b border-pa-blue/5 flex items-center justify-between px-6">
+              <div className="h-12 bg-crema border-b border-blu/5 flex items-center justify-between px-6">
                  <div className="flex gap-2">
-                   <div className="w-2.5 h-2.5 rounded-full bg-pa-blue/10" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-pa-blue/10" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-pa-blue/10" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
                  </div>
-                 <div className="h-5 w-48 bg-pa-blue/5 rounded-full flex items-center px-3 gap-2">
-                    <Search size={10} className="text-pa-blue/20" />
-                    <div className="h-1.5 w-full bg-pa-blue/10 rounded-full" />
+                 <div className="h-5 w-48 bg-blu/5 rounded-full flex items-center px-3 gap-2">
+                    <Search size={10} className="text-blu/20" />
+                    <div className="h-1.5 w-full bg-blu/10 rounded-full" />
                  </div>
               </div>
 
               <div className="p-8 space-y-8 overflow-y-auto no-scrollbar max-h-full pb-20">
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 bg-pa-blue/5 rounded-3xl space-y-1 group hover:bg-pa-blue/10 transition-colors">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-pa-blue/50">Presi in Carico</p>
+                  <div className="p-6 bg-blu/5 rounded-3xl space-y-1 group hover:bg-blu/10 transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blu/50">Presi in Carico</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-serif font-bold text-pa-blue leading-none">1.284</p>
-                      <TrendingUp size={16} className="text-pa-blue/40 mb-1" />
+                      <p className="text-4xl font-display font-bold text-blu leading-none">1.284</p>
+                      <TrendingUp size={16} className="text-blu/40 mb-1" />
                     </div>
                   </div>
-                  <div className="p-6 bg-emerald-50 rounded-3xl space-y-1 group hover:bg-emerald-100/50 transition-colors">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">Tirocini</p>
+                  <div className="p-6 bg-rosso-50 rounded-3xl space-y-1 group hover:bg-rosso-100/50 transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-rosso-600/50">Tirocini</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-serif font-bold text-emerald-600 leading-none">342</p>
-                      <CheckCircle2 size={16} className="text-emerald-600/40 mb-1" />
+                      <p className="text-4xl font-display font-bold text-rosso-600 leading-none">342</p>
+                      <CheckCircle2 size={16} className="text-rosso-600/40 mb-1" />
                     </div>
                   </div>
                 </div>
@@ -159,19 +159,19 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
                 {/* Progress Chart Mock */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center px-1">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-pa-blue/60">Flusso Matching</h4>
-                    <span className="text-[10px] font-bold text-pa-blue/40 italic">Ultimi 30 giorni</span>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-blu/60">Flusso Matching</h4>
+                    <span className="text-[10px] font-bold text-blu/40 italic">Ultimi 30 giorni</span>
                   </div>
-                  <div className="h-44 w-full bg-pa-gray-warm rounded-3xl border border-pa-blue/5 p-6 flex items-end gap-2 justify-between">
+                  <div className="h-44 w-full bg-crema rounded-3xl border border-blu/5 p-6 flex items-end gap-2 justify-between">
                      {[40, 70, 45, 90, 60, 80, 50, 100].map((h, i) => (
                        <motion.div 
                         key={i} 
-                        className="w-full bg-pa-blue/10 rounded-t-lg relative group"
+                        className="w-full bg-blu/10 rounded-t-lg relative group"
                         initial={{ height: 0 }}
                         animate={{ height: `${h}%` }}
                         transition={{ delay: 1 + i * 0.05, duration: 0.8, ease: "easeOut" }}
                        >
-                         <div className="absolute inset-0 bg-pa-blue/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg" />
+                         <div className="absolute inset-0 bg-blu/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg" />
                        </motion.div>
                      ))}
                   </div>
@@ -179,26 +179,26 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
 
                 {/* Recent Activity List */}
                 <div className="space-y-4">
-                   <h4 className="text-xs font-black uppercase tracking-widest text-pa-blue/60 px-1">Ultimi Onboarding (NEET)</h4>
+                   <h4 className="text-xs font-black uppercase tracking-widest text-blu/60 px-1">Ultimi Onboarding (NEET)</h4>
                    <div className="space-y-3">
                       {[
                         { name: "Marco V.", city: "Bari", status: "Matching" },
                         { name: "Sara L.", city: "Lecce", status: "Tirocinio" },
                         { name: "Giuseppe R.", city: "Taranto", status: "Call" },
                       ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-white border border-pa-blue/5 rounded-2xl shadow-sm">
+                        <div key={i} className="flex items-center justify-between p-4 bg-white border border-blu/5 rounded-2xl shadow-sm">
                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-pa-gray-warm flex items-center justify-center text-[10px] font-bold text-pa-blue">
+                              <div className="w-8 h-8 rounded-full bg-crema flex items-center justify-center text-[10px] font-bold text-blu">
                                 {item.name.split(' ')[0][0]}
                               </div>
                               <div>
-                                 <p className="text-sm font-bold text-pa-blue leading-none">{item.name}</p>
+                                 <p className="text-sm font-bold text-blu leading-none">{item.name}</p>
                                  <p className="text-[10px] text-text-muted mt-0.5">{item.city}</p>
                               </div>
                            </div>
                            <span className={cn(
                              "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
-                             item.status === 'Tirocinio' ? 'bg-emerald-50 text-emerald-600' : 'bg-pa-blue/5 text-pa-blue/60'
+                             item.status === 'Tirocinio' ? 'bg-rosso-50 text-rosso-600' : 'bg-blu/5 text-blu/60'
                            )}>
                               {item.status}
                            </span>
@@ -214,21 +214,21 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
 
             {/* Floating Elements */}
             <motion.div 
-              className="absolute -right-8 top-1/4 z-20 p-4 bg-white border border-pa-blue/10 rounded-2xl shadow-premium flex items-center gap-3"
+              className="absolute -right-8 top-1/4 z-20 p-4 bg-white border border-blu/10 rounded-2xl shadow-premium flex items-center gap-3"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-               <div className="w-10 h-10 bg-pa-blue/5 text-pa-blue rounded-xl flex items-center justify-center">
+               <div className="w-10 h-10 bg-blu/5 text-blu rounded-xl flex items-center justify-center">
                   <BarChart3 size={20} />
                </div>
                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-pa-blue/40 leading-none">Time to Match</p>
-                  <p className="text-lg font-bold text-pa-blue leading-tight">-42% <span className="text-[10px] text-emerald-600 italic">v1</span></p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blu/40 leading-none">Time to Match</p>
+                  <p className="text-lg font-bold text-blu leading-tight">-42% <span className="text-[10px] text-rosso-600 italic">v1</span></p>
                </div>
             </motion.div>
 
             {/* Decorative background circle */}
-            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-radial from-pa-blue/5 to-transparent rounded-full blur-3xl opacity-30" />
+            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-radial from-blu/5 to-transparent rounded-full blur-3xl opacity-30" />
           </motion.div>
 
         </div>

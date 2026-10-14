@@ -188,37 +188,37 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
         style={{ x, y, rotate, opacity, transformOrigin: "50% 90%" }}
         className={isFront ? "h-full w-full cursor-grab active:cursor-grabbing" : "h-full w-full"}
       >
-        <Card className="relative w-full h-full rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-slate-100 shadow-premium bg-white flex flex-col lg:flex-row group select-none lg:hover:border-emerald-100 p-0 gap-0">
+        <Card className="relative w-full h-full rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-viola-100 shadow-premium bg-white flex flex-col lg:flex-row group select-none lg:hover:border-rosso-100 p-0 gap-0">
           {/* Swipe feedback: tint and stamp grow with the offset, not only past the threshold */}
           <motion.div
             aria-hidden
             style={{ opacity: likeTint }}
-            className="absolute inset-0 z-30 bg-emerald-500/12 pointer-events-none"
+            className="absolute inset-0 z-30 bg-rosso-500/12 pointer-events-none"
           />
           <motion.div
             aria-hidden
             style={{ opacity: passTint }}
-            className="absolute inset-0 z-30 bg-rose-500/10 pointer-events-none"
+            className="absolute inset-0 z-30 bg-rosso-500/10 pointer-events-none"
           />
           <motion.div
             aria-hidden
             style={{ opacity: likeOpacity, scale: likeScale, rotate: -12 }}
-            className="absolute top-6 left-5 lg:top-10 lg:left-10 z-40 pointer-events-none rounded-2xl border-4 border-emerald-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-emerald-600 shadow-lg"
+            className="absolute top-6 left-5 lg:top-10 lg:left-10 z-40 pointer-events-none rounded-2xl border-4 border-rosso-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-rosso-600 shadow-lg"
           >
             {labels.like}
           </motion.div>
           <motion.div
             aria-hidden
             style={{ opacity: passOpacity, scale: passScale, rotate: 12 }}
-            className="absolute top-6 right-5 lg:top-10 lg:right-10 z-40 pointer-events-none rounded-2xl border-4 border-rose-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-rose-600 shadow-lg"
+            className="absolute top-6 right-5 lg:top-10 lg:right-10 z-40 pointer-events-none rounded-2xl border-4 border-rosso-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-rosso-600 shadow-lg"
           >
             Passa
           </motion.div>
 
           {/* ---------- Phone and tablet: one column built for a narrow, tall card ---------- */}
           <div className="lg:hidden flex flex-col h-full min-h-0">
-            <div className="relative shrink-0 overflow-hidden bg-slate-950 px-5 pt-5 pb-5">
-              <div className="absolute inset-0 bg-linear-to-br from-emerald-600 via-emerald-800 to-slate-950" />
+            <div className="relative shrink-0 overflow-hidden bg-viola-950 px-5 pt-5 pb-5">
+              <div className="absolute inset-0 bg-linear-to-br from-rosso-600 via-rosso-800 to-viola-950" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.35)_0%,transparent_60%)]" />
 
               <div className="relative flex items-center gap-4">
@@ -234,26 +234,26 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
                       unoptimized
                     />
                   ) : (
-                    <span className="font-display text-3xl italic text-emerald-600">{initial}</span>
+                    <span className="font-display text-3xl text-rosso-600">{initial}</span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-display italic text-white text-[1.75rem] leading-[1.05] tracking-tight line-clamp-2">
+                  <h2 className="font-display text-white text-[1.75rem] leading-[1.05] tracking-tight line-clamp-2">
                     {profile.name}
                   </h2>
-                  <p className="mt-1 text-[15px] font-medium text-emerald-100/85 truncate">{profile.title}</p>
+                  <p className="mt-1 text-[15px] font-medium text-rosso-100/85 truncate">{profile.title}</p>
                 </div>
               </div>
 
               <div className="relative mt-5 flex items-end justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold text-emerald-200/80">{labels.rate}</div>
+                  <div className="text-xs font-semibold text-rosso-200/80">{labels.rate}</div>
                   {/* Wraps instead of truncating: a RAL range is wider than half a phone card */}
-                  <div className="font-display italic text-white text-[2rem] leading-[1.05] tracking-tight wrap-break-word">
+                  <div className="font-display text-white text-[2rem] leading-[1.05] tracking-tight wrap-break-word">
                     {profile.rate}
                   </div>
                 </div>
-                <div className="shrink-0 max-w-[45%] inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-emerald-50 ring-1 ring-white/15">
+                <div className="shrink-0 max-w-[45%] inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-rosso-50 ring-1 ring-white/15">
                   <MapPin size={14} className="shrink-0" />
                   <span className="truncate">{profile.location}</span>
                 </div>
@@ -265,16 +265,16 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
             <div className="relative flex-1 min-h-0">
               <div className="h-full overflow-y-auto overscroll-contain no-scrollbar px-5 pt-5 pb-8 space-y-5">
                 {profile.bioShort && (
-                  <p className="text-[15px] leading-relaxed text-slate-600">{profile.bioShort}</p>
+                  <p className="text-[15px] leading-relaxed text-viola-600">{profile.bioShort}</p>
                 )}
                 {profile.skills.length > 0 && (
                   <div className="space-y-2.5">
-                    <div className="text-[13px] font-semibold text-slate-500">{labels.skills}</div>
+                    <div className="text-[13px] font-semibold text-viola-500">{labels.skills}</div>
                     <div className="flex flex-wrap gap-2">
                       {profile.skills.slice(0, 10).map((s) => (
                         <span
                           key={s}
-                          className="rounded-xl bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100 px-3 py-1.5 text-[13px] font-semibold"
+                          className="rounded-xl bg-rosso-50 text-rosso-800 ring-1 ring-rosso-100 px-3 py-1.5 text-[13px] font-semibold"
                         >
                           {s}
                         </span>
@@ -283,7 +283,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
                   </div>
                 )}
                 {isJob && (
-                  <p className="text-[13px] text-slate-500">Trattabile in base all&apos;esperienza</p>
+                  <p className="text-[13px] text-viola-500">Trattabile in base all&apos;esperienza</p>
                 )}
               </div>
               {/* Hint that the details continue below */}
@@ -293,8 +293,8 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
 
           {/* ---------- Desktop: the wide two-panel card ---------- */}
           {/* Left Section: Branding & Identity */}
-          <div className="hidden lg:flex relative w-[40%] shrink-0 overflow-hidden bg-slate-950 flex-col justify-center p-12">
-            <div className="absolute inset-0 bg-linear-to-br from-emerald-600 via-emerald-800 to-slate-950" />
+          <div className="hidden lg:flex relative w-[40%] shrink-0 overflow-hidden bg-viola-950 flex-col justify-center p-12">
+            <div className="absolute inset-0 bg-linear-to-br from-rosso-600 via-rosso-800 to-viola-950" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.3)_0%,transparent_70%)]" />
 
             <div className="relative z-10 flex flex-col items-center text-center gap-8">
@@ -311,12 +311,12 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
                       unoptimized
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-emerald-50 text-emerald-600 font-display text-6xl font-bold italic">
+                    <div className="w-full h-full flex items-center justify-center bg-rosso-50 text-rosso-600 font-display text-6xl font-bold ">
                       {initial}
                     </div>
                   )}
                 </div>
-                <div className="absolute -top-3 -right-3 bg-emerald-500 w-12 h-12 rounded-full border-4 border-slate-950 flex items-center justify-center shadow-lg">
+                <div className="absolute -top-3 -right-3 bg-rosso-500 w-12 h-12 rounded-full border-4 border-viola-950 flex items-center justify-center shadow-lg">
                   <Zap size={20} className="text-white" fill="currentColor" />
                 </div>
               </div>
@@ -325,8 +325,8 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
                 <Badge className="bg-white/10 backdrop-blur-md text-white border-white/10 text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
                   {labels.badge}
                 </Badge>
-                <h2 className="text-white text-4xl font-display font-bold italic tracking-tight leading-tight line-clamp-3">{profile.title}</h2>
-                <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-sm">
+                <h2 className="text-white text-4xl font-display font-bold tracking-tight leading-tight line-clamp-3">{profile.title}</h2>
+                <div className="flex items-center justify-center gap-2 text-rosso-400 font-bold text-sm">
                   <MapPin size={16} />
                   <span>{profile.location}</span>
                 </div>
@@ -337,8 +337,8 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
           {/* Right Section: Main Content */}
           <div className="hidden lg:flex flex-1 min-w-0 bg-white p-12 flex-col gap-10 relative overflow-y-auto overscroll-contain no-scrollbar">
             <div className="space-y-2">
-              <div className="text-[12px] font-black uppercase tracking-[0.4em] text-emerald-600">{labels.section}</div>
-              <h3 className="text-5xl font-display font-bold italic text-slate-950 tracking-tight leading-[0.9] line-clamp-2">
+              <div className="text-[12px] font-black uppercase tracking-[0.4em] text-rosso-600">{labels.section}</div>
+              <h3 className="text-5xl font-display font-bold text-viola-950 tracking-tight leading-[0.9] line-clamp-2">
                 {profile.name}
               </h3>
             </div>
@@ -346,9 +346,9 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
             <div className="space-y-8">
               {profile.bioShort && (
                 <div className="relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-100 rounded-full" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-rosso-100 rounded-full" />
                   <div className="pl-8">
-                    <p className="text-slate-600 text-lg leading-relaxed italic line-clamp-5">
+                    <p className="text-viola-600 text-lg leading-relaxed italic line-clamp-5">
                       &quot;{profile.bioShort}&quot;
                     </p>
                   </div>
@@ -357,24 +357,24 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
 
               <div className="grid grid-cols-2 gap-10">
                 <div className="space-y-3">
-                  <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">{labels.skills}</div>
+                  <div className="text-[11px] font-black uppercase tracking-widest text-viola-400">{labels.skills}</div>
                   <div className="flex flex-wrap gap-2">
                     {profile.skills.slice(0, 6).map((s) => (
-                      <Badge key={s} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold rounded-xl px-3 py-1.5 text-[12px]">
+                      <Badge key={s} variant="secondary" className="bg-rosso-50 text-rosso-700 border-rosso-100 font-bold rounded-xl px-3 py-1.5 text-[12px]">
                         {s}
                       </Badge>
                     ))}
                   </div>
                 </div>
 
-                <div className="min-w-0 border-l border-slate-50 pl-10 flex flex-col justify-center">
+                <div className="min-w-0 border-l border-viola-50 pl-10 flex flex-col justify-center">
                   <div className="space-y-1">
-                    <div className="text-[11px] font-black uppercase tracking-widest text-emerald-600">{labels.rate}</div>
-                    <div className="text-slate-950 font-display text-4xl xl:text-5xl font-bold italic tracking-tighter leading-[1.05] wrap-break-word">
+                    <div className="text-[11px] font-black uppercase tracking-widest text-rosso-600">{labels.rate}</div>
+                    <div className="text-viola-950 font-display text-4xl xl:text-5xl font-bold tracking-tighter leading-[1.05] wrap-break-word">
                       {profile.rate}
                     </div>
                     {isJob && (
-                      <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-3">Trattabile in base all&apos;esperienza</p>
+                      <p className="text-[11px] text-viola-400 font-medium uppercase tracking-wider mt-3">Trattabile in base all&apos;esperienza</p>
                     )}
                   </div>
                 </div>
@@ -383,7 +383,7 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
           </div>
 
           {/* Side accent */}
-          <div className="hidden lg:block w-2 shrink-0 bg-linear-to-b from-emerald-400 via-emerald-600 to-slate-900" />
+          <div className="hidden lg:block w-2 shrink-0 bg-linear-to-b from-rosso-400 via-rosso-600 to-viola-900" />
         </Card>
       </motion.div>
     </motion.div>

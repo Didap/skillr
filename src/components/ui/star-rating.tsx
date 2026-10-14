@@ -37,7 +37,7 @@ export function StarRating({
           <Star
             key={i}
             size={size}
-            className={i < value ? "fill-amber-400 text-amber-400" : "text-slate-200 fill-slate-50"}
+            className={i < value ? "fill-amber-400 text-amber-400" : "text-viola-200 fill-viola-50"}
           />
         ))}
       </div>
@@ -70,7 +70,7 @@ export function StarRating({
               size={size}
               className={cn(
                 "transition-colors duration-150",
-                starValue <= shown ? "fill-amber-400 text-amber-400" : "text-slate-200 fill-slate-50"
+                starValue <= shown ? "fill-amber-400 text-amber-400" : "text-viola-200 fill-viola-50"
               )}
             />
           </motion.button>

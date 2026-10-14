@@ -21,7 +21,7 @@ export function generateIcsString(options: {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Skillr//NONSGML Event//EN",
+    "PRODID:-//Helllo//NONSGML Event//EN",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${uid || crypto.randomUUID()}@skillr.com`,

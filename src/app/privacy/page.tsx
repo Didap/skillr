@@ -1,7 +1,7 @@
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata = {
-  title: "Privacy Policy | Skillr",
+  title: "Privacy Policy | Helllo",
 };
 
 export default function PrivacyPage() {
@@ -10,10 +10,10 @@ export default function PrivacyPage() {
       <section>
         <h2>1. Introduzione</h2>
         <p>
-          Benvenuto su Skillr. La tua privacy è di fondamentale importanza per noi. Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo, divulghiamo e proteggiamo le tue informazioni quando utilizzi la nostra piattaforma.
+          Benvenuto su Helllo. La tua privacy è di fondamentale importanza per noi. Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo, divulghiamo e proteggiamo le tue informazioni quando utilizzi la nostra piattaforma.
         </p>
         <p>
-          Utilizzando Skillr, accetti le pratiche descritte in questa informativa. Se non sei d&apos;accordo con i termini qui esposti, ti preghiamo di non accedere alla piattaforma.
+          Utilizzando Helllo, accetti le pratiche descritte in questa informativa. Se non sei d&apos;accordo con i termini qui esposti, ti preghiamo di non accedere alla piattaforma.
         </p>
       </section>
 

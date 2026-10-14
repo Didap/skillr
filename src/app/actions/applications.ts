@@ -160,7 +160,7 @@ export async function acceptApplicant(applicationId: string) {
         sendInBackground(`match emails, match ${newMatch.id}`, [
           () => sendEmail({
             to: professional.email,
-            subject: "Nuovo Match su Skillr!",
+            subject: "Nuovo Match su Helllo!",
             react: MatchEmail({
               userName: profName,
               matchedName: compName,
@@ -171,7 +171,7 @@ export async function acceptApplicant(applicationId: string) {
           }),
           () => sendEmail({
             to: company.email,
-            subject: "Nuovo Match su Skillr!",
+            subject: "Nuovo Match su Helllo!",
             react: MatchEmail({
               userName: compName,
               matchedName: profName,
@@ -226,7 +226,7 @@ export async function rejectApplicant(applicationId: string) {
             to: professional.email,
             subject: `Aggiornamento sulla candidatura: ${jobTitle}`,
             react: ApplicationRejectedEmail({ firstName, companyName: compName, jobTitle, dashboardUrl }),
-            text: `${compName} ha deciso di non proseguire con la tua candidatura per ${jobTitle}. Continua a cercare su Skillr: ${dashboardUrl}`,
+            text: `${compName} ha deciso di non proseguire con la tua candidatura per ${jobTitle}. Continua a cercare su Helllo: ${dashboardUrl}`,
           }),
         ]);
       }

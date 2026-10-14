@@ -57,17 +57,17 @@ export function PaNewsletterForm() {
 
   if (isSuccess) {
     return (
-      <div className="bg-pa-light border border-pa-blue/20 rounded-lg p-8 text-center animate-in fade-in zoom-in duration-300">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-pa-blue/10 mb-4">
-          <MailCheck className="h-6 w-6 text-pa-blue" />
+      <div className="bg-blu-100 border border-blu/20 rounded-lg p-8 text-center animate-in fade-in zoom-in duration-300">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blu/10 mb-4">
+          <MailCheck className="h-6 w-6 text-blu" />
         </div>
-        <h3 className="text-xl font-bold text-pa-blue mb-2">Controlla la tua casella email</h3>
+        <h3 className="text-xl font-bold text-blu mb-2">Controlla la tua casella email</h3>
         <p className="text-text-secondary">
           Ti abbiamo inviato un link per confermare la tua iscrizione alla newsletter sui bandi NEET in Puglia.
         </p>
         <Button 
           variant="outline" 
-          className="mt-6 border-pa-blue text-pa-blue hover:bg-pa-blue/5"
+          className="mt-6 border-blu text-blu hover:bg-blu/5"
           onClick={() => setIsSuccess(false)}
         >
           Iscrivi un altro indirizzo
@@ -84,15 +84,15 @@ export function PaNewsletterForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-pa-blue font-bold text-xs uppercase tracking-widest ml-1">Email Istituzionale</FormLabel>
+              <FormLabel className="text-blu font-bold text-xs uppercase tracking-widest ml-1">Email Istituzionale</FormLabel>
               <FormControl>
                 <div className="relative group">
                   <Input 
                     placeholder="nome.cognome@comune.puglia.it" 
-                    className="bg-white border-pa-gray-cold h-12 px-4 shadow-sm transition-all duration-300 focus-visible:ring-pa-blue focus-visible:border-pa-blue group-hover:border-pa-blue/50"
+                    className="bg-white border-viola-50 h-12 px-4 shadow-sm transition-all duration-300 focus-visible:ring-blu focus-visible:border-blu group-hover:border-blu/50"
                     {...field} 
                   />
-                  <div className="absolute inset-0 rounded-md bg-pa-blue/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  <div className="absolute inset-0 rounded-md bg-blu/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </div>
               </FormControl>
               <FormMessage className="text-xs font-medium" />
@@ -102,7 +102,7 @@ export function PaNewsletterForm() {
         
         <Button 
           type="submit" 
-          className="w-full bg-pa-blue text-white hover:bg-pa-blue-dark shadow-lg shadow-pa-blue/20 transition-all duration-300 font-bold h-12 rounded-xl group"
+          className="w-full bg-blu text-white hover:bg-blu-800 shadow-lg shadow-blu/20 transition-all duration-300 font-bold h-12 rounded-xl group"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -118,7 +118,7 @@ export function PaNewsletterForm() {
           )}
         </Button>
         <p className="text-[10px] text-text-muted text-center leading-relaxed">
-          Proteggiamo i tuoi dati. Iscrivendoti accetti la nostra <Link href="/privacy" className="underline hover:text-pa-blue">Privacy Policy</Link> per l&apos;invio di comunicazioni istituzionali.
+          Proteggiamo i tuoi dati. Iscrivendoti accetti la nostra <Link href="/privacy" className="underline hover:text-blu">Privacy Policy</Link> per l&apos;invio di comunicazioni istituzionali.
         </p>
       </form>
     </Form>

@@ -60,7 +60,7 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.state, ease: ease.out } }}
       exit={{ opacity: 0, transition: { duration: duration.feedback * 1.5, ease: ease.in } }}
-      className="fixed inset-0 z-[60] flex flex-col bg-emerald-950/95 backdrop-blur-md text-white overflow-y-auto overscroll-contain"
+      className="fixed inset-0 z-[60] flex flex-col bg-rosso-950/95 backdrop-blur-md text-white overflow-y-auto overscroll-contain"
     >
       <div className="pt-safe shrink-0">
         <div className="flex justify-end px-3 pt-3 md:px-6 md:pt-6">
@@ -83,20 +83,20 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
             initial={{ opacity: 0, scale: 0.4 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: duration.focal, ease: ease.out, delay: reduceMotion ? 0 : 0.18 }}
-            className="absolute w-64 h-64 md:w-80 md:h-80 rounded-full bg-emerald-400/30 blur-3xl"
+            className="absolute w-64 h-64 md:w-80 md:h-80 rounded-full bg-rosso-400/30 blur-3xl"
           />
           <motion.div
             initial={{ x: -slide, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ ...spring.card, opacity: { duration: duration.state } }}
-            className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-white bg-emerald-800 shadow-2xl overflow-hidden -mr-4 z-10"
+            className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-white bg-rosso-800 shadow-2xl overflow-hidden -mr-4 z-10"
           >
             {me?.image ? (
               <Image src={me.image} alt="Tu" fill className="object-cover" unoptimized />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white/60">
                 {me?.name ? (
-                  <span className="font-display text-5xl italic">{me.name[0]}</span>
+                  <span className="font-display text-5xl ">{me.name[0]}</span>
                 ) : (
                   <User size={40} />
                 )}
@@ -107,22 +107,22 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
             initial={{ x: slide, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ ...spring.card, opacity: { duration: duration.state } }}
-            className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-white bg-slate-800 shadow-2xl overflow-hidden -ml-4"
+            className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-white bg-viola-800 shadow-2xl overflow-hidden -ml-4"
           >
             {profileImage ? (
               <Image src={profileImage} alt={profileName} fill className="object-cover" unoptimized />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/60 font-display text-5xl italic">
+              <div className="w-full h-full flex items-center justify-center text-white/60 font-display text-5xl ">
                 {profileName[0]}
               </div>
             )}
           </motion.div>
         </div>
 
-        <motion.h2 id="match-title" {...settle(0.28)} className="font-display italic text-5xl md:text-8xl leading-none text-white">
+        <motion.h2 id="match-title" {...settle(0.28)} className="font-display text-5xl md:text-8xl leading-none text-white">
           It&apos;s a Match!
         </motion.h2>
-        <motion.p {...settle(0.34)} className="mt-4 text-lg md:text-xl text-emerald-100 max-w-sm">
+        <motion.p {...settle(0.34)} className="mt-4 text-lg md:text-xl text-rosso-100 max-w-sm">
           Tu e {profileName} vi siete piaciuti.
         </motion.p>
       </div>
@@ -137,7 +137,7 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
           href={`/matches/${matchId}`}
           className={cn(
             buttonVariants(),
-            "pressable rounded-full h-14 px-8 text-lg font-semibold bg-white text-emerald-950 hover:bg-emerald-50 gap-2 w-full sm:w-auto focus-visible:ring-4 focus-visible:ring-white/40"
+            "pressable rounded-full h-14 px-8 text-lg font-semibold bg-white text-rosso-950 hover:bg-rosso-50 gap-2 w-full sm:w-auto focus-visible:ring-4 focus-visible:ring-white/40"
           )}
         >
           <Calendar size={20} /> Pianifica Call
@@ -147,7 +147,7 @@ export function MatchOverlay({ profileName, profileImage, onClose, matchId }: Ma
           onClick={onClose}
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "pressable rounded-full h-14 px-8 text-lg font-semibold bg-transparent border-emerald-700 text-emerald-100 hover:bg-emerald-800 hover:text-white w-full sm:w-auto focus-visible:ring-4 focus-visible:ring-white/30"
+            "pressable rounded-full h-14 px-8 text-lg font-semibold bg-transparent border-rosso-700 text-rosso-100 hover:bg-rosso-800 hover:text-white w-full sm:w-auto focus-visible:ring-4 focus-visible:ring-white/30"
           )}
         >
           Continua a cercare

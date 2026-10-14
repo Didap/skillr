@@ -83,18 +83,18 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
 
   return (
     <div className={cn("relative space-y-3", className)} ref={containerRef}>
-      <div className="flex flex-wrap gap-2 min-h-[48px] p-2 rounded-xl bg-white border border-slate-200 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/5 transition-all shadow-sm">
+      <div className="flex flex-wrap gap-2 min-h-[48px] p-2 rounded-xl bg-white border border-viola-200 focus-within:border-rosso-500 focus-within:ring-4 focus-within:ring-rosso-500/5 transition-all shadow-sm">
         {value.map((tag) => (
           <Badge 
             key={tag} 
             variant="secondary" 
-            className="rounded-lg bg-slate-50 border-slate-100 text-slate-700 pr-1 py-1 pl-2.5 flex items-center gap-1.5 shadow-xs"
+            className="rounded-lg bg-viola-50 border-viola-100 text-viola-700 pr-1 py-1 pl-2.5 flex items-center gap-1.5 shadow-xs"
           >
             <span className="text-[11px] font-bold">{tag}</span>
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="w-4 h-4 rounded-md hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+              className="w-4 h-4 rounded-md hover:bg-viola-200 flex items-center justify-center text-viola-400 hover:text-viola-600 transition-colors"
             >
               <X size={10} strokeWidth={3} />
             </button>
@@ -106,7 +106,7 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
           placeholder={value.length === 0 ? placeholder : ""}
-          className="flex-1 bg-transparent border-none outline-none text-sm min-w-[140px] px-2 py-1 placeholder:text-slate-300 font-medium"
+          className="flex-1 bg-transparent border-none outline-none text-sm min-w-[140px] px-2 py-1 placeholder:text-viola-300 font-medium"
         />
       </div>
 
@@ -116,7 +116,7 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-1 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden"
+            className="absolute z-50 w-full mt-1 bg-white border border-viola-100 rounded-2xl shadow-xl overflow-hidden"
           >
             <div className="p-2">
               {filteredSuggestions.map((suggestion) => (
@@ -124,10 +124,10 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
                   key={suggestion}
                   type="button"
                   onClick={() => addTag(suggestion)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-viola-700 hover:bg-viola-50 rounded-xl transition-colors text-left"
                 >
                   {suggestion}
-                  <Check size={14} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Check size={14} className="text-rosso-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))}
             </div>
@@ -135,7 +135,7 @@ export function TagInput({ value, onChange, suggestions = [], placeholder, class
         )}
       </AnimatePresence>
 
-      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest px-1">
+      <p className="text-[11px] text-viola-500 font-bold uppercase tracking-widest px-1">
         Premi Invio o scegli un suggerimento
       </p>
     </div>

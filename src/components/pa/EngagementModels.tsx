@@ -12,7 +12,7 @@ const models = [
   },
   {
     title: "MEPA / Acquisti in Rete",
-    desc: "Skillr è presente sul Mercato Elettronico della PA per ordini diretti o trattative.",
+    desc: "Helllo è presente sul Mercato Elettronico della PA per ordini diretti o trattative.",
     tag: "Standard",
     icon: FileStack,
   },
@@ -24,7 +24,7 @@ const models = [
   },
   {
     title: "Partnership in ATS",
-    desc: "Skillr come partner tecnologico in raggruppamenti temporanei per bandi complessi.",
+    desc: "Helllo come partner tecnologico in raggruppamenti temporanei per bandi complessi.",
     tag: "Collaborativo",
     icon: Users2,
   },
@@ -36,8 +36,8 @@ export function EngagementModels() {
       <div className="max-w-7xl w-full mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
           <div className="max-w-2xl space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Flessibilità Contrattuale</h2>
-            <p className="text-5xl font-serif font-bold text-slate-900 leading-tight tracking-tight">
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-viola-400">Flessibilità Contrattuale</h2>
+            <p className="text-5xl font-display font-bold text-viola-900 leading-tight tracking-tight">
               Come collaborare con noi.
             </p>
           </div>
@@ -51,16 +51,16 @@ export function EngagementModels() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               viewport={{ once: true }}
-              className="p-8 rounded-[2rem] border border-slate-100 bg-pa-gray-warm/30 hover:bg-white hover:shadow-xl hover:border-pa-blue/10 transition-all duration-500 flex flex-col h-full"
+              className="p-8 rounded-[2rem] border border-viola-100 bg-crema/30 hover:bg-white hover:shadow-xl hover:border-blu/10 transition-all duration-500 flex flex-col h-full"
             >
-              <div className="w-12 h-12 rounded-xl bg-pa-blue/5 text-pa-blue flex items-center justify-center mb-8">
+              <div className="w-12 h-12 rounded-xl bg-blu/5 text-blu flex items-center justify-center mb-8">
                 <model.icon size={24} strokeWidth={1.5} />
               </div>
               <div className="space-y-4 grow">
-                <div className="inline-block px-3 py-1 rounded-full bg-pa-blue/5 text-[9px] font-black uppercase tracking-widest text-pa-blue">
+                <div className="inline-block px-3 py-1 rounded-full bg-blu/5 text-[9px] font-black uppercase tracking-widest text-blu">
                   {model.tag}
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-slate-900 leading-tight">{model.title}</h3>
+                <h3 className="text-2xl font-display font-bold text-viola-900 leading-tight">{model.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">
                   {model.desc}
                 </p>

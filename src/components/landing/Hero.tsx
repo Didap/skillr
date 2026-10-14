@@ -18,7 +18,7 @@ const itemUp = {
 export function Hero() {
   return (
     <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[800px] bg-linear-to-b from-emerald-50/50 to-transparent -z-10 rounded-[100%]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[800px] bg-linear-to-b from-rosso-50/50 to-transparent -z-10 rounded-[100%]" />
 
       <div className="max-w-6xl mx-auto px-6 text-center">
         <motion.div
@@ -28,22 +28,22 @@ export function Hero() {
           className="flex flex-col items-center"
         >
           <motion.div variants={itemUp} className="mb-10">
-            <span className="px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700 flex items-center gap-2">
+            <span className="px-4 py-1.5 rounded-full bg-white border border-viola-200 shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-rosso-700 flex items-center gap-2">
               <Star size={12} fill="currentColor" /> Recruiting a doppio opt-in
             </span>
           </motion.div>
 
           <motion.h1
             variants={itemUp}
-            className="font-display text-6xl sm:text-7xl md:text-9xl leading-[0.9] tracking-tighter text-slate-950 mb-10"
+            className="font-display text-6xl sm:text-7xl md:text-9xl leading-[0.9] tracking-tighter text-viola-950 mb-10"
           >
             Trova il match.<br />
-            <span className="text-emerald-600 italic">Senza chiacchiere.</span>
+            <span className="text-rosso-600 italic">Senza chiacchiere.</span>
           </motion.h1>
 
           <motion.p
             variants={itemUp}
-            className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto mb-16 leading-relaxed font-medium"
+            className="text-xl md:text-2xl text-viola-500 max-w-2xl mx-auto mb-16 leading-relaxed font-medium"
           >
             Vedi quanto paga, fai swipe, fissi una call di 30 minuti. La chat non c&apos;è.
           </motion.p>
@@ -54,14 +54,14 @@ export function Hero() {
           >
             <Link
               href="/onboarding"
-              className="pressable group relative inline-flex w-full sm:w-auto h-16 items-center justify-center overflow-hidden rounded-full bg-slate-950 px-10 font-bold text-white transition-all hover:bg-emerald-900 shadow-2xl shadow-slate-300"
+              className="pressable group relative inline-flex w-full sm:w-auto h-16 items-center justify-center overflow-hidden rounded-full bg-viola-950 px-10 font-bold text-white transition-all hover:bg-rosso-900 shadow-2xl shadow-viola-300"
             >
               <span className="mr-2">Voglio assumere</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/onboarding"
-              className="pressable inline-flex w-full sm:w-auto h-16 items-center justify-center rounded-full border-2 border-slate-200 bg-white px-10 font-bold text-slate-900 transition-all hover:border-emerald-600 hover:text-emerald-600"
+              className="pressable inline-flex w-full sm:w-auto h-16 items-center justify-center rounded-full border-2 border-viola-200 bg-white px-10 font-bold text-viola-900 transition-all hover:border-rosso-600 hover:text-rosso-600"
             >
               Cerco lavoro
             </Link>
@@ -70,7 +70,7 @@ export function Hero() {
           <motion.div variants={itemUp} className="mt-14">
             <Link
               href="#come-funziona"
-              className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-bold text-viola-500 hover:text-rosso-600 transition-colors"
             >
               Come funziona <ArrowDown size={16} />
             </Link>

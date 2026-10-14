@@ -54,19 +54,19 @@ export function ReviewForm({
 
   return (
     <div className="space-y-5 md:space-y-8">
-      <p className="text-slate-500 text-[15px] md:text-sm font-medium md:text-center">
-        Lascia una recensione per aiutare la community di Skillr.
+      <p className="text-viola-500 text-[15px] md:text-sm font-medium md:text-center">
+        Lascia una recensione per aiutare la community di Helllo.
       </p>
 
-      <div className="flex flex-col items-center gap-3 md:gap-4 py-5 px-3 md:p-8 bg-slate-50/50 rounded-3xl md:rounded-[2.5rem] border border-slate-100">
+      <div className="flex flex-col items-center gap-3 md:gap-4 py-5 px-3 md:p-8 bg-viola-50/50 rounded-3xl md:rounded-[2.5rem] border border-viola-100">
         <StarRating value={stars} onChange={setStars} labels={RATING_LABELS} className="[&_svg]:size-9 md:[&_svg]:size-11" />
-        <div className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]" aria-live="polite">
+        <div className="text-[11px] font-black text-viola-500 uppercase tracking-[0.2em]" aria-live="polite">
           {RATING_LABELS[stars]}
         </div>
       </div>
 
       <div className="space-y-2 md:space-y-3">
-        <label htmlFor="review-text" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1 md:ml-3">
+        <label htmlFor="review-text" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 ml-1 md:ml-3">
           <MessageSquare size={14} /> Commento (opzionale)
         </label>
         <Textarea
@@ -74,18 +74,18 @@ export function ReviewForm({
           placeholder={`Raccontaci la tua esperienza con ${targetName}...`}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full min-h-[120px] md:min-h-[140px] rounded-2xl md:rounded-[2rem] border-slate-200 focus:ring-primary/20 bg-white p-4 md:p-6 text-base md:text-sm leading-relaxed"
+          className="w-full min-h-[120px] md:min-h-[140px] rounded-2xl md:rounded-[2rem] border-viola-200 focus:ring-primary/20 bg-white p-4 md:p-6 text-base md:text-sm leading-relaxed"
           maxLength={500}
         />
         <div className="flex justify-end pr-1 md:pr-3">
-           <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest tabular-nums">{text.length}/500</span>
+           <span className="text-[11px] font-black text-viola-400 uppercase tracking-widest tabular-nums">{text.length}/500</span>
         </div>
       </div>
 
       <Button
         onClick={handleSubmit}
         disabled={loading || stars === 0}
-        className="pressable w-full h-14 md:h-16 rounded-[1.25rem] text-base md:text-lg font-black bg-slate-950 text-white hover:bg-emerald-800 transition-colors shadow-xl shadow-slate-200 gap-2"
+        className="pressable w-full h-14 md:h-16 rounded-[1.25rem] text-base md:text-lg font-black bg-viola-950 text-white hover:bg-rosso-800 transition-colors shadow-xl shadow-viola-200 gap-2"
       >
         {loading ? (
             <div className="flex items-center gap-2">

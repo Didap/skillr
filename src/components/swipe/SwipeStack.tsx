@@ -31,9 +31,9 @@ const cardAreaClass =
   "relative w-full flex-1 min-h-[20rem] max-h-[44rem] max-w-md mx-auto lg:flex-none lg:h-[580px] lg:max-h-none lg:max-w-[950px]";
 const actionRowClass = "shrink-0 flex items-center justify-center gap-8 pt-5 pb-1 lg:pt-6 lg:gap-6";
 const passButtonClass =
-  "w-16 h-16 lg:w-14 lg:h-14 rounded-full bg-white ring-1 ring-slate-200 shadow-card flex items-center justify-center text-slate-700";
+  "w-16 h-16 lg:w-14 lg:h-14 rounded-full bg-white ring-1 ring-viola-200 shadow-card flex items-center justify-center text-viola-700";
 const likeButtonClass =
-  "w-16 h-16 lg:w-14 lg:h-14 rounded-full bg-emerald-600 shadow-lg shadow-emerald-600/30 flex items-center justify-center text-white";
+  "w-16 h-16 lg:w-14 lg:h-14 rounded-full bg-rosso-600 shadow-lg shadow-rosso-600/30 flex items-center justify-center text-white";
 
 export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackProps) {
   const [profiles] = useState<Profile[]>(initialProfiles);
@@ -58,7 +58,7 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
         if (res.success) {
           toast.success("Candidatura inviata!", {
             description: `Ti sei candidato per: ${swipedProfile.name}`,
-            icon: <Zap size={14} className="text-emerald-500" />,
+            icon: <Zap size={14} className="text-rosso-500" />,
           });
         } else {
           toast.error(res.error || "Errore durante la candidatura");
@@ -143,7 +143,7 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
               title="Passa (freccia sinistra)"
               className={cn(
                 passButtonClass,
-                "pressable hover:text-slate-950 hover:ring-slate-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
+                "pressable hover:text-viola-950 hover:ring-viola-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-viola-300"
               )}
             >
               <X size={28} strokeWidth={2.5} />
@@ -155,7 +155,7 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
               title={`${likeLabel} (freccia destra)`}
               className={cn(
                 likeButtonClass,
-                "pressable hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                "pressable hover:bg-rosso-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rosso-200"
               )}
             >
               <Heart size={28} fill="currentColor" />
@@ -167,16 +167,16 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: duration.view, ease: ease.out }}
-          className="m-auto w-full max-w-md flex flex-col items-center gap-6 text-center bg-white rounded-3xl border border-slate-100 shadow-premium px-6 py-10"
+          className="m-auto w-full max-w-md flex flex-col items-center gap-6 text-center bg-white rounded-3xl border border-viola-100 shadow-premium px-6 py-10"
         >
-          <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+          <div className="w-16 h-16 rounded-2xl bg-rosso-50 flex items-center justify-center text-rosso-600">
             <Zap size={32} />
           </div>
           <div>
-            <h3 className="font-display text-3xl italic text-slate-950">
+            <h3 className="font-display text-3xl text-viola-950">
               {userRole === 'professional' ? 'Hai visto tutti i lavori!' : 'Hai finito i talenti!'}
             </h3>
-            <p className="text-base text-slate-500 mt-2">
+            <p className="text-base text-viola-500 mt-2">
               {userRole === 'professional' ? 'Torna più tardi per nuove opportunità.' : 'Torna più tardi per nuovi match.'}
             </p>
           </div>
@@ -184,7 +184,7 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
             variant="outline"
             onClick={resetStack}
             disabled={reloading}
-            className="pressable rounded-full h-12 px-8 gap-2 border-slate-200 font-bold w-full sm:w-auto"
+            className="pressable rounded-full h-12 px-8 gap-2 border-viola-200 font-bold w-full sm:w-auto"
           >
             <RefreshCw size={18} className={reloading ? "animate-spin motion-reduce:animate-none" : undefined} /> Cerca Nuovi
           </Button>
@@ -210,47 +210,47 @@ export function SwipeStackSkeleton() {
   return (
     <div className={frameClass} aria-busy="true" aria-label="Caricamento profili">
       <div className={cardAreaClass}>
-        <div className="absolute inset-0 rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-slate-100 shadow-premium bg-white flex flex-col lg:flex-row">
+        <div className="absolute inset-0 rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-viola-100 shadow-premium bg-white flex flex-col lg:flex-row">
           {/* Phone: band + details */}
           <div className="lg:hidden flex flex-col h-full">
             <Skeleton className="shrink-0 rounded-none p-5 space-y-5">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-slate-200" />
+                <div className="w-16 h-16 rounded-2xl bg-viola-200" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-6 w-3/4 rounded-full bg-slate-200" />
-                  <div className="h-4 w-1/2 rounded-full bg-slate-200" />
+                  <div className="h-6 w-3/4 rounded-full bg-viola-200" />
+                  <div className="h-4 w-1/2 rounded-full bg-viola-200" />
                 </div>
               </div>
-              <div className="h-8 w-2/5 rounded-full bg-slate-200" />
+              <div className="h-8 w-2/5 rounded-full bg-viola-200" />
             </Skeleton>
             <Skeleton className="rounded-none bg-transparent p-5 space-y-3">
-              <div className="h-4 w-full rounded-full bg-slate-100" />
-              <div className="h-4 w-11/12 rounded-full bg-slate-100" />
-              <div className="h-4 w-2/3 rounded-full bg-slate-100" />
+              <div className="h-4 w-full rounded-full bg-viola-100" />
+              <div className="h-4 w-11/12 rounded-full bg-viola-100" />
+              <div className="h-4 w-2/3 rounded-full bg-viola-100" />
               <div className="flex flex-wrap gap-2 pt-3">
-                <div className="h-8 w-20 rounded-xl bg-slate-100" />
-                <div className="h-8 w-24 rounded-xl bg-slate-100" />
-                <div className="h-8 w-16 rounded-xl bg-slate-100" />
+                <div className="h-8 w-20 rounded-xl bg-viola-100" />
+                <div className="h-8 w-24 rounded-xl bg-viola-100" />
+                <div className="h-8 w-16 rounded-xl bg-viola-100" />
               </div>
             </Skeleton>
           </div>
           {/* Desktop: two panels */}
           <Skeleton className="hidden lg:flex w-[40%] shrink-0 rounded-none items-center justify-center">
-            <div className="w-40 h-40 rounded-[2.5rem] bg-slate-200" />
+            <div className="w-40 h-40 rounded-[2.5rem] bg-viola-200" />
           </Skeleton>
           <Skeleton className="hidden lg:flex flex-1 flex-col gap-6 rounded-none bg-transparent p-12">
-            <div className="h-12 w-2/3 rounded-full bg-slate-100" />
-            <div className="h-5 w-full rounded-full bg-slate-100" />
-            <div className="h-5 w-5/6 rounded-full bg-slate-100" />
-            <div className="h-5 w-1/2 rounded-full bg-slate-100" />
+            <div className="h-12 w-2/3 rounded-full bg-viola-100" />
+            <div className="h-5 w-full rounded-full bg-viola-100" />
+            <div className="h-5 w-5/6 rounded-full bg-viola-100" />
+            <div className="h-5 w-1/2 rounded-full bg-viola-100" />
           </Skeleton>
         </div>
       </div>
       <div className={actionRowClass} aria-hidden>
-        <div className={cn(passButtonClass, "text-slate-300")}>
+        <div className={cn(passButtonClass, "text-viola-300")}>
           <X size={28} strokeWidth={2.5} />
         </div>
-        <div className={cn(likeButtonClass, "bg-emerald-600/30 shadow-none")}>
+        <div className={cn(likeButtonClass, "bg-rosso-600/30 shadow-none")}>
           <Heart size={28} fill="currentColor" />
         </div>
       </div>

@@ -38,7 +38,7 @@ export function TimePicker({
 
   return (
     <div className={cn(
-      "flex items-center h-14 rounded-2xl bg-slate-50 border-2 border-transparent focus-within:border-emerald-500 focus-within:bg-white transition-all px-4 gap-0 shadow-sm",
+      "flex items-center h-14 rounded-2xl bg-viola-50 border-2 border-transparent focus-within:border-rosso-500 focus-within:bg-white transition-all px-4 gap-0 shadow-sm",
       disabled && "opacity-50 cursor-not-allowed",
       className
     )}>
@@ -47,9 +47,9 @@ export function TimePicker({
           <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full min-w-11 px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">
+          <SelectContent side="top" className="rounded-2xl border-viola-100 shadow-premium">
             {HOURS.map((h) => (
-              <SelectItem key={h} value={h} className="font-bold text-lg rounded-xl focus:bg-emerald-50 focus:text-emerald-600">
+              <SelectItem key={h} value={h} className="font-bold text-lg rounded-xl focus:bg-rosso-50 focus:text-rosso-600">
                 {h}
               </SelectItem>
             ))}
@@ -57,16 +57,16 @@ export function TimePicker({
         </Select>
       </div>
       
-      <span className="text-2xl font-display font-black text-slate-300 pb-1">:</span>
+      <span className="text-2xl font-display font-black text-viola-300 pb-1">:</span>
       
       <div className="flex-1 pl-4">
         <Select value={minutes} onValueChange={handleMinuteChange} disabled={disabled}>
           <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-2xl h-full min-w-11 px-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent side="top" className="rounded-2xl border-slate-100 shadow-premium">
+          <SelectContent side="top" className="rounded-2xl border-viola-100 shadow-premium">
             {MINUTES.map((m) => (
-              <SelectItem key={m} value={m} className="font-bold text-lg rounded-xl focus:bg-emerald-50 focus:text-emerald-600">
+              <SelectItem key={m} value={m} className="font-bold text-lg rounded-xl focus:bg-rosso-50 focus:text-rosso-600">
                 {m}
               </SelectItem>
             ))}

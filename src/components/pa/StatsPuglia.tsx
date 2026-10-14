@@ -7,7 +7,7 @@ export function StatsPuglia() {
   return (
     <>
       {/* Stats Section - High Impact NEET Data */}
-      <section className="bg-slate-900 py-28 text-white relative overflow-hidden">
+      <section className="bg-viola-900 py-28 text-white relative overflow-hidden">
         {/* Background decorative element */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-[-20deg] translate-x-1/2" />
         
@@ -20,7 +20,7 @@ export function StatsPuglia() {
             className="max-w-3xl mb-16 space-y-4"
           >
             <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/40">L&apos;Urgenza del Territorio</h2>
-            <p className="text-4xl font-serif text-white leading-tight">
+            <p className="text-4xl font-display text-white leading-tight">
               I numeri della crisi NEET in Puglia richiedono un cambio di paradigma tecnologico.
             </p>
           </motion.div>
@@ -34,8 +34,8 @@ export function StatsPuglia() {
               className="group space-y-6"
             >
               <div className="relative">
-                <p className="text-8xl lg:text-9xl font-serif font-black text-white/5 absolute -top-10 -left-4 select-none">23.4</p>
-                <p className="text-7xl font-serif font-bold text-white relative">23.4%<sup className="text-xl text-pa-blue-light ml-1">1</sup></p>
+                <p className="text-8xl lg:text-9xl font-display font-black text-white/5 absolute -top-10 -left-4 select-none">23.4</p>
+                <p className="text-7xl font-display font-bold text-white relative">23.4%<sup className="text-xl text-blu-300 ml-1">1</sup></p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold italic leading-tight text-white/90">Tasso NEET in Puglia, tra i più alti d&apos;Italia.</h3>
@@ -53,13 +53,13 @@ export function StatsPuglia() {
               className="group space-y-6"
             >
               <div className="relative">
-                <p className="text-8xl lg:text-9xl font-serif font-black text-white/5 absolute -top-10 -left-4 select-none">65</p>
-                <p className="text-7xl font-serif font-bold text-white relative">65%<sup className="text-xl text-pa-blue-light ml-1">2</sup></p>
+                <p className="text-8xl lg:text-9xl font-display font-black text-white/5 absolute -top-10 -left-4 select-none">65</p>
+                <p className="text-7xl font-display font-bold text-white relative">65%<sup className="text-xl text-blu-300 ml-1">2</sup></p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold italic leading-tight text-white/90">I &quot;Sommersi&quot; non iscritti ai Centri per l&apos;Impiego.</h3>
                 <p className="text-white/50 text-sm leading-relaxed">
-                  La maggior parte dei NEET invisibili sfugge ai canali istituzionali. Skillr Outreach li intercetta dove vivono: online.
+                  La maggior parte dei NEET invisibili sfugge ai canali istituzionali. Helllo Outreach li intercetta dove vivono: online.
                 </p>
               </div>
             </motion.div>
@@ -72,8 +72,8 @@ export function StatsPuglia() {
               className="group space-y-6"
             >
               <div className="relative">
-                <p className="text-8xl lg:text-9xl font-serif font-black text-white/5 absolute -top-10 -left-4 select-none">4/10</p>
-                <p className="text-7xl font-serif font-bold text-white relative">4/10<sup className="text-xl text-pa-blue-light ml-1">3</sup></p>
+                <p className="text-8xl lg:text-9xl font-display font-black text-white/5 absolute -top-10 -left-4 select-none">4/10</p>
+                <p className="text-7xl font-display font-bold text-white relative">4/10<sup className="text-xl text-blu-300 ml-1">3</sup></p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold italic leading-tight text-white/90">Tirocini che falliscono per mancato matching.</h3>
@@ -91,7 +91,7 @@ export function StatsPuglia() {
               <span>2. Fonte: Elaborazione ANPAL/INAPP 2025</span>
               <span>3. Fonte: Report ADAPT/Inapp su Politiche Attive</span>
             </div>
-            <div className="text-[10px] text-pa-blue-light/50 italic">
+            <div className="text-[10px] text-blu-300/50 italic">
               * Informazioni soggette ad aggiornamento periodico. Ultimo aggiornamento: Aprile 2026.
             </div>
           </div>
@@ -99,7 +99,7 @@ export function StatsPuglia() {
       </section>
 
       {/* Puglia vs Italy Comparison */}
-      <section className="py-20 bg-slate-100 border-b border-slate-200">
+      <section className="py-20 bg-viola-100 border-b border-viola-200">
         <div className="max-w-7xl w-full mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div 
@@ -109,7 +109,7 @@ export function StatsPuglia() {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <h3 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">Un divario strutturale da colmare.</h3>
+              <h3 className="text-3xl font-display font-bold text-viola-900 tracking-tight">Un divario strutturale da colmare.</h3>
               <p className="text-text-secondary leading-relaxed">
                 I dati ISTAT evidenziano come la Puglia presenti una sfida sensibilmente più complessa rispetto alla media nazionale, rendendo indispensabili strumenti di matching avanzato.
               </p>
@@ -119,15 +119,15 @@ export function StatsPuglia() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="grid grid-cols-2 gap-px bg-slate-200 rounded-3xl overflow-hidden border border-slate-200"
+              className="grid grid-cols-2 gap-px bg-viola-200 rounded-3xl overflow-hidden border border-viola-200"
             >
               <div className="bg-white p-8 space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tasso NEET Puglia</p>
-                <p className="text-4xl font-serif font-bold text-pa-blue">23.4%</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-viola-400">Tasso NEET Puglia</p>
+                <p className="text-4xl font-display font-bold text-blu">23.4%</p>
               </div>
               <div className="bg-white p-8 space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Media Italia</p>
-                <p className="text-4xl font-serif font-bold text-slate-300">16.1%</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-viola-400">Media Italia</p>
+                <p className="text-4xl font-display font-bold text-viola-300">16.1%</p>
               </div>
             </motion.div>
           </div>

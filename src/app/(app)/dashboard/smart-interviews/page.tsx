@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Smart Interviews | Skillr",
+  title: "Smart Interviews | Helllo",
   description: "Partecipa alle sessioni di matching rapido con le migliori aziende.",
 };
 

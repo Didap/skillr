@@ -5,78 +5,156 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* OKLCH Color Tokens - Pure and Dynamic */
-  --color-primary: oklch(0.45 0.15 160);
-  --color-primary-foreground: oklch(0.99 0.005 160);
-  --color-primary-dark: oklch(0.25 0.08 160);
-  --color-accent: oklch(0.65 0.25 150);
-  --color-accent-foreground: oklch(0.15 0.02 240);
+  /* Helllo brand colours, named after the Figma variables (colore/*) */
+  --color-viola: #653171;
+  --color-rosso: #E93D29;
+  --color-rosa: #F6B9C9;
+  --color-blu: #225AD6;
+  --color-crema: #F4E9E9;
+  --color-bianco: #FFFFFF;
 
-  --color-secondary: oklch(0.94 0.01 240);
-  --color-secondary-foreground: oklch(0.15 0.02 240);
+  /* Tonal scales derived from the brand colours (OKLab mixes).
+     viola: the neutral/ink scale, white -> viola (950 is the brand viola).
+     rosso: rosa at 200, brand rosso at 500, deeper reds above.
+     blu: brand blu at 600. */
+  --color-viola-50: #F9F6F9;
+  --color-viola-100: #F1EBF2;
+  --color-viola-200: #E4DAE6;
+  --color-viola-300: #CFBED4;
+  --color-viola-400: #A180A9;
+  --color-viola-500: #80558A;
+  --color-viola-600: #774983;
+  --color-viola-700: #6F3F7B;
+  --color-viola-800: #6A3877;
+  --color-viola-900: #673474;
+  --color-viola-950: #653171;
 
-  --color-muted: oklch(0.96 0.005 240);
-  --color-muted-foreground: oklch(0.45 0.02 240);
+  --color-rosso-50: #FEEDF1;
+  --color-rosso-100: #FCDCE4;
+  --color-rosso-200: #F6B9C9;
+  --color-rosso-300: #F48886;
+  --color-rosso-400: #EF6357;
+  --color-rosso-500: #E93D29;
+  --color-rosso-600: #CC3523;
+  --color-rosso-700: #B02D1D;
+  --color-rosso-800: #952517;
+  --color-rosso-900: #7B1D11;
+  --color-rosso-950: #62160B;
 
-  --color-background: oklch(0.99 0.005 160);
-  --color-foreground: oklch(0.15 0.02 240);
+  --color-blu-50: #F1F5FE;
+  --color-blu-100: #E1EAFC;
+  --color-blu-200: #C6D7F9;
+  --color-blu-300: #A0BCF3;
+  --color-blu-400: #6E97E9;
+  --color-blu-500: #4375DF;
+  --color-blu-600: #225AD6;
+  --color-blu-700: #1D4CB5;
+  --color-blu-800: #173E95;
+  --color-blu-900: #123176;
+  --color-blu-950: #0E265C;
 
-  --color-surface: oklch(0.98 0.005 160);
-  --color-surface-warm: oklch(0.99 0.005 80);
+  /* Semantic tokens */
+  --color-primary: var(--color-rosso);
+  --color-primary-foreground: var(--color-bianco);
+  --color-primary-dark: var(--color-rosso-700);
+  --color-accent: var(--color-rosa);
+  --color-accent-foreground: var(--color-viola);
 
-  --color-input: oklch(0.88 0.02 240);
-  --color-ring: oklch(0.45 0.15 160);
+  --color-secondary: var(--color-crema);
+  --color-secondary-foreground: var(--color-viola);
 
-  --color-popover: oklch(0.99 0.005 160);
-  --color-popover-foreground: oklch(0.15 0.02 240);
+  --color-muted: var(--color-viola-50);
+  --color-muted-foreground: var(--color-viola-500);
 
-  --color-destructive: oklch(0.6 0.18 25);
-  --color-destructive-foreground: oklch(0.99 0.005 160);
+  --color-background: var(--color-bianco);
+  --color-foreground: var(--color-viola);
 
-  --color-text-primary: oklch(0.15 0.02 240);
-  --color-text-secondary: oklch(0.45 0.02 240);
-  --color-text-muted: oklch(0.65 0.02 240);
+  --color-surface: var(--color-crema);
+  --color-surface-warm: var(--color-crema);
 
-  --color-border-subtle: oklch(0.94 0.01 240);
-  --color-border-strong: oklch(0.88 0.02 240);
+  --color-border: var(--color-viola-200);
+  --color-input: var(--color-viola-200);
+  --color-ring: var(--color-blu);
 
-  --color-success: oklch(0.6 0.18 150);
-  --color-error: oklch(0.6 0.18 25);
+  --color-popover: var(--color-bianco);
+  --color-popover-foreground: var(--color-viola);
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Instrument Serif', serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --color-destructive: var(--color-rosso-700);
+  --color-destructive-foreground: var(--color-bianco);
 
+  --color-text-primary: var(--color-viola);
+  --color-text-secondary: var(--color-viola-500);
+  --color-text-muted: var(--color-viola-400);
+
+  --color-border-subtle: var(--color-viola-100);
+  --color-border-strong: var(--color-viola-200);
+
+  --color-success: var(--color-blu);
+  --color-error: var(--color-rosso-700);
+
+  /* Figma text styles (Helllo/*) as text-* utilities: size, line height, tracking, weight */
+  --text-display: 2.5rem;
+  --text-display--line-height: 2.75rem;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 700;
+  --text-title: 1.75rem;
+  --text-title--line-height: 2rem;
+  --text-title--letter-spacing: -0.015em;
+  --text-title--font-weight: 700;
+  --text-prompt: 1.625rem;
+  --text-prompt--line-height: 2rem;
+  --text-prompt--letter-spacing: -0.01em;
+  --text-prompt--font-weight: 500;
+  --text-body: 1rem;
+  --text-body--line-height: 1.375rem;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1rem;
+  --text-label--font-weight: 500;
+  --text-chip: 0.875rem;
+  --text-chip--line-height: 1.125rem;
+  --text-chip--font-weight: 500;
+
+  --radius-card: 1.75rem;
   --radius-3xl: 2rem;
   --radius-full: 9999px;
 
-  --shadow-card: 0 0 0 1px oklch(0.15 0.02 240 / 0.05), 0 8px 32px -8px oklch(0.15 0.02 240 / 0.08);
-  --shadow-premium: 0 0 0 1px oklch(0.15 0.02 240 / 0.02), 0 32px 64px -16px oklch(0.15 0.02 240 / 0.12);
+  --shadow-card: 0 0 0 1px rgb(101 49 113 / 0.08), 0 8px 32px -12px rgb(101 49 113 / 0.12);
+  --shadow-premium: 0 0 0 1px rgb(101 49 113 / 0.04), 0 32px 64px -24px rgb(101 49 113 / 0.18);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-swipe: cubic-bezier(0.23, 1, 0.32, 1);
+}
 
-  /* PA Institutional Palette */
-  --color-pa-blue: oklch(0.35 0.12 245);
-  --color-pa-blue-dark: oklch(0.25 0.08 245);
-  --color-pa-gray-warm: oklch(0.98 0.01 60);
-  --color-pa-gray-cold: oklch(0.96 0.005 240);
+/* Font families come from next/font variables set on <html> (see app/layout.tsx).
+   Hanken Grotesk: UI and headlines (Display, Title, Body, Label, Chip).
+   Bricolage Grotesque: the user's own voice (Prompt: answers, bios, quotes).
+   Pacifico: one accent word at a time (Accent Script), never whole sentences. */
+@theme inline {
+  --font-sans: var(--font-hanken), system-ui, sans-serif;
+  --font-display: var(--font-hanken), system-ui, sans-serif;
+  --font-prompt: var(--font-bricolage), var(--font-hanken), system-ui, sans-serif;
+  --font-script: var(--font-pacifico), cursive;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
   body {
-    background-color: oklch(0.99 0.005 160);
+    background-color: var(--color-background);
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
   h1, h2, h3, h4 {
-    @apply tracking-tighter;
+    letter-spacing: -0.02em;
   }
 
-  .font-display {
-    @apply italic;
+  /* Pacifico has no weights or italics: never fake them */
+  .font-script {
+    font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
+    letter-spacing: 0;
   }
 
   :root {
@@ -107,13 +185,13 @@
   }
 
   ::selection {
-    background: oklch(0.92 0.06 160);
-    color: oklch(0.25 0.08 160);
+    background: var(--color-rosa);
+    color: var(--color-viola);
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: oklch(0.88 0.02 240) transparent;
+    scrollbar-color: var(--color-viola-200) transparent;
   }
 }
 

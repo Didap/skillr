@@ -74,7 +74,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             <Link
               href={`/profile/${match.targetId}`}
               aria-label="Vedi profilo"
-              className="md:hidden pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100"
+              className="md:hidden pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-viola-600 hover:bg-viola-100"
             >
               <UserRound size={21} />
             </Link>
@@ -109,12 +109,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                       {match.targetImage ? (
                         <Image src={match.targetImage} alt={match.targetName} width={160} height={160} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-primary font-display text-4xl md:text-6xl italic">
+                        <span className="text-primary font-display text-4xl md:text-6xl ">
                           {match.targetName.charAt(0)}
                         </span>
                       )}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-emerald-500 w-6 h-6 md:w-8 md:h-8 rounded-full border-[3px] md:border-4 border-white flex items-center justify-center shadow-md">
+                    <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-rosso-500 w-6 h-6 md:w-8 md:h-8 rounded-full border-[3px] md:border-4 border-white flex items-center justify-center shadow-md">
                       <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full animate-pulse motion-reduce:animate-none" />
                     </div>
                   </div>
@@ -123,7 +123,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-black uppercase tracking-[0.2em] mb-2">
                       <Zap size={10} fill="currentColor" /> Match Confermato
                     </div>
-                    <h2 className="text-2xl md:text-5xl font-display italic text-text-primary tracking-tight leading-tight break-words line-clamp-2">
+                    <h2 className="text-2xl md:text-5xl font-display text-text-primary tracking-tight leading-tight break-words line-clamp-2">
                       {match.targetName}
                     </h2>
                     {match.targetTitle && (
@@ -160,8 +160,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                         </div>
                       )}
                       {match.targetRate && (
-                        <div className="flex items-center gap-2 max-w-full bg-emerald-50 text-emerald-700 px-3 md:px-4 py-2 rounded-2xl text-sm font-bold border border-emerald-100 shadow-sm">
-                          <Zap size={16} fill="currentColor" className="text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 max-w-full bg-rosso-50 text-rosso-700 px-3 md:px-4 py-2 rounded-2xl text-sm font-bold border border-rosso-100 shadow-sm">
+                          <Zap size={16} fill="currentColor" className="text-rosso-500 shrink-0" />
                           <span className="min-w-0 break-words">{match.targetRate}</span>
                         </div>
                       )}
@@ -184,7 +184,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
               </div>
               <div className="relative flex justify-center">
                 <div className="bg-white px-6">
-                  <div className="px-4 py-1.5 rounded-full bg-slate-950 text-white text-[11px] font-black uppercase tracking-[0.2em]">
+                  <div className="px-4 py-1.5 rounded-full bg-viola-950 text-white text-[11px] font-black uppercase tracking-[0.2em]">
                     Scheduling & Feedback
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
 
           <footer className="hidden md:block text-center py-12">
             <p className="text-xs font-bold text-text-muted uppercase tracking-[0.3em]">
-              Skillr © 2026 — Zero Messaggi, Solo Match.
+              Helllo © 2026 — Zero Messaggi, Solo Match.
             </p>
           </footer>
         </main>

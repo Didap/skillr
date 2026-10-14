@@ -42,7 +42,7 @@ interface JobWithStats extends JobData {
 }
 
 const iconButton =
-  "pressable shrink-0 w-11 h-11 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40";
+  "pressable shrink-0 w-11 h-11 rounded-full border border-viola-200 bg-white flex items-center justify-center text-viola-600 transition-colors hover:bg-viola-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rosso-500/40";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<JobWithStats[]>([]);
@@ -82,7 +82,7 @@ export default function JobsPage() {
       setJobs(prev => prev.filter(j => j.id !== deleteId));
       toast.success("Ricerca eliminata", {
         description: "L'annuncio e i relativi match sono stati archiviati.",
-        icon: <Trash2 size={16} className="text-red-500" />,
+        icon: <Trash2 size={16} className="text-rosso-500" />,
       });
       setDeleteId(null);
     } else {
@@ -107,7 +107,7 @@ export default function JobsPage() {
         description: currentStatus
           ? "I professionisti non vedranno più questo annuncio."
           : "L'annuncio è di nuovo visibile nel feed.",
-        icon: currentStatus ? <Power size={14} className="text-amber-500" /> : <Zap size={14} className="text-emerald-500" />,
+        icon: currentStatus ? <Power size={14} className="text-amber-500" /> : <Zap size={14} className="text-rosso-500" />,
       });
     } else {
       // Revert on error
@@ -141,13 +141,13 @@ export default function JobsPage() {
             <Link
               href="/jobs/new"
               aria-label="Nuova ricerca"
-              className="md:hidden pressable w-11 h-11 rounded-full bg-slate-950 text-white flex items-center justify-center shadow-premium"
+              className="md:hidden pressable w-11 h-11 rounded-full bg-viola-950 text-white flex items-center justify-center shadow-premium"
             >
               <Plus size={20} />
             </Link>
             <Link
               href="/jobs/new"
-              className="hidden md:inline-flex pressable items-center gap-2 rounded-xl h-12 px-6 bg-slate-950 hover:bg-emerald-600 text-white shadow-premium transition-colors group"
+              className="hidden md:inline-flex pressable items-center gap-2 rounded-xl h-12 px-6 bg-viola-950 hover:bg-rosso-600 text-white shadow-premium transition-colors group"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300 motion-reduce:transition-none" />
               <span className="font-bold text-sm">Nuova ricerca</span>
@@ -159,8 +159,8 @@ export default function JobsPage() {
       <PageBody className="bg-white">
         <div className="max-w-4xl mx-auto px-4 pt-5 pb-8 md:p-12">
           <div className="hidden md:block mb-12">
-            <h2 className="text-3xl font-display italic font-bold text-slate-950">I tuoi annunci</h2>
-            <p className="text-slate-500 font-medium mt-1">Monitora i match e gestisci la visibilità.</p>
+            <h2 className="text-3xl font-display font-bold text-viola-950">I tuoi annunci</h2>
+            <p className="text-viola-500 font-medium mt-1">Monitora i match e gestisci la visibilità.</p>
           </div>
 
           {/* Search + filter: one compact row on every width */}
@@ -251,7 +251,7 @@ export default function JobsPage() {
                                 </span>
                               )}
                               {job.matchCount > 0 && (
-                                <span className="inline-flex items-center h-6 px-2.5 rounded-full bg-emerald-500 text-white text-xs font-semibold tabular-nums">
+                                <span className="inline-flex items-center h-6 px-2.5 rounded-full bg-rosso-500 text-white text-xs font-semibold tabular-nums">
                                   {job.matchCount} match
                                 </span>
                               )}
@@ -261,7 +261,7 @@ export default function JobsPage() {
                                 </span>
                               )}
                               {job.remoteOk && (
-                                <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-semibold">
+                                <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-rosso-50 text-rosso-700 border border-rosso-100 text-xs font-semibold">
                                   <Laptop className="size-3.5" /> Remote OK
                                 </span>
                               )}
@@ -288,7 +288,7 @@ export default function JobsPage() {
                       <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-border-subtle">
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="pressable order-first md:order-last flex-1 md:flex-none min-w-0 h-11 px-4 md:px-5 rounded-full bg-slate-950 hover:bg-emerald-600 text-white text-sm font-bold inline-flex items-center justify-center gap-2 transition-colors"
+                          className="pressable order-first md:order-last flex-1 md:flex-none min-w-0 h-11 px-4 md:px-5 rounded-full bg-viola-950 hover:bg-rosso-600 text-white text-sm font-bold inline-flex items-center justify-center gap-2 transition-colors"
                         >
                           <Users size={16} className="shrink-0" />
                           <span className="truncate">Candidati</span>
@@ -309,9 +309,9 @@ export default function JobsPage() {
                           className={cn(iconButton, isToggling && "opacity-60")}
                         >
                           {isToggling ? (
-                            <Loader2 size={18} className="animate-spin text-slate-400" />
+                            <Loader2 size={18} className="animate-spin text-viola-400" />
                           ) : (
-                            <Power size={18} className={job.isActive ? "text-emerald-600" : "text-text-muted"} />
+                            <Power size={18} className={job.isActive ? "text-rosso-600" : "text-text-muted"} />
                           )}
                         </button>
                         <Link
@@ -327,7 +327,7 @@ export default function JobsPage() {
                           onClick={() => setDeleteId(job.id)}
                           aria-label="Elimina ricerca"
                           title="Elimina"
-                          className={cn(iconButton, "hidden md:flex hover:bg-red-50 hover:text-red-600 hover:border-red-100")}
+                          className={cn(iconButton, "hidden md:flex hover:bg-rosso-50 hover:text-rosso-600 hover:border-rosso-100")}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -376,7 +376,7 @@ export default function JobsPage() {
                 <p className="text-text-secondary mb-6">Non abbiamo trovato ricerche che corrispondano ai tuoi filtri.</p>
                 <button
                   type="button"
-                  className="pressable h-11 px-6 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="pressable h-11 px-6 rounded-full border border-viola-200 bg-white text-sm font-semibold text-viola-700 hover:bg-viola-50"
                   onClick={() => {
                     setSearchQuery("");
                     setShowOnlyActive(false);
@@ -390,7 +390,7 @@ export default function JobsPage() {
             {loading && (
               <div className="space-y-4" aria-busy="true" aria-label="Caricamento ricerche">
                 {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-44 md:h-28 bg-slate-50/50 rounded-3xl border border-slate-100" />
+                  <Skeleton key={i} className="h-44 md:h-28 bg-viola-50/50 rounded-3xl border border-viola-100" />
                 ))}
               </div>
             )}
@@ -405,9 +405,9 @@ export default function JobsPage() {
             <Link
               href={`/jobs/${menuJob.id}/edit`}
               onClick={() => setMenuId(null)}
-              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-slate-50 text-slate-900 font-semibold"
+              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-viola-50 text-viola-900 font-semibold"
             >
-              <Pencil size={20} className="text-slate-500" />
+              <Pencil size={20} className="text-viola-500" />
               Modifica ricerca
             </Link>
             <button
@@ -416,7 +416,7 @@ export default function JobsPage() {
                 setMenuId(null);
                 setDeleteId(menuJob.id);
               }}
-              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-red-50 text-red-600 font-semibold text-left"
+              className="pressable flex items-center gap-4 h-14 px-4 rounded-2xl bg-rosso-50 text-rosso-600 font-semibold text-left"
             >
               <Trash2 size={20} />
               Elimina ricerca

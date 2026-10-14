@@ -58,18 +58,18 @@ export default function PaReportsPage() {
   return (
     <div className="container max-w-4xl py-12 space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+        <h1 className="text-3xl font-bold tracking-tight text-viola-900 dark:text-viola-50">
           Reportistica e Rendicontazione PA
         </h1>
-        <p className="text-lg text-slate-500 dark:text-slate-400">
+        <p className="text-lg text-viola-500 dark:text-viola-400">
           Esporta i dati necessari per la rendicontazione dei tuoi progetti territoriali (PNRR, FSE+, GG+).
         </p>
       </div>
 
-      <Card className="border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+      <Card className="border-viola-200 dark:border-viola-800 shadow-sm overflow-hidden">
+        <CardHeader className="bg-viola-50/50 dark:bg-viola-900/50 border-b border-viola-200 dark:border-viola-800">
           <div className="flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <FileSpreadsheet className="w-5 h-5 text-blu-600 dark:text-blu-400" />
             <CardTitle>Generazione Report KPI</CardTitle>
           </div>
           <CardDescription>
@@ -79,7 +79,7 @@ export default function PaReportsPage() {
         <CardContent className="pt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-medium text-viola-700 dark:text-viola-300">
                 Data di inizio
               </label>
               <DatePicker 
@@ -88,7 +88,7 @@ export default function PaReportsPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-medium text-viola-700 dark:text-viola-300">
                 Data di fine
               </label>
               <DatePicker 
@@ -98,8 +98,8 @@ export default function PaReportsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-slate-500">
+          <div className="pt-4 border-t border-viola-100 dark:border-viola-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-viola-500">
               {startDate && endDate && (
                 <span>
                   Esportazione dal <strong>{format(startDate, "PP", { locale: it })}</strong> al <strong>{format(endDate, "PP", { locale: it })}</strong>
@@ -109,7 +109,7 @@ export default function PaReportsPage() {
             <Button 
               onClick={handleDownload} 
               disabled={isLoading}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full sm:w-auto bg-blu-600 hover:bg-blu-700 text-white"
             >
               {isLoading ? (
                 <>
@@ -147,14 +147,14 @@ export default function PaReportsPage() {
 
 function MetricBrief({ title, description }: { title: string; description: string }) {
   return (
-    <Card className="bg-slate-50/30 dark:bg-slate-900/10 border-dashed border-slate-200 dark:border-slate-800">
+    <Card className="bg-viola-50/30 dark:bg-viola-900/10 border-dashed border-viola-200 dark:border-viola-800">
       <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-viola-500">
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-viola-600 dark:text-viola-400">
           {description}
         </p>
       </CardContent>
