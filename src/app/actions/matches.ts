@@ -269,6 +269,9 @@ export async function getPotentialMatches() {
   }
 }
 
+export type MatchParty = { name: string; image: string | null; detail: string | null };
+export type MatchParties = { professional: MatchParty; company: MatchParty };
+
 export async function recordSwipe(targetId: string, targetType: "professional" | "company", direction: "left" | "right") {
   const user = await requireUser();
   if ("error" in user || !user.role) return { error: "Non autorizzato" };
@@ -296,6 +299,7 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
         .set({ ...updates, matchedAt: isMatch ? new Date() : existingMatch.matchedAt })
         .where(eq(matches.id, existingMatch.id));
 
+      let parties: MatchParties | undefined;
       if (isMatch) {
         // Match emails go out after the response
         try {
@@ -306,6 +310,22 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
           ]);
 
           if (me && target) {
+            // Both sides for the match screen, whichever of the two swiped last
+            const pro = me.role === "company" ? target : me;
+            const company = me.role === "company" ? me : target;
+            parties = {
+              professional: {
+                name: professionalDisplayName(pro),
+                image: pro.professionalProfile?.photoUrl || pro.image || null,
+                detail: pro.professionalProfile?.title || null,
+              },
+              company: {
+                name: companyDisplayName(company),
+                image: company.companyProfile?.logoUrl || company.image || null,
+                detail: company.companyProfile?.industry || null,
+              },
+            };
+
             const nameOf = (u: typeof me) =>
               u.role === "company" ? companyDisplayName(u, "Utente") : professionalDisplayName(u, "Utente");
             const userName = nameOf(me);
@@ -348,7 +368,7 @@ export async function recordSwipe(targetId: string, targetType: "professional" |
 
       revalidatePath("/dashboard");
       revalidatePath("/matches");
-      return { success: true, isMatch, matchId: existingMatch.id };
+      return { success: true, isMatch, matchId: existingMatch.id, parties };
     } else {
       const ownStatus = status as "liked" | "passed";
       // A concurrent swipe on the same pair lands on the unique key: keep this side's choice.

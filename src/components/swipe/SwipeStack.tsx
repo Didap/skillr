@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, X, Zap } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { recordSwipe } from "@/app/actions/matches";
+import { recordSwipe, type MatchParties } from "@/app/actions/matches";
 import { applyToJob, passJob } from "@/app/actions/applications";
 import { Profile } from "@/types/profile";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ const likeButtonClass =
 export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackProps) {
   const [profiles] = useState<Profile[]>(initialProfiles);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchData, setMatchData] = useState<{ name: string, image: string | null, matchId: string } | null>(null);
+  const [matchData, setMatchData] = useState<{ matchId: string; parties: MatchParties } | null>(null);
   const [reloading, setReloading] = useState(false);
   const frontCardRef = useRef<SwipeCardHandle>(null);
   // How far the top card is from committing (0..1); the card behind rises with it
@@ -79,10 +79,14 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
     if (res.error) {
       toast.error(res.error);
     } else if (res.isMatch) {
+      // The server sends both sides; if it couldn't, fall back to the card that was swiped
+      const them = { name: swipedProfile.name, image: swipedProfile.image, detail: swipedProfile.title || null };
+      const you = { name: "Tu", image: null, detail: null };
       setMatchData({
-        name: swipedProfile.name,
-        image: swipedProfile.image,
-        matchId: res.matchId || swipedProfile.id
+        matchId: res.matchId || swipedProfile.id,
+        parties: res.parties ?? (userRole === "company"
+          ? { professional: them, company: you }
+          : { professional: you, company: them }),
       });
     }
   };
@@ -192,8 +196,8 @@ export function SwipeStack({ initialProfiles, userRole, onReload }: SwipeStackPr
       <AnimatePresence>
         {matchData && (
           <MatchOverlay
-            profileName={matchData.name}
-            profileImage={matchData.image || undefined}
+            parties={matchData.parties}
+            viewerRole={userRole}
             matchId={matchData.matchId}
             onClose={() => setMatchData(null)}
           />
