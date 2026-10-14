@@ -61,7 +61,7 @@ export const MatchEmail = ({
           </Section>
           <Section style={styles.buttonContainer}>
             <Button style={styles.button} href={matchUrl}>
-              View Match & Start Chat
+              Open the chat
             </Button>
           </Section>
         </Section>

@@ -10,12 +10,15 @@ import { spring } from "@/lib/motion";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
 import { signOutAndClearDraft } from "@/lib/sign-out";
+import { useChatRealtime } from "@/components/chat/ChatRealtimeProvider";
+import { UnreadBadge } from "@/components/chat/UnreadBadge";
 
 /** Thumb-reach navigation for phones; the sidebar takes over from md up. */
 export function MobileTabBar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [accountOpen, setAccountOpen] = useState(false);
+  const { unreadTotal } = useChatRealtime();
 
   if (!session?.user) return null;
 
@@ -47,6 +50,9 @@ export function MobileTabBar() {
                 >
                   <TabPill active={active}>
                     <Icon size={24} strokeWidth={1.75} className="relative text-viola" />
+                    {item.href === "/matches" && (
+                      <UnreadBadge count={unreadTotal} className="absolute top-0.5 right-2.5" />
+                    )}
                   </TabPill>
                   <span className="sr-only">{item.short}</span>
                 </Link>

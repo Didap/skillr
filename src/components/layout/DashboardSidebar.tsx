@@ -9,10 +9,13 @@ import { Logo } from "@/components/brand/Logo";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { primaryNav, LEGAL_LINKS, isOwnProfile } from "./nav-items";
 import { signOutAndClearDraft } from "@/lib/sign-out";
+import { useChatRealtime } from "@/components/chat/ChatRealtimeProvider";
+import { UnreadBadge } from "@/components/chat/UnreadBadge";
 
 export function DashboardSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { unreadTotal } = useChatRealtime();
 
   if (!session?.user) return null;
 
@@ -34,6 +37,7 @@ export function DashboardSidebar() {
             icon={<item.icon size={22} strokeWidth={1.75} />}
             label={item.label}
             active={item.isActive(pathname)}
+            badge={item.href === "/matches" ? unreadTotal : 0}
           />
         ))}
         <SidebarLink
@@ -69,7 +73,7 @@ export function DashboardSidebar() {
   );
 }
 
-function SidebarLink({ href, icon, label, active = false }: { href: string, icon: React.ReactNode, label: string, active?: boolean }) {
+function SidebarLink({ href, icon, label, active = false, badge = 0 }: { href: string, icon: React.ReactNode, label: string, active?: boolean, badge?: number }) {
   return (
     <Link
       href={href}
@@ -79,8 +83,12 @@ function SidebarLink({ href, icon, label, active = false }: { href: string, icon
         active ? "bg-rosa" : "hover:bg-crema"
       )}
     >
-      {icon}
-      <span className="hidden lg:block">{label}</span>
+      <span className="relative flex">
+        {icon}
+        <UnreadBadge count={badge} className="absolute -top-2 -right-2.5 lg:hidden" />
+      </span>
+      <span className="hidden lg:block flex-1">{label}</span>
+      <UnreadBadge count={badge} className="hidden lg:inline-flex" />
     </Link>
   );
 }

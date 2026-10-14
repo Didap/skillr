@@ -24,6 +24,8 @@ export const spring = {
   card: { type: "spring", stiffness: 300, damping: 30 } satisfies Transition,
   // Bottom sheet open/close
   sheet: { type: "spring", stiffness: 420, damping: 40 } satisfies Transition,
+  // Small elements popping in (chat bubbles)
+  pop: { type: "spring", stiffness: 480, damping: 32 } satisfies Transition,
 };
 
 // Opacity only: a transform on the page wrapper would make every `position: fixed`

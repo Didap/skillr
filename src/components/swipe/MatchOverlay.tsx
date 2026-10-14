@@ -10,6 +10,9 @@ import { MatchTitle } from "@/components/brand/MatchTitle";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
+import { sendMessage } from "@/app/actions/chat";
+import { safeAction } from "@/lib/chat/call-action";
+import { MAX_BODY_LENGTH } from "@/lib/chat/types";
 import { hankenBlackItalic } from "./match-font";
 import { cn, inertOutside, isEditableTarget } from "@/lib/utils";
 import { beat, duration, ease, enter, haptic } from "@/lib/motion";
@@ -19,6 +22,8 @@ interface MatchOverlayProps {
   // Who is looking: decides who the icebreakers are addressed to
   viewerRole: "professional" | "company";
   matchId: string;
+  /** Dev preview: nothing is sent to the real chat */
+  preview?: boolean;
   onClose: () => void;
 }
 
@@ -61,7 +66,7 @@ function initials(name: string) {
  * safe-area aware. The cards fly in and meet on the rosa block, the "lll" badge pops
  * where they touch, then the icebreakers and actions settle.
  */
-export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOverlayProps) {
+export function MatchOverlay({ parties, viewerRole, matchId, preview, onClose }: MatchOverlayProps) {
   const reduceMotion = !!useReducedMotion();
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -145,6 +150,8 @@ export function MatchOverlay({ parties, viewerRole, matchId, onClose }: MatchOve
         </p>
 
         <Icebreaker
+          matchId={matchId}
+          preview={preview}
           suggestions={ICEBREAKERS[viewerRole]}
           recipientName={recipientName}
           reduceMotion={reduceMotion}
@@ -287,30 +294,45 @@ function MatchIllustration({ parties, reduceMotion }: { parties: MatchParties; r
 
 /*
  * First message after the match: suggested lines plus a text field, as in the Figma.
- * Front-end only for now: messages stay in this component and are not sent anywhere
- * until the chat backend exists, and the screen says so: nothing is kept or sent later.
+ * Messages go to the real chat; the dev preview keeps them local.
  */
+type SentLine = { id: string; text: string; status: "sending" | "sent" | "failed"; error?: string };
+
 function Icebreaker({
+  matchId,
+  preview,
   suggestions,
   recipientName,
   reduceMotion,
 }: {
+  matchId: string;
+  preview?: boolean;
   suggestions: string[];
   recipientName: string;
   reduceMotion: boolean;
 }) {
   const [draft, setDraft] = useState("");
-  const [sent, setSent] = useState<string[]>([]);
+  const [sent, setSent] = useState<SentLine[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const send = (e: FormEvent) => {
+  const send = async (e: FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
     if (!text) return;
-    setSent((prev) => [...prev, text]);
+    const id = crypto.randomUUID();
+    setSent((prev) => [...prev, { id, text, status: preview ? "sent" : "sending" }]);
     setDraft("");
     haptic(10);
+    if (preview) return;
+
+    const res = await safeAction(sendMessage(matchId, { clientId: id, body: text }));
+    setSent((prev) =>
+      prev.map((m): SentLine => (m.id !== id ? m : "error" in res ? { ...m, status: "failed", error: res.error } : { ...m, status: "sent" }))
+    );
+    // Keep the text so it can be sent again
+    if ("error" in res) setDraft((current) => current || text);
   };
+  const last = sent.at(-1);
 
   return (
     <div className="shrink-0 flex flex-col gap-3.5">
@@ -349,20 +371,35 @@ function Icebreaker({
           it and the status line under the first one */}
       <div aria-live="polite" className={cn("flex flex-col items-end gap-1.5", sent.length === 0 && "hidden")}>
         <ol className="contents" aria-label="I tuoi messaggi">
-          {sent.map((text, i) => (
+          {sent.map((m) => (
             <motion.li
-              key={i}
+              key={m.id}
               initial={{ opacity: 0, y: 12, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 480, damping: 30 }}
-              className="max-w-[85%] origin-bottom-right rounded-3xl rounded-br-md bg-viola px-4 py-2.5 text-body text-white"
+              className={cn(
+                "max-w-[85%] origin-bottom-right rounded-3xl rounded-br-md bg-viola px-4 py-2.5 text-body text-white",
+                m.status === "failed" && "opacity-60"
+              )}
             >
-              {text}
+              {m.text}
             </motion.li>
           ))}
         </ol>
-        {sent.length > 0 && (
-          <p className="text-label text-viola-500 pr-1 text-right">Anteprima: la chat non è ancora attiva, il messaggio non viene inviato</p>
+        {last && (
+          <p className="text-label text-viola-500 pr-1 text-right">
+            {preview ? (
+              "Anteprima: il messaggio non viene inviato"
+            ) : last.status === "sending" ? (
+              "Invio…"
+            ) : last.status === "failed" ? (
+              <span className="text-rosso-700">Non inviato: {last.error} Riprova dal campo qui sotto.</span>
+            ) : (
+              <Link href={`/matches/${matchId}`} className="font-bold text-viola underline underline-offset-2">
+                Inviato · Apri la chat
+              </Link>
+            )}
+          </p>
         )}
       </div>
 
@@ -378,7 +415,7 @@ function Icebreaker({
           placeholder={`Scrivi a ${recipientName}…`}
           aria-label={`Scrivi a ${recipientName}`}
           enterKeyHint="send"
-          maxLength={500}
+          maxLength={MAX_BODY_LENGTH}
           className="min-w-0 flex-1 bg-transparent text-body text-viola placeholder:text-viola outline-none"
         />
         <button

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { MobileTabBar } from "./MobileTabBar";
 import { pageEnter } from "@/lib/motion";
+import { ChatRealtimeProvider } from "@/components/chat/ChatRealtimeProvider";
 
 /**
  * Logged-in app frame. Desktop: sidebar + scrolling content column. Phone: full-width
@@ -20,18 +21,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [landingPath] = useState(pathname);
 
   return (
-    <div className="h-dvh bg-background flex overflow-hidden">
-      <DashboardSidebar />
-      {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
-      <motion.div
-        key={pathname}
-        initial={pathname === landingPath ? false : pageEnter.initial}
-        animate={pageEnter.animate}
-        className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
-      >
-        {children}
-      </motion.div>
-      <MobileTabBar />
-    </div>
+    <ChatRealtimeProvider>
+      <div className="h-dvh bg-background flex overflow-hidden">
+        <DashboardSidebar />
+        {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
+        <motion.div
+          key={pathname}
+          initial={pathname === landingPath ? false : pageEnter.initial}
+          animate={pageEnter.animate}
+          className="flex-1 flex flex-col min-w-0 h-full overflow-hidden"
+        >
+          {children}
+        </motion.div>
+        <MobileTabBar />
+      </div>
+    </ChatRealtimeProvider>
   );
 }

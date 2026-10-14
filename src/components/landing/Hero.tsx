@@ -47,7 +47,7 @@ export function Hero() {
             variants={itemUp}
             className="text-lg md:text-xl text-viola-500 max-w-xl mb-10 md:mb-12 leading-relaxed"
           >
-            Vedi quanto paga, fai swipe, fissi una call di 30 minuti. La chat non c&apos;è: il ghiaccio si rompe in call.
+            Vedi quanto paga, fai swipe, scrivi al tuo match e fissi una call di 30 minuti.
           </motion.p>
 
           <motion.div

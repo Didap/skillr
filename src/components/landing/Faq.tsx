@@ -6,8 +6,8 @@ const QUESTIONS = [
     a: "Niente. Il profilo è gratis per tutti.",
   },
   {
-    q: "Perché non c'è una chat?",
-    a: "Perché skill, tariffa e budget sono già sulla card. Il resto si chiarisce in 30 minuti di call.",
+    q: "Posso scrivere a un'azienda?",
+    a: "Sì, dopo il match. La chat si apre solo quando vi siete scelti a vicenda: niente messaggi a freddo.",
   },
   {
     q: "Chi vede la mia tariffa?",
