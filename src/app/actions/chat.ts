@@ -342,7 +342,8 @@ export async function uploadChatAttachment(matchId: string, formData: FormData) 
       cloudinary.uploader
         .upload_stream(
           // PDFs are "image" resources in Cloudinary too, so one resource type covers both
-          { folder: chatFolder(matchId), type: "authenticated", resource_type: "image" },
+          // An explicit public_id keeps the folder in the id in both fixed and dynamic folder modes
+          { public_id: `${chatFolder(matchId)}/${crypto.randomUUID()}`, type: "authenticated", resource_type: "image" },
           (error, res) => (error || !res ? reject(error ?? new Error("Empty Cloudinary response")) : resolve(res))
         )
         .end(buffer);

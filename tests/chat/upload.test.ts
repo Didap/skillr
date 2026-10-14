@@ -20,18 +20,21 @@ describe("uploadChatAttachment", () => {
   });
 
   it("uploads to the match folder as an authenticated resource", async () => {
-    const upload = vi.spyOn(cloudinary.uploader, "upload_stream").mockImplementation(((options: { folder: string }, callback: (e: unknown, r: unknown) => void) => ({
-      end: () => callback(undefined, { public_id: `${options.folder}/abc123` }),
+    const upload = vi.spyOn(cloudinary.uploader, "upload_stream").mockImplementation(((options: { public_id: string }, callback: (e: unknown, r: unknown) => void) => ({
+      end: () => callback(undefined, { public_id: options.public_id }),
     })) as never);
     const { match, pro } = await seedMatch();
     signInAs(pro);
 
     const res = await uploadChatAttachment(match.id, form(new File(["%PDF-1.4"], "cv.pdf", { type: "application/pdf" })));
+    const options = upload.mock.calls[0][0] as unknown as Record<string, string>;
     expect(res).toEqual({
       success: true,
-      data: { publicId: `helllo/chat/${match.id}/abc123`, name: "cv.pdf", mime: "application/pdf", size: 8 },
+      data: { publicId: options.public_id, name: "cv.pdf", mime: "application/pdf", size: 8 },
     });
-    expect(upload.mock.calls[0][0]).toMatchObject({ folder: `helllo/chat/${match.id}`, type: "authenticated", resource_type: "image" });
+    expect(options).toMatchObject({ type: "authenticated", resource_type: "image" });
+    expect(options.public_id.startsWith(`helllo/chat/${match.id}/`)).toBe(true);
+    expect(options).not.toHaveProperty("folder");
   });
 
   it("rejects unsupported types and files over 5 MB", async () => {
