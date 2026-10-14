@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Channel } from "pusher-js";
 import { getMessages, markRead, sendMessage, uploadChatAttachment } from "@/app/actions/chat";
 import { CHAT_EVENTS, matchChannel } from "@/lib/chat/channels";
-import { confirmPending, latestReadAt, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
+import { confirmPending, latestReadAt, laterOf, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
 import type { ChatMessage, ThreadPage } from "@/lib/chat/types";
 import { currentSocketId, getPusherClient } from "@/lib/pusher/client";
 
@@ -33,7 +33,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   const [hasMore, setHasMore] = useState(initial.hasMore);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [otherLastReadAt, setOtherLastReadAt] = useState(initial.otherLastReadAt);
-  const [blockedById, setBlockedById] = useState(initial.blockedById);
+  const [blockedById, setBlocked] = useState(initial.blockedById);
   const [otherTyping, setOtherTyping] = useState(false);
   const [live, setLive] = useState(false);
 
@@ -43,6 +43,13 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   const typingTimer = useRef<number | undefined>(undefined);
   const readTimer = useRef<number | undefined>(undefined);
   const lastTypingSent = useRef(0);
+  // Bumped whenever blockedById changes outside catchUp, so a stale catchUp response can't undo it
+  const metaEpoch = useRef(0);
+
+  const setBlockedById = useCallback((next: string | null) => {
+    metaEpoch.current += 1;
+    setBlocked(next);
+  }, []);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -61,13 +68,15 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   }, [matchId]);
 
   const catchUp = useCallback(async () => {
+    const epoch = metaEpoch.current;
     const after = messagesRef.current.findLast((m) => m.status === "sent")?.id;
     const res = await getMessages(matchId, after ? { after } : {}).catch(() => null);
     if (!res || "error" in res) return;
     const { messages: fresh } = res.data;
     if (fresh.length > 0) setMessages((prev) => mergeMessages(prev, fresh));
-    setOtherLastReadAt(latestReadAt(res.data.otherLastReadAt, fresh, viewerId));
-    setBlockedById(res.data.blockedById);
+    // Never move the read receipt backwards; a response that raced a block/unblock must not undo it
+    setOtherLastReadAt((current) => laterOf(current, latestReadAt(res.data.otherLastReadAt, fresh, viewerId)));
+    if (metaEpoch.current === epoch) setBlocked(res.data.blockedById);
     if (fresh.some((m) => m.senderId !== viewerId)) scheduleRead();
   }, [matchId, viewerId, scheduleRead]);
 
@@ -94,7 +103,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
       }
     });
     channel.bind(CHAT_EVENTS.read, (e: { userId: string; readAt: string }) => {
-      if (e.userId !== viewerId) setOtherLastReadAt(e.readAt);
+      if (e.userId !== viewerId) setOtherLastReadAt((current) => laterOf(current, e.readAt));
     });
     channel.bind(CHAT_EVENTS.blocked, (e: { blockedById: string }) => setBlockedById(e.blockedById));
     channel.bind(CHAT_EVENTS.unblocked, () => setBlockedById(null));
@@ -118,7 +127,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
       channelRef.current = null;
       window.clearTimeout(typingTimer.current);
     };
-  }, [matchId, viewerId, catchUp, scheduleRead]);
+  }, [matchId, viewerId, catchUp, scheduleRead, setBlockedById]);
 
   // Polling fallback while realtime is unavailable
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmPending, latestReadAt, mergeMessages, type ThreadMessage } from "@/lib/chat/merge";
+import { confirmPending, latestReadAt, laterOf, mergeMessages, type ThreadMessage } from "@/lib/chat/merge";
 import type { ChatMessage } from "@/lib/chat/types";
 
 const msg = (id: string, second: number, body = id): ChatMessage => ({
@@ -50,5 +50,17 @@ describe("latestReadAt", () => {
     expect(latestReadAt(msg("x", 20).createdAt, [from("u2", 5)], "u1")).toBe(msg("x", 20).createdAt);
     expect(latestReadAt(null, [from("u1", 5)], "u1")).toBeNull();
     expect(latestReadAt(msg("x", 3).createdAt, [], "u1")).toBe(msg("x", 3).createdAt);
+  });
+});
+
+describe("laterOf", () => {
+  it("returns the later ISO timestamp and ignores nulls", () => {
+    const a = msg("a", 3).createdAt;
+    const b = msg("b", 9).createdAt;
+    expect(laterOf(a, b)).toBe(b);
+    expect(laterOf(b, a)).toBe(b);
+    expect(laterOf(null, a)).toBe(a);
+    expect(laterOf(a, null)).toBe(a);
+    expect(laterOf(null, null)).toBeNull();
   });
 });

@@ -49,3 +49,10 @@ export function latestReadAt(current: string | null, messages: ChatMessage[], vi
   }
   return latest;
 }
+
+/** The later of two ISO timestamps (they compare as text); null means "none yet". */
+export function laterOf(a: string | null, b: string | null): string | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  return a >= b ? a : b;
+}
