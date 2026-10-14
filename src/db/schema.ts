@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, pgEnum, uuid, unique, index, uniqueIndex, check } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum('role', ['professional', 'company', 'pa_admin']);
@@ -10,6 +10,7 @@ export const interviewBookingStatusEnum = pgEnum('interview_booking_status', ['b
 export const paSubscriberStatusEnum = pgEnum('pa_subscriber_status', ['pending', 'active', 'unsubscribed']);
 // 'passed' = the professional swiped left on the job (kept so the job doesn't come back in the feed)
 export const jobApplicationStatusEnum = pgEnum('job_application_status', ['pending', 'accepted', 'rejected', 'passed']);
+export const chatReportReasonEnum = pgEnum('chat_report_reason', ['spam', 'harassment', 'inappropriate', 'scam', 'other']);
 
 
 export const users = pgTable("user", {
@@ -153,6 +154,13 @@ export const matches = pgTable("matches", {
   meetingLink: text("meeting_link"),
   googleEventId: text("google_event_id"),
   callDuration: integer("call_duration"),
+  // Chat: one read marker per side (a message is read when the other side's marker is at
+  // or after it), the last activity for inbox ordering, and who closed the conversation.
+  professionalLastReadAt: timestamp("professional_last_read_at"),
+  companyLastReadAt: timestamp("company_last_read_at"),
+  lastMessageAt: timestamp("last_message_at"),
+  blockedById: text("blocked_by_id").references(() => users.id, { onDelete: "set null" }),
+  blockedAt: timestamp("blocked_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (t) => [
@@ -170,6 +178,36 @@ export const proposedSlots = pgTable("proposed_slots", {
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   isAccepted: boolean("is_accepted").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Named chat_messages: an old initial migration created a differently shaped "messages"
+// table that may still exist in some databases.
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  matchId: text("match_id").notNull().references(() => matches.id, { onDelete: "cascade" }),
+  senderId: text("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  body: text("body"),
+  attachmentPublicId: text("attachment_public_id"),
+  attachmentName: text("attachment_name"),
+  attachmentMime: text("attachment_mime"),
+  attachmentSize: integer("attachment_size"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => [
+  // Threads are read newest first by match
+  index("chat_messages_match_created_idx").on(t.matchId, t.createdAt),
+  // The rate limit counts a sender's recent messages
+  index("chat_messages_sender_created_idx").on(t.senderId, t.createdAt),
+  check("chat_messages_content_check", sql`${t.body} is not null or ${t.attachmentPublicId} is not null`),
+]);
+
+export const chatReports = pgTable("chat_reports", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  matchId: text("match_id").notNull().references(() => matches.id, { onDelete: "cascade" }),
+  reporterId: text("reporter_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  messageId: text("message_id").references(() => chatMessages.id, { onDelete: "set null" }),
+  reason: chatReportReasonEnum("reason").notNull(),
+  details: text("details"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -341,6 +379,8 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
   }),
   proposedSlots: many(proposedSlots),
   reviews: many(reviews),
+  messages: many(chatMessages),
+  reports: many(chatReports),
 }));
 
 export const proposedSlotsRelations = relations(proposedSlots, ({ one }) => ({
@@ -348,6 +388,17 @@ export const proposedSlotsRelations = relations(proposedSlots, ({ one }) => ({
     fields: [proposedSlots.matchId],
     references: [matches.id],
   }),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  match: one(matches, { fields: [chatMessages.matchId], references: [matches.id] }),
+  sender: one(users, { fields: [chatMessages.senderId], references: [users.id] }),
+}));
+
+export const chatReportsRelations = relations(chatReports, ({ one }) => ({
+  match: one(matches, { fields: [chatReports.matchId], references: [matches.id] }),
+  reporter: one(users, { fields: [chatReports.reporterId], references: [users.id] }),
+  message: one(chatMessages, { fields: [chatReports.messageId], references: [chatMessages.id] }),
 }));
 
 export const availabilityRelations = relations(availability, ({ one }) => ({
