@@ -81,6 +81,23 @@ describe("sendMessage", () => {
     expect(await db.select().from(chatMessages)).toHaveLength(0);
   });
 
+  it("rolls the message back when a block lands between the access check and the write", async () => {
+    const { match, pro, company } = await seedMatch();
+    signInAs(pro);
+    const original = db.transaction.bind(db) as (...args: unknown[]) => Promise<unknown>;
+    const spy = vi.spyOn(db, "transaction").mockImplementationOnce((async (...args: unknown[]) => {
+      await db.update(matches).set({ blockedById: company.id, blockedAt: new Date() }).where(eq(matches.id, match.id));
+      return original(...args);
+    }) as unknown as typeof db.transaction);
+    try {
+      expect(await sendMessage(match.id, { clientId: "c1", body: "Ciao" })).toEqual({ error: "Questa conversazione è chiusa" });
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(await db.select().from(chatMessages)).toHaveLength(0);
+  });
+
   it("rate-limits after 20 messages in 10 seconds", async () => {
     const { match, pro } = await seedMatch();
     for (let i = 0; i < 20; i++) await insertMessage(match.id, pro.id, `m${i}`);
