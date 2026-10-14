@@ -13,6 +13,9 @@ vi.mock("@/lib/mail", () => ({
 vi.mock("@/lib/pusher/server", () => ({
   getPusher: vi.fn(() => null),
   publish: vi.fn(async () => {}),
+  publishAfterResponse: vi.fn((task: () => Promise<unknown>) => {
+    void task();
+  }),
 }));
 
 beforeEach(() => {

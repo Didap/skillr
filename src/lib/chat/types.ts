@@ -8,6 +8,17 @@ export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 export const ATTACHMENT_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"] as const;
 export type AttachmentMime = (typeof ATTACHMENT_MIME_TYPES)[number];
 
+export function isAttachmentMime(type: string): type is AttachmentMime {
+  return (ATTACHMENT_MIME_TYPES as readonly string[]).includes(type);
+}
+
+/** Why a file can't be sent as an attachment, or null when it can. */
+export function attachmentError(file: { type: string; size: number }): string | null {
+  if (!isAttachmentMime(file.type)) return "Formato non supportato. Invia un'immagine (JPG, PNG, WebP, GIF) o un PDF.";
+  if (file.size > MAX_ATTACHMENT_BYTES) return "File troppo grande. Massimo 5MB.";
+  return null;
+}
+
 export type MessageAttachment = { url: string; name: string; mime: string; size: number };
 
 export type ChatMessage = {

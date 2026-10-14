@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { chatMessages, chatReports, matches } from "@/db/schema";
 import { requireUser } from "@/lib/auth-guard";
 import { cloudinary } from "@/lib/cloudinary";
-import { loadConversation, readMarkerOf } from "@/lib/chat/access";
+import { loadConversation, markReadNow, otherSide, readMarkerOf } from "@/lib/chat/access";
 import { chatFolder, isInMatchFolder } from "@/lib/chat/attachments";
 import { CHAT_EVENTS, matchChannel, userChannel } from "@/lib/chat/channels";
 import { toChatMessage } from "@/lib/chat/messages";
@@ -18,6 +18,7 @@ import {
   MAX_ATTACHMENT_BYTES,
   MAX_BODY_LENGTH,
   PAGE_SIZE,
+  attachmentError,
   type AttachmentMime,
   type ChatMessage,
   type ReportInput,
@@ -26,12 +27,24 @@ import {
   type UploadedAttachment,
 } from "@/lib/chat/types";
 import { sendEmail, sendInBackground } from "@/lib/mail";
-import { publish } from "@/lib/pusher/server";
+import { publish, publishAfterResponse } from "@/lib/pusher/server";
 
 // Pusher socket ids look like "123.456"; anything else is dropped, not an error
 const socketIdSchema = z.string().regex(/^\d+\.\d+$/).optional().catch(undefined);
 
 class ConversationClosed extends Error {}
+
+// No socket id on purpose: the sender's own tab must update its inbox too
+function publishInbox(matchId: string, userIds: string[]) {
+  const channels = userIds.map(userChannel);
+  return publish(channels.length === 1 ? channels[0] : channels, CHAT_EVENTS.inbox, { matchId });
+}
+
+/** Who holds the block right now (null: nobody), or undefined if the match is gone. */
+async function currentBlocker(matchId: string) {
+  const [current] = await db.select({ blockedById: matches.blockedById }).from(matches).where(eq(matches.id, matchId));
+  return current?.blockedById;
+}
 
 /** The signed-in user and their conversation, or the error to return. */
 async function viewerConversation(matchId: string) {
@@ -77,7 +90,7 @@ export async function getMessages(matchId: string, cursor: { before?: string; af
     const hasMore = !after && rows.length > PAGE_SIZE;
     const page = after ? rows : rows.slice(0, PAGE_SIZE).reverse();
     const { match, side } = ctx.convo;
-    const otherLastReadAt = readMarkerOf(match, side === "professional" ? "company" : "professional");
+    const otherLastReadAt = readMarkerOf(match, otherSide(side));
 
     const data: ThreadPage = {
       messages: page.map(toChatMessage),
@@ -142,10 +155,9 @@ export async function sendMessage(matchId: string, input: SendMessageInput) {
         .returning();
       // now() is the transaction's start time, the same instant as the message's created_at.
       // The guard on blocked_by_id makes a block that lands mid-send roll the insert back.
-      const marker = convo.side === "professional" ? { professionalLastReadAt: sql`now()` } : { companyLastReadAt: sql`now()` };
       const updated = await tx
         .update(matches)
-        .set({ lastMessageAt: sql`now()`, ...marker })
+        .set({ lastMessageAt: sql`now()`, ...markReadNow(convo.side) })
         .where(and(eq(matches.id, matchId), isNull(matches.blockedById)))
         .returning({ id: matches.id });
       if (updated.length === 0) throw new ConversationClosed();
@@ -153,11 +165,12 @@ export async function sendMessage(matchId: string, input: SendMessageInput) {
     });
 
     const message: ChatMessage = toChatMessage(row);
-    await Promise.all([
-      publish(matchChannel(matchId), CHAT_EVENTS.newMessage, message, socketId),
-      // No socketId: the sender's own tab must also get the inbox update (same socket as its provider)
-      publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }),
-    ]);
+    publishAfterResponse(() =>
+      Promise.all([
+        publish(matchChannel(matchId), CHAT_EVENTS.newMessage, message, socketId),
+        publishInbox(matchId, [convo.otherUserId, user.id]),
+      ])
+    );
     return { success: true as const, data: { message, clientId } };
   } catch (error) {
     if (error instanceof ConversationClosed) return { error: "Questa conversazione è chiusa" };
@@ -174,19 +187,19 @@ export async function markRead(matchId: string, socketId?: string) {
   const socket = socketIdSchema.parse(socketId);
 
   try {
-    const marker = convo.side === "professional" ? { professionalLastReadAt: sql`now()` } : { companyLastReadAt: sql`now()` };
     const [row] = await db
       .update(matches)
-      .set(marker)
+      .set(markReadNow(convo.side))
       .where(eq(matches.id, matchId))
       .returning({ professionalLastReadAt: matches.professionalLastReadAt, companyLastReadAt: matches.companyLastReadAt });
-    const readAt = (convo.side === "professional" ? row.professionalLastReadAt : row.companyLastReadAt)!.toISOString();
+    const readAt = readMarkerOf(row, convo.side)!.toISOString();
 
-    await Promise.all([
-      publish(matchChannel(matchId), CHAT_EVENTS.read, { userId: user.id, readAt }, socket),
-      // Not skipping the socket: the reader's own badge must update too
-      publish(userChannel(user.id), CHAT_EVENTS.inbox, { matchId }),
-    ]);
+    publishAfterResponse(() =>
+      Promise.all([
+        publish(matchChannel(matchId), CHAT_EVENTS.read, { userId: user.id, readAt }, socket),
+        publishInbox(matchId, [user.id]),
+      ])
+    );
     return { success: true as const, data: { readAt } };
   } catch (error) {
     console.error("Error marking chat as read:", error);
@@ -213,14 +226,15 @@ async function applyBlock(matchId: string, userId: string, otherUserId: string) 
     .where(and(eq(matches.id, matchId), isNull(matches.blockedById)))
     .returning({ blockedById: matches.blockedById });
   if (updated.length > 0) {
-    await Promise.all([
-      publish(matchChannel(matchId), CHAT_EVENTS.blocked, { blockedById: userId }),
-      publish([userChannel(otherUserId), userChannel(userId)], CHAT_EVENTS.inbox, { matchId }),
-    ]);
+    publishAfterResponse(() =>
+      Promise.all([
+        publish(matchChannel(matchId), CHAT_EVENTS.blocked, { blockedById: userId }),
+        publishInbox(matchId, [otherUserId, userId]),
+      ])
+    );
     return userId;
   }
-  const [current] = await db.select({ blockedById: matches.blockedById }).from(matches).where(eq(matches.id, matchId));
-  return current?.blockedById ?? userId;
+  return (await currentBlocker(matchId)) ?? userId;
 }
 
 export async function blockConversation(matchId: string) {
@@ -248,13 +262,14 @@ export async function unblockConversation(matchId: string) {
       .returning({ id: matches.id });
     if (updated.length === 0) {
       // The block changed under us: announce nothing, report who holds it now
-      const [current] = await db.select({ blockedById: matches.blockedById }).from(matches).where(eq(matches.id, matchId));
-      return { success: true as const, data: { blockedById: (current?.blockedById ?? null) as string | null } };
+      return { success: true as const, data: { blockedById: ((await currentBlocker(matchId)) ?? null) as string | null } };
     }
-    await Promise.all([
-      publish(matchChannel(matchId), CHAT_EVENTS.unblocked, {}),
-      publish([userChannel(convo.otherUserId), userChannel(user.id)], CHAT_EVENTS.inbox, { matchId }),
-    ]);
+    publishAfterResponse(() =>
+      Promise.all([
+        publish(matchChannel(matchId), CHAT_EVENTS.unblocked, {}),
+        publishInbox(matchId, [convo.otherUserId, user.id]),
+      ])
+    );
     return { success: true as const, data: { blockedById: null as string | null } };
   } catch (error) {
     console.error("Error unblocking conversation:", error);
@@ -337,10 +352,8 @@ export async function uploadChatAttachment(matchId: string, formData: FormData) 
 
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "File mancante" };
-  if (!(ATTACHMENT_MIME_TYPES as readonly string[]).includes(file.type)) {
-    return { error: "Formato non supportato. Invia un'immagine (JPG, PNG, WebP, GIF) o un PDF." };
-  }
-  if (file.size > MAX_ATTACHMENT_BYTES) return { error: "File troppo grande. Massimo 5MB." };
+  const invalid = attachmentError(file);
+  if (invalid) return { error: invalid };
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());

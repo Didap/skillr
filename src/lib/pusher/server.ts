@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import Pusher from "pusher";
 
 let client: Pusher | null | undefined;
@@ -24,5 +25,15 @@ export async function publish(channels: string | string[], event: string, data: 
     await pusher.trigger(channels, event, data, socketId ? { socket_id: socketId } : undefined);
   } catch (error) {
     console.error(`Pusher trigger failed (${event}):`, error);
+  }
+}
+
+/** Runs a publish after the response has gone out, so Pusher latency stays off the request path. */
+export function publishAfterResponse(task: () => Promise<unknown>) {
+  try {
+    after(task);
+  } catch {
+    // after() is only available inside a request scope
+    void task();
   }
 }
