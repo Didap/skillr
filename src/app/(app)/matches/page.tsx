@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, Calendar, Mail, ChevronRight, Star } from "lucide-react";
+import { Search, Calendar, MessageCircle, ChevronRight, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getMatches } from "@/app/actions/matches";
 import { motion } from "framer-motion";
@@ -16,6 +16,10 @@ import { MyApplications, type MyApplicationsResult } from "@/components/matches/
 import { formatEventDayShort, formatEventTime } from "@/lib/rome-time";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LogoMark } from "@/components/brand/LogoMark";
+import { useChatRealtime } from "@/components/chat/ChatRealtimeProvider";
+import { UnreadBadge } from "@/components/chat/UnreadBadge";
+import { formatChatTime, previewText } from "@/lib/chat/format";
+import type { ChatSummary } from "@/lib/chat/types";
 
 interface MatchSummary {
   id: string;
@@ -29,6 +33,7 @@ interface MatchSummary {
   proposedSlotCount: number;
   scheduledAt: Date | string | null;
   hasReviewed: boolean;
+  chat: ChatSummary;
 }
 
 type CallTone = "action" | "waiting" | "scheduled" | "done";
@@ -100,6 +105,24 @@ export default function MatchesPage() {
     }
     loadMatches();
   }, [status]);
+
+  // Live inbox: any change to one of your conversations reloads the list (debounced)
+  const { onInboxUpdate } = useChatRealtime();
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let timer: number | undefined;
+    const off = onInboxUpdate(() => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(async () => {
+        const res = await getMatches();
+        if (res.success) setMatches(res.data);
+      }, 400);
+    });
+    return () => {
+      off();
+      window.clearTimeout(timer);
+    };
+  }, [status, onInboxUpdate]);
 
   const now = new Date();
   const filteredMatches = matches.filter(m =>
@@ -201,8 +224,14 @@ export default function MatchesPage() {
                               </span>
                             )}
                           </div>
-                          {match.targetTitle && (
-                            <p className="text-sm text-viola-500 font-medium truncate">{match.targetTitle}</p>
+                          {match.chat.blocked ? (
+                            <p className="text-sm text-viola-400 font-medium truncate">Conversazione chiusa</p>
+                          ) : match.chat.lastMessage ? (
+                            <p className={cn("text-sm truncate", match.chat.unread > 0 ? "text-viola font-bold" : "text-viola-500 font-medium")}>
+                              {previewText(match.chat.lastMessage)}
+                            </p>
+                          ) : (
+                            match.targetTitle && <p className="text-sm text-viola-500 font-medium truncate">{match.targetTitle}</p>
                           )}
 
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 min-w-0">
@@ -227,8 +256,19 @@ export default function MatchesPage() {
                           </div>
                         </div>
 
-                        <div className="size-8 md:size-11 rounded-full flex items-center justify-center text-viola md:border md:border-viola md:bg-white shrink-0">
-                          <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          {match.chat.lastMessageAt && (
+                            <span className={cn("text-label tabular-nums", match.chat.unread > 0 ? "text-rosso font-bold" : "text-viola-400")}>
+                              {formatChatTime(match.chat.lastMessageAt, now)}
+                            </span>
+                          )}
+                          {match.chat.unread > 0 ? (
+                            <UnreadBadge count={match.chat.unread} />
+                          ) : (
+                            <div className="size-8 md:size-11 rounded-full flex items-center justify-center text-viola md:border md:border-viola md:bg-white">
+                              <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
+                            </div>
+                          )}
                         </div>
                       </Link>
                     </motion.li>
@@ -261,11 +301,11 @@ export default function MatchesPage() {
           {!isLoading && (
             <aside className="mt-6 md:mt-10 flex items-start gap-3 p-5 md:p-6 rounded-card bg-rosa">
               <div className="size-10 rounded-full bg-white flex items-center justify-center text-viola shrink-0">
-                <Mail size={20} strokeWidth={1.75} aria-hidden="true" />
+                <MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
               </div>
               <p className="text-sm text-viola leading-relaxed">
-                <span className="font-bold">Zero chat, massima efficienza.</span>{" "}
-                Su Helllo non si perde tempo a chattare. Entra nel match, guarda gli slot proposti e fissa la tua videochiamata conoscitiva.
+                <span className="font-bold">Chat e colloquio, nello stesso posto.</span>{" "}
+                Entra nel match per scrivervi, guarda gli orari proposti e fissa la videochiamata conoscitiva.
               </p>
             </aside>
           )}
