@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -84,6 +84,14 @@ export default function MatchesPage() {
   const [applications, setApplications] = useState<MyApplicationsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // Only the newest getMatches request may write the list (and none after unmount)
+  const latestRequest = useRef(0);
+  useEffect(() => {
+    // Invalidates in-flight requests on unmount
+    return () => {
+      latestRequest.current += 1;
+    };
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -95,8 +103,9 @@ export default function MatchesPage() {
     async function loadMatches() {
       if (status === "authenticated") {
         // Matches and (for professionals) applications arrive in one call
+        const request = ++latestRequest.current;
         const res = await getMatches();
-        if (res.success) {
+        if (request === latestRequest.current && res.success) {
            setMatches(res.data);
         }
         if ("applications" in res && res.applications) setApplications(res.applications);
@@ -114,8 +123,9 @@ export default function MatchesPage() {
     const off = onInboxUpdate(() => {
       window.clearTimeout(timer);
       timer = window.setTimeout(async () => {
+        const request = ++latestRequest.current;
         const res = await getMatches();
-        if (res.success) setMatches(res.data);
+        if (request === latestRequest.current && res.success) setMatches(res.data);
       }, 400);
     });
     return () => {
