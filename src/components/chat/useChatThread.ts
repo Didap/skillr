@@ -121,8 +121,8 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
     });
 
     const onState = ({ current }: { current: string }) => {
+      // No catch-up here: resubscribing after a reconnect fires subscription_succeeded, which does it
       setLive(current === "connected" && channel.subscribed);
-      if (current === "connected") void catchUp();
     };
     pusher.connection.bind("state_change", onState);
 
