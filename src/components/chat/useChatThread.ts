@@ -46,6 +46,8 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   const lastTypingSent = useRef(0);
   // Bumped whenever blockedById changes outside catchUp, so a stale catchUp response can't undo it
   const metaEpoch = useRef(0);
+  // createdAt of the newest message from the other side already marked read
+  const readMark = useRef<string | null>(null);
 
   const setBlockedById = useCallback((next: string | null) => {
     metaEpoch.current += 1;
@@ -59,14 +61,25 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
     visibleRef.current = visible;
   }, [visible]);
 
-  // Debounced: a burst of incoming messages costs one write
+  // Debounced: a burst of incoming messages costs one write. Does nothing unless the other
+  // side has a message newer than the last one we marked read (no write, no publishes).
   const scheduleRead = useCallback(() => {
     if (!visibleRef.current || document.visibilityState !== "visible") return;
     window.clearTimeout(readTimer.current);
     readTimer.current = window.setTimeout(() => {
-      void markRead(matchId, currentSocketId()).catch(() => {});
+      const newest = messagesRef.current.findLast((m) => m.status === "sent" && m.senderId !== viewerId)?.createdAt;
+      const previous = readMark.current;
+      if (!newest || (previous !== null && newest <= previous)) return;
+      readMark.current = newest;
+      void markRead(matchId, currentSocketId())
+        .then((res) => {
+          if ("error" in res && readMark.current === newest) readMark.current = previous;
+        })
+        .catch(() => {
+          if (readMark.current === newest) readMark.current = previous;
+        });
     }, 300);
-  }, [matchId]);
+  }, [matchId, viewerId]);
 
   const catchUp = useCallback(async () => {
     const epoch = metaEpoch.current;
