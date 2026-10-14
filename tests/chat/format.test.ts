@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatBytes, formatChatTime, formatDayLabel, formatMessageTime, isSameRomeDay, previewText } from "@/lib/chat/format";
+import { formatBytes, formatChatTime, formatDayLabel, isSameRomeDay, previewText } from "@/lib/chat/format";
+import { formatEventTime } from "@/lib/rome-time";
 
 // Every input is an explicit UTC instant; expectations are Europe/Rome wall-clock, so the
 // suite passes whatever TZ the runner uses. 14 Oct 2026 is CEST (UTC+2).
@@ -32,8 +33,8 @@ describe("chat formatting (Europe/Rome)", () => {
   });
 
   it("formats message time in Rome", () => {
-    expect(formatMessageTime("2026-10-14T07:05:00Z")).toBe("09:05");
-    expect(formatMessageTime("2026-01-14T07:05:00Z")).toBe("08:05"); // CET
+    expect(formatEventTime("2026-10-14T07:05:00Z")).toBe("09:05");
+    expect(formatEventTime("2026-01-14T07:05:00Z")).toBe("08:05"); // CET
   });
 
   it("compares Rome calendar days", () => {

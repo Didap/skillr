@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -93,6 +93,16 @@ export default function MatchesPage() {
     };
   }, []);
 
+  // Matches and (for professionals) applications arrive in one call
+  const reload = useCallback(async () => {
+    const request = ++latestRequest.current;
+    const res = await getMatches();
+    if (request !== latestRequest.current) return;
+    if (res.success) setMatches(res.data);
+    if ("applications" in res && res.applications) setApplications(res.applications);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -100,20 +110,10 @@ export default function MatchesPage() {
   }, [status, router]);
 
   useEffect(() => {
-    async function loadMatches() {
-      if (status === "authenticated") {
-        // Matches and (for professionals) applications arrive in one call
-        const request = ++latestRequest.current;
-        const res = await getMatches();
-        if (request === latestRequest.current && res.success) {
-           setMatches(res.data);
-        }
-        if ("applications" in res && res.applications) setApplications(res.applications);
-        setLoading(false);
-      }
-    }
-    loadMatches();
-  }, [status]);
+    // reload sets state only after the fetch resolves
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (status === "authenticated") void reload();
+  }, [status, reload]);
 
   // Live inbox: any change to one of your conversations reloads the list (debounced)
   const { onInboxUpdate } = useChatRealtime();
@@ -122,17 +122,13 @@ export default function MatchesPage() {
     let timer: number | undefined;
     const off = onInboxUpdate(() => {
       window.clearTimeout(timer);
-      timer = window.setTimeout(async () => {
-        const request = ++latestRequest.current;
-        const res = await getMatches();
-        if (request === latestRequest.current && res.success) setMatches(res.data);
-      }, 400);
+      timer = window.setTimeout(() => void reload(), 400);
     });
     return () => {
       off();
       window.clearTimeout(timer);
     };
-  }, [status, onInboxUpdate]);
+  }, [status, onInboxUpdate, reload]);
 
   const now = new Date();
   const filteredMatches = matches.filter(m =>

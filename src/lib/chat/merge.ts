@@ -43,11 +43,7 @@ export function confirmPending(prev: ThreadMessage[], clientId: string, message:
  * arrives, their read marker is at least that message's time (ISO strings compare as text).
  */
 export function latestReadAt(current: string | null, messages: ChatMessage[], viewerId: string): string | null {
-  let latest = current;
-  for (const m of messages) {
-    if (m.senderId !== viewerId && (latest === null || m.createdAt > latest)) latest = m.createdAt;
-  }
-  return latest;
+  return messages.reduce((latest, m) => (m.senderId !== viewerId ? laterOf(latest, m.createdAt) : latest), current);
 }
 
 /** The later of two ISO timestamps (they compare as text); null means "none yet". */

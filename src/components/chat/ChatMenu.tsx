@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { blockConversation, unblockConversation } from "@/app/actions/chat";
+import { safeAction } from "@/lib/chat/call-action";
 import { ReportSheet } from "./ReportSheet";
 
 interface ChatMenuProps {
@@ -17,8 +18,6 @@ interface ChatMenuProps {
   onBlockedChange: (blockedById: string | null) => void;
 }
 
-const OFFLINE = { error: "Connessione assente. Riprova." } as const;
-
 export function ChatMenu({ matchId, viewerId, otherName, blockedById, onBlockedChange }: ChatMenuProps) {
   const [open, setOpen] = useState(false);
   const [confirmBlock, setConfirmBlock] = useState(false);
@@ -28,7 +27,7 @@ export function ChatMenu({ matchId, viewerId, otherName, blockedById, onBlockedC
 
   const block = async () => {
     setBusy(true);
-    const res = await blockConversation(matchId).catch(() => OFFLINE);
+    const res = await safeAction(blockConversation(matchId));
     setBusy(false);
     if ("error" in res) return void toast.error(res.error);
     onBlockedChange(res.data.blockedById);
@@ -37,7 +36,7 @@ export function ChatMenu({ matchId, viewerId, otherName, blockedById, onBlockedC
   };
 
   const unblock = async () => {
-    const res = await unblockConversation(matchId).catch(() => OFFLINE);
+    const res = await safeAction(unblockConversation(matchId));
     if ("error" in res) return void toast.error(res.error);
     onBlockedChange(res.data.blockedById);
     if (res.data.blockedById === null) toast.success("Conversazione sbloccata");

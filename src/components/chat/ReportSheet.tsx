@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { reportConversation } from "@/app/actions/chat";
+import { safeAction } from "@/lib/chat/call-action";
 import { CHAT_REPORT_REASONS, type ChatReportReason } from "@/lib/chat/types";
 
 interface ReportSheetProps {
@@ -26,9 +27,7 @@ export function ReportSheet({ open, block, matchId, otherName, onClose, onReport
     e.preventDefault();
     if (!reason || busy) return;
     setBusy(true);
-    const res = await reportConversation(matchId, { reason, details: details || undefined, block }).catch(() => ({
-      error: "Connessione assente. Riprova.",
-    }));
+    const res = await safeAction(reportConversation(matchId, { reason, details: details || undefined, block }));
     setBusy(false);
     if ("error" in res) {
       toast.error(res.error);

@@ -4,17 +4,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Channel } from "pusher-js";
 import { getMessages, markRead, sendMessage, uploadChatAttachment } from "@/app/actions/chat";
 import { CHAT_EVENTS, matchChannel } from "@/lib/chat/channels";
+import { OFFLINE_ERROR, safeAction } from "@/lib/chat/call-action";
 import { confirmPending, latestReadAt, laterOf, mergeMessages, type OutgoingDraft, type ThreadMessage } from "@/lib/chat/merge";
 import { AFTER_LIMIT, type ChatMessage, type ThreadPage } from "@/lib/chat/types";
 import { currentSocketId, getPusherClient } from "@/lib/pusher/client";
-
-export type { OutgoingDraft, ThreadMessage };
 
 const MAX_CATCH_UP_BATCHES = 10;
 const POLL_MS = 10_000;
 const TYPING_THROTTLE_MS = 3_000;
 const TYPING_TTL_MS = 5_000;
-const OFFLINE = "Connessione assente. Riprova.";
 
 interface Options {
   matchId: string;
@@ -161,12 +159,13 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState !== "visible") return;
-      void catchUp();
+      // While live, a reconnect catches up by itself (subscription_succeeded); polling covers the rest
+      if (!live) void catchUp();
       scheduleRead();
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [catchUp, scheduleRead]);
+  }, [live, catchUp, scheduleRead]);
 
   // Opening the thread (or switching to the Chat tab) reads it
   useEffect(() => {
@@ -187,18 +186,18 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
       if (draft.file && !attachment) {
         const form = new FormData();
         form.append("file", draft.file);
-        const upload = await uploadChatAttachment(matchId, form).catch(() => ({ error: OFFLINE }));
-        if ("error" in upload) return fail(clientId, upload.error ?? OFFLINE);
+        const upload = await safeAction(uploadChatAttachment(matchId, form));
+        if ("error" in upload) return fail(clientId, upload.error ?? OFFLINE_ERROR);
         attachment = upload.data;
         const uploaded = attachment;
         // "Riprova" reuses the upload
         setMessages((prev) => prev.map((m) => (m.clientId === clientId ? { ...m, draft: { ...draft, uploaded } } : m)));
       }
-      const res = await sendMessage(matchId, { clientId, body: draft.body, attachment, socketId: currentSocketId() }).catch(
-        () => ({ error: OFFLINE })
+      const res = await safeAction(
+        sendMessage(matchId, { clientId, body: draft.body, attachment, socketId: currentSocketId() })
       );
       if ("error" in res) {
-        fail(clientId, res.error ?? OFFLINE);
+        fail(clientId, res.error ?? OFFLINE_ERROR);
         // e.g. the conversation was just closed: pick up the new state
         void catchUp();
         return;
@@ -265,7 +264,7 @@ export function useChatThread({ matchId, viewerId, initial, visible }: Options) 
   return {
     messages, hasMore, loadingOlder, loadOlder,
     otherLastReadAt, blockedById, setBlockedById,
-    otherTyping, live,
+    otherTyping,
     send, retry, discard, notifyTyping,
   };
 }

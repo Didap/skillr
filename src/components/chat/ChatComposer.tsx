@@ -3,9 +3,9 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowUp, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
-import { ATTACHMENT_MIME_TYPES, MAX_ATTACHMENT_BYTES, MAX_BODY_LENGTH } from "@/lib/chat/types";
+import { ATTACHMENT_MIME_TYPES, attachmentError, MAX_BODY_LENGTH } from "@/lib/chat/types";
 import { formatBytes } from "@/lib/chat/format";
-import type { OutgoingDraft } from "./useChatThread";
+import type { OutgoingDraft } from "@/lib/chat/merge";
 
 interface ChatComposerProps {
   recipientName: string;
@@ -48,12 +48,9 @@ export function ChatComposer({ recipientName, onSend, onTyping }: ChatComposerPr
   const pick = (picked: File | undefined) => {
     if (fileRef.current) fileRef.current.value = "";
     if (!picked) return;
-    if (!(ATTACHMENT_MIME_TYPES as readonly string[]).includes(picked.type)) {
-      toast.error("Formato non supportato. Invia un'immagine (JPG, PNG, WebP, GIF) o un PDF.");
-      return;
-    }
-    if (picked.size > MAX_ATTACHMENT_BYTES) {
-      toast.error("File troppo grande. Massimo 5MB.");
+    const invalid = attachmentError(picked);
+    if (invalid) {
+      toast.error(invalid);
       return;
     }
     setFile(picked);

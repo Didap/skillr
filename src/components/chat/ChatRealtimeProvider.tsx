@@ -6,18 +6,16 @@ import { getUnreadTotal } from "@/app/actions/chat";
 import { CHAT_EVENTS, userChannel } from "@/lib/chat/channels";
 import { getPusherClient } from "@/lib/pusher/client";
 
-type InboxListener = (matchId: string | null) => void;
+type InboxListener = () => void;
 
 interface ChatRealtime {
   unreadTotal: number;
-  refreshUnread: () => void;
-  /** Called when any of your conversations changes; matchId is null after a fallback poll */
+  /** Called when any of your conversations changes (or a fallback poll sees a new unread total) */
   onInboxUpdate: (listener: InboxListener) => () => void;
 }
 
 const ChatRealtimeContext = createContext<ChatRealtime>({
   unreadTotal: 0,
-  refreshUnread: () => {},
   onInboxUpdate: () => () => {},
 });
 
@@ -46,20 +44,20 @@ export function ChatRealtimeProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!userId) return;
     void fetchUnread();
-    const notify = (matchId: string | null) => listeners.current.forEach((listener) => listener(matchId));
+    const notify = () => listeners.current.forEach((listener) => listener());
 
     const pusher = getPusherClient();
     const name = userChannel(userId);
     const channel = pusher?.subscribe(name);
-    const onInbox = ({ matchId }: { matchId: string }) => {
+    const onInbox = () => {
       void fetchUnread();
-      notify(matchId);
+      notify();
     };
     channel?.bind(CHAT_EVENTS.inbox, onInbox);
 
     // Without realtime the badge (and an open inbox) still catch up, just more slowly
     const poll = window.setInterval(async () => {
-      if (document.visibilityState === "visible" && (await fetchUnread())) notify(null);
+      if (document.visibilityState === "visible" && (await fetchUnread())) notify();
     }, FALLBACK_POLL_MS);
 
     return () => {
@@ -69,7 +67,6 @@ export function ChatRealtimeProvider({ children }: { children: React.ReactNode }
     };
   }, [userId, fetchUnread]);
 
-  const refreshUnread = useCallback(() => void fetchUnread(), [fetchUnread]);
   const onInboxUpdate = useCallback((listener: InboxListener) => {
     listeners.current.add(listener);
     return () => {
@@ -77,7 +74,7 @@ export function ChatRealtimeProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  const value = useMemo(() => ({ unreadTotal, refreshUnread, onInboxUpdate }), [unreadTotal, refreshUnread, onInboxUpdate]);
+  const value = useMemo(() => ({ unreadTotal, onInboxUpdate }), [unreadTotal, onInboxUpdate]);
   return <ChatRealtimeContext.Provider value={value}>{children}</ChatRealtimeContext.Provider>;
 }
 
