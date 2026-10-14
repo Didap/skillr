@@ -7,7 +7,7 @@ Source of truth: Figma "Helllo — Brand Identity" (snNq4LfmuM6VuXOrUjwApb). Tok
 ## Personality
 Warm, direct, a little cheeky. The product is a "hello": every match is an icebreaker, not an
 application. Flat, saturated colour blocks; pill shapes; one handwritten word at a time.
-No gradients, no glassy glows, no serif, no italics.
+No gradients, no glassy glows, no serif. Italic only for the match caption (below).
 
 ## Colours (Figma variables `colore/*`)
 | Token | Hex | Role |
@@ -47,6 +47,7 @@ rosso buttons). `destructive` is `rosso-700`; pair errors with an icon/text, nev
 | Label | Hanken Grotesk | 13/16 | 500 | 0 | `text-label` |
 | Chip | Hanken Grotesk | 14/18 | 500 | 0 | `text-chip` |
 | Accent Script | Pacifico | 24/32 | 400 | 0 | `font-script` |
+| Match caption | Hanken Grotesk Italic | 28/32 | 900 | -1.5% | `text-[1.75rem] leading-8 font-black italic` |
 
 - `font-sans` and `font-display` are both Hanken Grotesk; headlines are bold and tight.
 - `font-prompt` (Bricolage) is the user's own voice: answers to profile prompts, bios, headlines
@@ -75,8 +76,10 @@ rosso buttons). `destructive` is `rosso-700`; pair errors with an icon/text, nev
   rosa, headline in Prompt with one Pacifico word, location row, chips), round crema
   "expand" button.
 - **Bottom nav**: viola line icons; the active item sits in a rosa pill.
-- **Match screen**: "È un" (Display, viola) + rosso wordmark; rosa block with white wavy stripes
-  holding both cards tilted ±6°, joined by the round rosso "lll" badge (`LogoMark`).
+- **Match screen** (Figma v2 "titolo energico"): `MatchTitle` (tilted rosso wordmark + "!" +
+  blu "È un" sticker) spilling over a rosa block with crema stripes (`MatchStripes`) holding both
+  cards tilted ±6°, joined by `LogoMark`; Black Italic caption, rosa icebreaker chips, crema
+  message field, rosso CTA. Everything enters one beat at a time.
 - **Icons**: lucide, 1.75–2px stroke, viola. Verified = blu filled badge-check.
 
 ## Brand assets
