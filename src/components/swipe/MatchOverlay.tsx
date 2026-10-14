@@ -11,6 +11,7 @@ import { LogoMark } from "@/components/brand/LogoMark";
 import { MatchStripes } from "@/components/brand/MatchStripes";
 import type { MatchParties } from "@/app/actions/matches";
 import { sendMessage } from "@/app/actions/chat";
+import { MAX_BODY_LENGTH } from "@/lib/chat/types";
 import { hankenBlackItalic } from "./match-font";
 import { cn, inertOutside, isEditableTarget } from "@/lib/utils";
 import { beat, duration, ease, enter, haptic } from "@/lib/motion";
@@ -409,7 +410,7 @@ function Icebreaker({
           placeholder={`Scrivi a ${recipientName}…`}
           aria-label={`Scrivi a ${recipientName}`}
           enterKeyHint="send"
-          maxLength={2000}
+          maxLength={MAX_BODY_LENGTH}
           className="min-w-0 flex-1 bg-transparent text-body text-viola placeholder:text-viola outline-none"
         />
         <button
