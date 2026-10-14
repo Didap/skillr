@@ -18,7 +18,7 @@ export function ParticipantsSheet({ event, onClose }: ParticipantsSheetProps) {
     <BottomSheet open={!!event} onClose={onClose} title="Iscritti">
       {event && (
         <>
-          <p className="-mt-2 mb-4 text-sm text-viola-500 truncate">{event.title}</p>
+          <p className="-mt-2 mb-4 text-body text-viola-500 truncate">{event.title}</p>
           <LoadedParticipants key={event.id} eventId={event.id} />
         </>
       )}

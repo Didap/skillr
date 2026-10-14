@@ -37,7 +37,7 @@ export function StarRating({
           <Star
             key={i}
             size={size}
-            className={i < value ? "fill-amber-400 text-amber-400" : "text-viola-200 fill-viola-50"}
+            className={i < value ? "fill-rosso text-rosso" : "text-viola-200 fill-viola-50"}
           />
         ))}
       </div>
@@ -64,13 +64,13 @@ export function StarRating({
             whileTap={{ scale: 0.85 }}
             animate={{ scale: starValue <= value ? 1 : 0.92 }}
             transition={spring.snappy}
-            className="min-w-12 min-h-12 md:min-w-14 md:min-h-14 flex items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            className="min-w-12 min-h-12 md:min-w-14 md:min-h-14 flex items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Star
               size={size}
               className={cn(
                 "transition-colors duration-150",
-                starValue <= shown ? "fill-amber-400 text-amber-400" : "text-viola-200 fill-viola-50"
+                starValue <= shown ? "fill-rosso text-rosso" : "text-viola-200 fill-viola-50"
               )}
             />
           </motion.button>

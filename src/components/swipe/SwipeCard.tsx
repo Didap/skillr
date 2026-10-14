@@ -11,12 +11,13 @@ import {
   type MotionValue,
   type PanInfo,
 } from "framer-motion";
-import { useImperativeHandle, useLayoutEffect, useRef, type Ref } from "react";
+import { useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Zap } from "lucide-react";
+import { Banknote, ChevronDown, MapPin } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 import { duration, ease, haptic, spring } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 import { Profile } from "@/types/profile";
 
@@ -33,11 +34,16 @@ interface SwipeCardProps {
   ref?: Ref<SwipeCardHandle>;
 }
 
-// A job card and a talent card share the layout, not the wording.
+// A job card and a talent card share the layout, not the wording or the colour:
+// talent cards use the blu info block of the Figma candidate card, job cards (a company
+// speaking) use viola, so the two are told apart at a glance.
 const LABELS = {
-  job: { badge: "Opportunità esclusiva", section: "Dettagli posizione", skills: "Requisiti fondamentali", rate: "Budget proposto", like: "Candidati" },
-  person: { badge: "Professionista", section: "Profilo", skills: "Competenze", rate: "Tariffa", like: "Mi interessa" },
+  job: { skills: "Requisiti", rate: "Budget proposto", block: "bg-viola" },
+  person: { skills: "Competenze", rate: "Tariffa", block: "bg-blu" },
 } as const;
+
+// Chips shown on the collapsed card; the rest go in a "+N" chip until the card is expanded
+const COLLAPSED_CHIPS = 3;
 
 // Horizontal travel that commits a swipe, and the release speed that commits a flick
 const COMMIT_OFFSET = 110;
@@ -89,6 +95,10 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
   const isJob = profile.type === "job";
   const labels = isJob ? LABELS.job : LABELS.person;
   const initial = ((isJob ? profile.title : profile.name)[0] || "?").toUpperCase();
+  // Phone card: details are clamped until the crema button expands them (the block scrolls)
+  const [expanded, setExpanded] = useState(false);
+  const visibleSkills = profile.skills.slice(0, expanded ? 10 : COLLAPSED_CHIPS);
+  const hiddenSkills = profile.skills.length - visibleSkills.length;
 
   useMotionValueEvent(x, "change", (v) => {
     if (!isFront) return;
@@ -164,6 +174,24 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
     }
   };
 
+  const statusPill = isJob && profile.remoteOk ? <StatusPill>Anche da remoto</StatusPill> : null;
+
+  const meta = (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-body text-white">
+      <span className="inline-flex min-w-0 items-center gap-2">
+        <MapPin size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
+        <span className="truncate">{profile.location}</span>
+      </span>
+      <span className="inline-flex min-w-0 items-center gap-2">
+        <Banknote size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
+        <span className="sr-only">{labels.rate}:</span>
+        <span className="wrap-break-word">{profile.rate}</span>
+      </span>
+    </div>
+  );
+
+  const chip = "rounded-full bg-rosa px-4 py-2 text-chip text-viola";
+
   return (
     <motion.div
       aria-hidden={isFront ? undefined : true}
@@ -188,204 +216,210 @@ export function SwipeCard({ profile, onSwipe, isFront = false, stackProgress, re
         style={{ x, y, rotate, opacity, transformOrigin: "50% 90%" }}
         className={isFront ? "h-full w-full cursor-grab active:cursor-grabbing" : "h-full w-full"}
       >
-        <Card className="relative w-full h-full rounded-[2rem] lg:rounded-[3.5rem] overflow-hidden border border-viola-100 shadow-premium bg-white flex flex-col lg:flex-row group select-none lg:hover:border-rosso-100 p-0 gap-0">
+        <Card className="relative w-full h-full rounded-card overflow-hidden ring-0 shadow-card bg-crema flex flex-col lg:flex-row select-none p-0 gap-0">
           {/* Swipe feedback: tint and stamp grow with the offset, not only past the threshold */}
           <motion.div
             aria-hidden
             style={{ opacity: likeTint }}
-            className="absolute inset-0 z-30 bg-rosso-500/12 pointer-events-none"
+            className="absolute inset-0 z-30 bg-rosso/15 pointer-events-none"
           />
           <motion.div
             aria-hidden
             style={{ opacity: passTint }}
-            className="absolute inset-0 z-30 bg-rosso-500/10 pointer-events-none"
+            className="absolute inset-0 z-30 bg-viola/10 pointer-events-none"
           />
+          {/* Stamps: the positive one is the "helllo!" of the action bar, the other a plain "Passa" */}
           <motion.div
             aria-hidden
             style={{ opacity: likeOpacity, scale: likeScale, rotate: -12 }}
-            className="absolute top-6 left-5 lg:top-10 lg:left-10 z-40 pointer-events-none rounded-2xl border-4 border-rosso-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-rosso-600 shadow-lg"
+            className="absolute top-6 left-5 lg:top-10 lg:left-10 z-40 pointer-events-none inline-flex items-center rounded-full bg-rosso px-6 h-14 lg:h-16 text-white"
           >
-            {labels.like}
+            <Logo className="h-7 lg:h-8 text-white" title={null} />
+            <span className="font-display text-[2rem] font-bold leading-none">!</span>
           </motion.div>
           <motion.div
             aria-hidden
             style={{ opacity: passOpacity, scale: passScale, rotate: 12 }}
-            className="absolute top-6 right-5 lg:top-10 lg:right-10 z-40 pointer-events-none rounded-2xl border-4 border-rosso-500 bg-white/90 px-4 py-1.5 text-xl lg:text-3xl font-black uppercase tracking-wider text-rosso-600 shadow-lg"
+            className="absolute top-6 right-5 lg:top-10 lg:right-10 z-40 pointer-events-none inline-flex items-center rounded-full border-2 border-viola bg-white px-6 h-14 lg:h-16 text-title text-viola"
           >
             Passa
           </motion.div>
 
-          {/* ---------- Phone and tablet: one column built for a narrow, tall card ---------- */}
+          {/* ---------- Phone and tablet: photo on top, coloured info block below ---------- */}
           <div className="lg:hidden flex flex-col h-full min-h-0">
-            <div className="relative shrink-0 overflow-hidden bg-viola-950 px-5 pt-5 pb-5">
-              <div className="absolute inset-0 bg-linear-to-br from-rosso-600 via-rosso-800 to-viola-950" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.35)_0%,transparent_60%)]" />
-
-              <div className="relative flex items-center gap-4">
-                <div className="w-16 h-16 shrink-0 rounded-2xl bg-white p-2 shadow-xl flex items-center justify-center overflow-hidden">
-                  {profile.image ? (
-                    <Image
-                      src={profile.image}
-                      alt=""
-                      width={64}
-                      height={64}
-                      draggable={false}
-                      className="w-full h-full object-contain"
-                      unoptimized
-                    />
-                  ) : (
-                    <span className="font-display text-3xl text-rosso-600">{initial}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-white text-[1.75rem] leading-[1.05] tracking-tight line-clamp-2">
-                    {profile.name}
-                  </h2>
-                  <p className="mt-1 text-[15px] font-medium text-rosso-100/85 truncate">{profile.title}</p>
-                </div>
-              </div>
-
-              <div className="relative mt-5 flex items-end justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold text-rosso-200/80">{labels.rate}</div>
-                  {/* Wraps instead of truncating: a RAL range is wider than half a phone card */}
-                  <div className="font-display text-white text-[2rem] leading-[1.05] tracking-tight wrap-break-word">
-                    {profile.rate}
-                  </div>
-                </div>
-                <div className="shrink-0 max-w-[45%] inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-rosso-50 ring-1 ring-white/15">
-                  <MapPin size={14} className="shrink-0" />
-                  <span className="truncate">{profile.location}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Details scroll inside the card; touch-action pan-y on the drag layer keeps
-                vertical scrolling native while horizontal intent starts the swipe */}
             <div className="relative flex-1 min-h-0">
-              <div className="h-full overflow-y-auto overscroll-contain no-scrollbar px-5 pt-5 pb-8 space-y-5">
-                {profile.bioShort && (
-                  <p className="text-[15px] leading-relaxed text-viola-600">{profile.bioShort}</p>
-                )}
-                {profile.skills.length > 0 && (
-                  <div className="space-y-2.5">
-                    <div className="text-[13px] font-semibold text-viola-500">{labels.skills}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.skills.slice(0, 10).map((s) => (
-                        <span
-                          key={s}
-                          className="rounded-xl bg-rosso-50 text-rosso-800 ring-1 ring-rosso-100 px-3 py-1.5 text-[13px] font-semibold"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {isJob && (
-                  <p className="text-[13px] text-viola-500">Trattabile in base all&apos;esperienza</p>
-                )}
-              </div>
-              {/* Hint that the details continue below */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-white to-transparent" />
-            </div>
-          </div>
-
-          {/* ---------- Desktop: the wide two-panel card ---------- */}
-          {/* Left Section: Branding & Identity */}
-          <div className="hidden lg:flex relative w-[40%] shrink-0 overflow-hidden bg-viola-950 flex-col justify-center p-12">
-            <div className="absolute inset-0 bg-linear-to-br from-rosso-600 via-rosso-800 to-viola-950" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.3)_0%,transparent_70%)]" />
-
-            <div className="relative z-10 flex flex-col items-center text-center gap-8">
-              <div className="relative group-hover:rotate-3 transition-transform duration-500">
-                <div className="w-40 h-40 rounded-[2.5rem] bg-white p-6 shadow-2xl flex items-center justify-center overflow-hidden relative border border-white/20">
-                  {profile.image ? (
-                    <Image
-                      src={profile.image}
-                      alt={profile.name}
-                      width={160}
-                      height={160}
-                      draggable={false}
-                      className="w-full h-full object-contain"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-rosso-50 text-rosso-600 font-display text-6xl font-bold ">
-                      {initial}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -top-3 -right-3 bg-rosso-500 w-12 h-12 rounded-full border-4 border-viola-950 flex items-center justify-center shadow-lg">
-                  <Zap size={20} className="text-white" fill="currentColor" />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Badge className="bg-white/10 backdrop-blur-md text-white border-white/10 text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
-                  {labels.badge}
-                </Badge>
-                <h2 className="text-white text-4xl font-display font-bold tracking-tight leading-tight line-clamp-3">{profile.title}</h2>
-                <div className="flex items-center justify-center gap-2 text-rosso-400 font-bold text-sm">
-                  <MapPin size={16} />
-                  <span>{profile.location}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Section: Main Content */}
-          <div className="hidden lg:flex flex-1 min-w-0 bg-white p-12 flex-col gap-10 relative overflow-y-auto overscroll-contain no-scrollbar">
-            <div className="space-y-2">
-              <div className="text-[12px] font-black uppercase tracking-[0.4em] text-rosso-600">{labels.section}</div>
-              <h3 className="text-5xl font-display font-bold text-viola-950 tracking-tight leading-[0.9] line-clamp-2">
-                {profile.name}
-              </h3>
+              <CardPhoto profile={profile} isJob={isJob} initial={initial} alt="" sizes="448px" />
+              {statusPill && <div className="absolute left-4 bottom-4 z-10">{statusPill}</div>}
             </div>
 
-            <div className="space-y-8">
+            {/* Grows when expanded and then scrolls inside the card; touch-action pan-y on the
+                drag layer keeps vertical scrolling native while horizontal intent starts the swipe */}
+            <div
+              className={cn(
+                "shrink min-h-0 overflow-y-auto overscroll-contain no-scrollbar p-6 flex flex-col gap-3.5",
+                labels.block
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-title text-white line-clamp-2 wrap-break-word">{profile.name}</h2>
+                  <p className="mt-1.5 text-body text-rosa truncate">{profile.title}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  aria-label={expanded ? "Mostra meno dettagli" : "Mostra tutti i dettagli"}
+                  className="pressable shrink-0 size-10 rounded-full bg-crema text-viola flex items-center justify-center hover:bg-white focus-visible:outline-white"
+                >
+                  <ChevronDown
+                    size={22}
+                    strokeWidth={2}
+                    className={cn("transition-transform duration-200 motion-reduce:transition-none", expanded && "rotate-180")}
+                  />
+                </button>
+              </div>
+
               {profile.bioShort && (
-                <div className="relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-rosso-100 rounded-full" />
-                  <div className="pl-8">
-                    <p className="text-viola-600 text-lg leading-relaxed italic line-clamp-5">
-                      &quot;{profile.bioShort}&quot;
-                    </p>
-                  </div>
-                </div>
+                <p className={cn("font-prompt text-prompt text-white wrap-break-word", !expanded && "line-clamp-2")}>
+                  {profile.bioShort}
+                </p>
               )}
 
-              <div className="grid grid-cols-2 gap-10">
-                <div className="space-y-3">
-                  <div className="text-[11px] font-black uppercase tracking-widest text-viola-400">{labels.skills}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.slice(0, 6).map((s) => (
-                      <Badge key={s} variant="secondary" className="bg-rosso-50 text-rosso-700 border-rosso-100 font-bold rounded-xl px-3 py-1.5 text-[12px]">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+              {meta}
 
-                <div className="min-w-0 border-l border-viola-50 pl-10 flex flex-col justify-center">
-                  <div className="space-y-1">
-                    <div className="text-[11px] font-black uppercase tracking-widest text-rosso-600">{labels.rate}</div>
-                    <div className="text-viola-950 font-display text-4xl xl:text-5xl font-bold tracking-tighter leading-[1.05] wrap-break-word">
-                      {profile.rate}
-                    </div>
-                    {isJob && (
-                      <p className="text-[11px] text-viola-400 font-medium uppercase tracking-wider mt-3">Trattabile in base all&apos;esperienza</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              {profile.skills.length > 0 && (
+                <ul className="flex flex-wrap gap-2" aria-label={labels.skills}>
+                  {visibleSkills.map((s) => (
+                    <li key={s} className={chip}>
+                      {s}
+                    </li>
+                  ))}
+                  {hiddenSkills > 0 && (
+                    <li className={chip}>
+                      <span aria-hidden>+{hiddenSkills}</span>
+                      <span className="sr-only">e altre {hiddenSkills}</span>
+                    </li>
+                  )}
+                </ul>
+              )}
+
+              {isJob && expanded && (
+                <p className="text-label text-crema">Trattabile in base all&apos;esperienza</p>
+              )}
             </div>
           </div>
 
-          {/* Side accent */}
-          <div className="hidden lg:block w-2 shrink-0 bg-linear-to-b from-rosso-400 via-rosso-600 to-viola-900" />
+          {/* ---------- Desktop: photo panel on the left, the info block fills the rest ---------- */}
+          <div className="hidden lg:block relative w-[40%] shrink-0">
+            <CardPhoto profile={profile} isJob={isJob} initial={initial} alt={profile.name} sizes="380px" />
+            {statusPill && <div className="absolute left-8 bottom-8 z-10">{statusPill}</div>}
+          </div>
+
+          <div
+            className={cn(
+              "hidden lg:flex flex-1 min-w-0 p-12 flex-col gap-5 overflow-y-auto overscroll-contain no-scrollbar",
+              labels.block
+            )}
+          >
+            <div>
+              <h3 className="text-display text-white line-clamp-2 wrap-break-word">{profile.name}</h3>
+              <p className="mt-2 text-xl font-medium text-rosa line-clamp-2">{profile.title}</p>
+            </div>
+
+            {profile.bioShort && (
+              <p className="font-prompt text-prompt text-white line-clamp-5 wrap-break-word">{profile.bioShort}</p>
+            )}
+
+            <div className="space-y-2">
+              {meta}
+              {isJob && <p className="text-label text-crema">Trattabile in base all&apos;esperienza</p>}
+            </div>
+
+            {profile.skills.length > 0 && (
+              <div className="mt-auto space-y-3">
+                <div className="text-label text-rosa">{labels.skills}</div>
+                <ul className="flex flex-wrap gap-2">
+                  {profile.skills.slice(0, 8).map((s) => (
+                    <li key={s} className={chip}>
+                      {s}
+                    </li>
+                  ))}
+                  {profile.skills.length > 8 && (
+                    <li className={chip}>
+                      <span aria-hidden>+{profile.skills.length - 8}</span>
+                      <span className="sr-only">e altre {profile.skills.length - 8}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
         </Card>
       </motion.div>
     </motion.div>
+  );
+}
+
+/** Photo area: a person's photo fills it; a company logo sits on a white tile; crema otherwise. */
+function CardPhoto({
+  profile,
+  isJob,
+  initial,
+  alt,
+  sizes,
+}: {
+  profile: Profile;
+  isJob: boolean;
+  initial: string;
+  alt: string;
+  sizes: string;
+}) {
+  if (!profile.image) {
+    return (
+      <div className="absolute inset-0 bg-crema flex items-center justify-center">
+        <span className="size-24 rounded-full bg-rosa text-viola text-display flex items-center justify-center">
+          {initial}
+        </span>
+      </div>
+    );
+  }
+  if (isJob) {
+    return (
+      <div className="absolute inset-0 bg-crema flex items-center justify-center p-8">
+        <div className="relative size-32 lg:size-40 rounded-card bg-white overflow-hidden">
+          <Image
+            src={profile.image}
+            alt={alt}
+            fill
+            sizes="160px"
+            draggable={false}
+            className="object-contain p-4"
+            unoptimized
+          />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <Image
+      src={profile.image}
+      alt={alt}
+      fill
+      sizes={sizes}
+      draggable={false}
+      className="object-cover bg-crema"
+      unoptimized
+    />
+  );
+}
+
+/** Rosso status pill with a white dot (DESIGN.md "Status pill"). */
+function StatusPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full bg-rosso px-4 h-8 text-chip font-bold text-white">
+      <span aria-hidden className="size-2 rounded-full bg-white" />
+      {children}
+    </span>
   );
 }

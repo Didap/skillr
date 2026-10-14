@@ -11,6 +11,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface ConfirmationEmailProps {
   userName: string;
@@ -31,6 +32,7 @@ export const ConfirmationEmail = ({
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
+          <EmailLogo />
           <Heading style={styles.h1}>Meeting Confirmed</Heading>
         </Section>
         <Section style={styles.content}>
@@ -44,7 +46,7 @@ export const ConfirmationEmail = ({
           </Section>
           {meetingLink && (
             <Text style={styles.text}>
-              <strong>Meeting Link:</strong> <a href={meetingLink}>{meetingLink}</a>
+              <strong>Meeting Link:</strong> <a href={meetingLink} style={styles.rawLink}>{meetingLink}</a>
             </Text>
           )}
           <Text style={styles.text}>
@@ -52,9 +54,7 @@ export const ConfirmationEmail = ({
           </Text>
         </Section>
         <Hr style={styles.hr} />
-        <Section style={styles.footer}>
-          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
-        </Section>
+        <EmailFooter />
       </Container>
     </Body>
   </Html>

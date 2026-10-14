@@ -1,5 +1,19 @@
 import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
+
+// Custom theme keys from globals.css. Without them tailwind-merge reads `text-label` (a Figma
+// text style, i.e. a font size) as a colour and drops it next to `text-viola`, and can't
+// resolve conflicts on rounded-card, shadow-card or the brand font families.
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: {
+      text: ["display", "title", "prompt", "body", "label", "chip"],
+      radius: ["card"],
+      shadow: ["card", "premium"],
+      font: ["display", "prompt", "script"],
+    },
+  },
+})
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

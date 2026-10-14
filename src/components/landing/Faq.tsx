@@ -33,22 +33,22 @@ const QUESTIONS = [
 
 export function Faq() {
   return (
-    <section id="faq" className="py-20 md:py-32 bg-white scroll-mt-20">
-      <div className="max-w-4xl mx-auto px-6">
-        <h2 className="font-display text-5xl md:text-7xl text-viola-950 leading-tight mb-16 text-center">
-          Domande <span className="italic text-rosso-600">frequenti.</span>
+    <section id="faq" className="py-20 md:py-32 bg-blu scroll-mt-20">
+      <div className="max-w-3xl mx-auto px-4 md:px-6">
+        <h2 className="font-display text-display md:text-6xl md:leading-[1.05] tracking-[-0.03em] text-white mb-10 md:mb-14 text-center">
+          Domande <span className="font-script text-rosa">frequenti.</span>
         </h2>
 
-        <div className="divide-y divide-viola-100 border-y border-viola-100">
+        <div className="space-y-3">
           {QUESTIONS.map(({ q, a }) => (
-            <details key={q} className="group py-2">
-              <summary className="flex items-center justify-between gap-6 py-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                <span className="text-lg md:text-xl font-bold text-viola-950 tracking-tight">{q}</span>
-                <span className="shrink-0 w-10 h-10 rounded-full border-2 border-viola-200 flex items-center justify-center text-viola-500 transition-all group-open:rotate-45 group-open:border-rosso-600 group-open:text-rosso-600">
-                  <Plus size={18} />
+            <details key={q} className="group rounded-card bg-white px-5 sm:px-7 text-viola">
+              <summary className="flex items-center justify-between gap-4 py-5 cursor-pointer list-none rounded-card [&::-webkit-details-marker]:hidden">
+                <span className="text-lg md:text-xl font-bold tracking-tight">{q}</span>
+                <span className="shrink-0 size-10 rounded-full border border-viola flex items-center justify-center transition-[rotate,background-color] group-open:rotate-45 group-open:bg-rosa motion-reduce:transition-none">
+                  <Plus size={18} strokeWidth={1.75} />
                 </span>
               </summary>
-              <p className="pb-6 pr-4 md:pr-16 text-viola-500 font-medium leading-relaxed">{a}</p>
+              <p className="pb-6 pr-2 md:pr-14 font-prompt text-lg md:text-xl leading-7 font-medium">{a}</p>
             </details>
           ))}
         </div>

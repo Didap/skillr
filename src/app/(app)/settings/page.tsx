@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   Plus,
   X,
-  Target
+  Target,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,9 +44,26 @@ import { getMetadataCatalog } from "@/app/actions/metadata";
 import { toast } from "sonner";
 import { normalizeSkills, skillLabel } from "@/lib/skill-slugs";
 import { cn } from "@/lib/utils";
-import { duration, ease, spring } from "@/lib/motion";
+import { duration, ease } from "@/lib/motion";
 
 type CatalogCluster = { id: string; label: string; skills: { id: string; slug: string; label: string }[] };
+
+// Card heading shared by every settings section: round crema icon + Title-style heading
+function SectionHeading({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
+  return (
+    <div className="flex items-center gap-4 mb-6">
+      <div className="w-11 h-11 rounded-full bg-crema flex items-center justify-center text-viola shrink-0" aria-hidden="true">
+        <Icon size={20} strokeWidth={1.75} />
+      </div>
+      <div className="min-w-0">
+        <h3 className="text-title text-viola">{title}</h3>
+        {description && <p className="text-label font-normal text-viola-500 mt-0.5">{description}</p>}
+      </div>
+    </div>
+  );
+}
+
+const FIELD_LABEL = "text-label text-viola";
 
 const SECTIONS = [
   { value: "profile", label: "Profilo", icon: User },
@@ -243,7 +261,7 @@ export default function SettingsPage() {
     <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
       <PageHeader
         title="Impostazioni"
-        subtitle="Gestisci il tuo ecosistema"
+        subtitle="Profilo, skill, account e notifiche"
         actions={
           <div className="hidden md:flex items-center gap-4">
             <AnimatePresence>
@@ -252,7 +270,7 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0, transition: { duration: duration.state, ease: ease.out } }}
                   exit={{ opacity: 0, transition: { duration: duration.feedback } }}
-                  className="flex items-center gap-2 text-rosso-700 font-bold text-xs bg-rosso-50 px-3 py-1.5 rounded-full border border-rosso-100"
+                  className="flex items-center gap-2 text-chip text-viola bg-rosa px-3 py-1.5 rounded-full"
                 >
                   <CheckCircle2 size={14} />
                   Modifiche salvate
@@ -263,12 +281,12 @@ export default function SettingsPage() {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="pressable rounded-xl px-6 h-12 bg-viola-950 hover:bg-rosso-600 text-white shadow-premium gap-2 transition-colors group"
+              className="group h-12 px-6 gap-2 text-sm"
             >
               {saveLabel ?? (
                 <>
-                  <Save size={16} className="group-hover:scale-110 transition-transform" />
-                  <span className="font-bold text-sm">Salva modifiche</span>
+                  <Save size={16} className="group-hover:scale-110 transition-transform motion-reduce:transition-none" />
+                  <span>Salva modifiche</span>
                 </>
               )}
             </Button>
@@ -283,9 +301,9 @@ export default function SettingsPage() {
         className="flex-1 min-h-0 flex flex-col md:flex-row gap-0"
       >
         {/* Section navigation: a scrolling segmented strip on phones, a side column from md up */}
-        <div className="shrink-0 border-b md:border-b-0 md:border-r border-viola-100 md:border-viola-50 bg-white md:bg-viola-50/30 md:w-64 md:p-6 md:flex md:flex-col md:gap-6 md:h-full md:overflow-y-auto no-scrollbar">
+        <div className="shrink-0 border-b md:border-b-0 md:border-r border-viola/15 bg-white md:w-64 md:p-6 md:flex md:flex-col md:gap-6 md:h-full md:overflow-y-auto no-scrollbar">
           <div className="md:space-y-1">
-            <p className="hidden md:block text-[11px] text-viola-500 font-black uppercase tracking-[0.2em] mb-4 px-3">Menu</p>
+            <p className="hidden md:block text-label text-viola-500 mb-3 px-4">Sezioni</p>
             <TabsList
               ref={tabListRef}
               className="bg-transparent border-0 rounded-none p-0 h-auto! w-full flex flex-row! md:flex-col! items-stretch justify-start gap-1 overflow-x-auto no-scrollbar px-4 py-2 md:p-0 md:overflow-visible"
@@ -295,17 +313,11 @@ export default function SettingsPage() {
                   key={section.value}
                   value={section.value}
                   data-section={section.value}
-                  className="pressable group relative shrink-0 md:shrink flex-none md:flex-1 w-auto! md:w-full! flex items-center gap-2 md:gap-3 h-11 md:h-12 rounded-full md:rounded-xl px-4 justify-start font-bold text-sm text-viola-500 hover:text-viola-700 border-0 data-active:bg-transparent data-active:shadow-none! data-active:text-rosso-800 md:data-active:text-viola-950 transition-colors"
+                  className="pressable group relative shrink-0 md:shrink flex-none md:flex-1 w-auto! md:w-full! flex items-center gap-2 md:gap-3 h-11 md:h-12 px-4 justify-start border-0 transition-colors"
                 >
-                  {tab === section.value && (
-                    <motion.span
-                      layoutId="settings-section-pill"
-                      transition={spring.snappy}
-                      className="absolute inset-0 rounded-full md:rounded-xl bg-rosso-50 ring-1 ring-rosso-100 md:bg-white md:ring-viola-100/80 md:shadow-premium"
-                    />
-                  )}
-                  <span className="relative flex items-center justify-center md:w-7 md:h-7 md:rounded-lg md:bg-viola-100 md:group-data-active:bg-rosso-50 group-data-active:text-rosso-600 transition-colors">
-                    <section.icon size={15} />
+                  {/* The primitive puts the active section in a rosa pill, like the bottom nav */}
+                  <span className="relative flex items-center justify-center">
+                    <section.icon size={18} strokeWidth={1.75} />
                   </span>
                   <span className="relative">{section.label}</span>
                 </TabsTrigger>
@@ -313,22 +325,21 @@ export default function SettingsPage() {
             </TabsList>
           </div>
 
-          <div className="hidden md:block mt-auto p-6 rounded-2xl bg-rosso-600 text-white relative overflow-hidden group shadow-lg shadow-rosso-100">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-            <p className="text-[11px] text-rosso-50 font-black uppercase tracking-widest mb-2">Pro Tip</p>
-            <p className="text-xs font-bold leading-snug">
+          <div className="hidden md:block mt-auto p-6 rounded-card bg-viola text-white">
+            <p className="text-label text-rosa mb-2">Un consiglio</p>
+            <p className="text-body font-medium">
               Mantieni il profilo aggiornato per il matching.
             </p>
           </div>
         </div>
 
         {/* Section content: the page's own scroll container */}
-        <PageBody className="min-h-0 bg-white">
+        <PageBody className="min-h-0 bg-crema">
           <div className="max-w-3xl mx-auto px-4 pt-6 md:p-12 md:pb-0">
             {/* Profile Section */}
             <TabsContent value="profile" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
-              <div className="space-y-6 md:space-y-8">
-                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 bg-viola-50/50 p-5 md:p-8 rounded-[2rem] border border-viola-100">
+              <div className="space-y-4 md:space-y-6">
+                <Card className="flex-col md:flex-row items-center gap-6 md:gap-8 p-6 md:p-8">
                   <div className="relative group shrink-0">
                     <input
                       type="file"
@@ -341,7 +352,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={triggerUpload}
                       aria-label="Cambia immagine profilo"
-                      className="pressable w-28 h-28 md:w-32 md:h-32 rounded-[2.25rem] md:rounded-[2.5rem] bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center text-viola-200 cursor-pointer hover:border-rosso-100 transition-colors"
+                      className="pressable w-28 h-28 md:w-32 md:h-32 rounded-card bg-crema overflow-hidden flex items-center justify-center text-viola-300 cursor-pointer"
                     >
                       {profileImage ? (
                         <Image src={profileImage} alt="Profile" width={128} height={128} className="w-full h-full object-cover" />
@@ -353,119 +364,137 @@ export default function SettingsPage() {
                       type="button"
                       onClick={triggerUpload}
                       aria-label="Carica una nuova foto"
-                      className="pressable absolute -right-2 -bottom-2 w-11 h-11 rounded-xl bg-rosso-600 text-white flex items-center justify-center shadow-lg md:hover:scale-110 transition-transform border-2 border-white"
+                      className="pressable absolute -right-2 -bottom-2 w-11 h-11 rounded-full bg-rosso text-white flex items-center justify-center border-2 border-white"
                     >
-                      <Camera size={16} />
+                      <Camera size={18} strokeWidth={1.75} />
                     </button>
                   </div>
 
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-xl font-display font-bold mb-2">Immagine Profilo</h3>
-                    <p className="text-sm text-viola-500 font-medium mb-5 md:mb-6">
+                    <h3 className="text-title text-viola mb-2">Foto profilo</h3>
+                    <p className="text-body text-viola-500 mb-5">
                       Carica una foto professionale. JPG o PNG, max 2MB.
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-3">
                       <Button
                         variant="outline"
                         onClick={triggerUpload}
-                        className="pressable rounded-xl border-viola-200 h-11 md:h-10 px-6 text-sm font-bold hover:bg-white transition-colors"
+                        className="h-11 px-6 text-sm"
                       >
-                        Cambia Foto
+                        Cambia foto
                       </Button>
                       {profileImage && (
                         <Button
-                          variant="ghost"
+                          variant="destructive"
                           onClick={removeImage}
-                          className="pressable rounded-xl text-rosso-600 hover:text-rosso-700 hover:bg-rosso-50 h-11 md:h-10 px-6 text-sm font-bold transition-colors"
+                          className="h-11 px-6 gap-2 text-sm"
                         >
-                          Rimuovi
+                          <Trash2 size={16} /> Rimuovi
                         </Button>
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
 
-                <Card className="border-viola-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
-                  <div className="flex items-center gap-4 mb-6 md:mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-rosso-50 flex items-center justify-center text-rosso-600 border border-rosso-100 shrink-0">
-                      <Globe size={18} />
-                    </div>
-                    <h3 className="text-lg font-display font-bold ">Informazioni Pubbliche</h3>
-                  </div>
+                <Card className="gap-0 p-6 md:p-8 overflow-visible">
+                  <SectionHeading icon={Globe} title="Informazioni pubbliche" />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Nome completo</Label>
+                      <Label htmlFor="name" className={FIELD_LABEL}>Nome completo</Label>
                       <Input
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Il tuo nome"
-                        className="rounded-xl h-12 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
+                        className="h-12 px-5 font-medium"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="title" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">
-                        {session?.user?.role === 'company' ? 'Nome Azienda' : 'Titolo professionale'}
+                      <Label htmlFor="title" className={FIELD_LABEL}>
+                        {session?.user?.role === 'company' ? 'Nome azienda' : 'Titolo professionale'}
                       </Label>
                       <Input
                         id="title"
                         value={session?.user?.role === 'company' ? companyName : title}
                         onChange={(e) => session?.user?.role === 'company' ? setCompanyName(e.target.value) : setTitle(e.target.value)}
                         placeholder={session?.user?.role === 'company' ? "Es. Helllo srl" : "Es. Senior Developer"}
-                        className="rounded-xl h-12 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold px-5 text-base"
+                        className="h-12 px-5 font-medium"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-6 md:mt-8 space-y-2">
-                    <Label htmlFor="bio" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Bio professionale</Label>
+                  <div className="mt-6 space-y-2">
+                    <Label htmlFor="bio" className={FIELD_LABEL}>Bio professionale</Label>
+                    {/* The bio is the user's own voice: Prompt style */}
                     <Textarea
                       id="bio"
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder="Racconta chi sei..."
-                      className="min-h-[160px] rounded-2xl border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-medium p-5 md:p-6 resize-none text-base leading-relaxed"
+                      className="min-h-[160px] rounded-3xl p-5 md:p-6 resize-none font-prompt text-lg md:text-xl font-medium leading-7"
                     />
                   </div>
                 </Card>
 
-                <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-viola-950 text-white p-5 md:p-8 relative group">
-                  <div className="absolute bottom-0 right-0 w-64 h-64 bg-rosso-500 rounded-full blur-[80px] opacity-10" />
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-8 relative z-10">
-                    <div className="text-center md:text-left">
-                      <h4 className="font-display font-bold text-xl mb-2">Anteprima Profilo</h4>
-                      <p className="text-viola-300 text-sm leading-relaxed max-w-xs">
-                        Controlla come appari nello swipe engine.
+                {/* Live preview in the profile language: blu background, rosa prompt card, white chip card */}
+                <section aria-labelledby="profile-preview-heading" className="rounded-card bg-blu p-4 md:p-6 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2 pt-2">
+                    <div className="min-w-0">
+                      <h4 id="profile-preview-heading" className="text-title text-white">Anteprima profilo</h4>
+                      <p className="text-body text-blu-100 mt-1">
+                        Così ti vedono gli altri nello swipe.
                       </p>
                     </div>
-                    <Button className="pressable w-full md:w-auto rounded-xl bg-white text-viola-950 hover:bg-rosso-500 hover:text-white gap-2 font-bold shadow-xl transition-colors shrink-0 h-12 px-8 text-sm">
-                      <Eye size={18} /> Anteprima Live
+                    <Button variant="outline" className="w-full sm:w-auto h-12 px-6 gap-2 text-sm shrink-0">
+                      <Eye size={18} /> Anteprima live
                     </Button>
                   </div>
-                </Card>
+
+                  <div className="px-2 pt-3">
+                    <p className="text-title text-white truncate">{name || "Il tuo nome"}</p>
+                    <p className="text-body font-medium text-rosa truncate">
+                      {(session?.user?.role === 'company' ? companyName : title) || (session?.user?.role === 'company' ? "La tua azienda" : "Il tuo ruolo")}
+                    </p>
+                  </div>
+
+                  <div className="rounded-card bg-rosa p-6 space-y-2">
+                    <p className="text-label text-viola">Su di me</p>
+                    <p className={cn(
+                      "font-prompt text-2xl leading-8 md:text-prompt font-medium line-clamp-5 wrap-break-word",
+                      bio ? "text-viola" : "text-viola-500"
+                    )}>
+                      {bio || "Scrivi due righe nella bio: qui le leggeranno gli altri."}
+                    </p>
+                  </div>
+
+                  {skills.length > 0 && (
+                    <div className="rounded-card bg-white p-6 space-y-3">
+                      <p className="text-label text-viola">Competenze</p>
+                      <ul className="flex flex-wrap gap-2">
+                        {skills.slice(0, 8).map((skill) => (
+                          <li key={skill} className="inline-flex items-center rounded-full bg-rosa px-4 py-2 text-chip text-viola">
+                            {labelOf(skill)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </section>
               </div>
             </TabsContent>
 
             {/* Skills Section */}
             <TabsContent value="skills" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none overflow-visible">
-              <div className="space-y-6 md:space-y-8">
+              <div className="space-y-4 md:space-y-6">
                 {/* Skill Management Card */}
-                <Card className="border-viola-100 shadow-premium rounded-[2rem] bg-white p-5 md:p-8 overflow-visible">
-                  <div className="flex items-center gap-4 mb-6 md:mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-rosso-50 flex items-center justify-center text-rosso-600 border border-rosso-100 shrink-0">
-                      <Zap size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-lg font-display font-bold ">Gestione Competenze</h3>
-                      <p className="text-[11px] text-viola-500 font-medium uppercase tracking-wider">Configura il tuo arsenale tecnico</p>
-                    </div>
-                  </div>
+                <Card className="gap-0 p-6 md:p-8 overflow-visible">
+                  <SectionHeading icon={Zap} title="Le tue competenze" description="Quello che sai fare, in chip." />
 
                   <div className="space-y-6">
-                    <div className="flex flex-col gap-3">
-                      <Label htmlFor="skills-manage" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Le tue Skill Attive</Label>
-                      <div className="flex flex-wrap gap-2 p-3 md:p-4 rounded-2xl bg-viola-50/50 border border-viola-100 min-h-[80px]">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="skills-manage" className={FIELD_LABEL}>Skill attive</Label>
+                      <div className="flex flex-wrap gap-2 p-3 md:p-4 rounded-3xl bg-crema min-h-[80px]">
                         <AnimatePresence mode="popLayout">
                           {skills.length > 0 ? (
                             skills.map((skill) => (
@@ -476,14 +505,13 @@ export default function SettingsPage() {
                                 exit={{ opacity: 0, scale: 0.9, transition: { duration: duration.feedback } }}
                                 layout
                               >
-                                <Badge className="h-11 md:h-10 bg-white border-viola-200 text-viola-700 hover:bg-viola-50 font-bold text-sm pl-4 pr-1 py-0 rounded-xl gap-2 shadow-sm group transition-colors">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rosso-500" />
+                                <Badge className="h-11 md:h-10 text-chip pl-4 pr-1 py-0 gap-1">
                                   {labelOf(skill)}
                                   <button
                                     type="button"
                                     onClick={() => removeSkill(skill)}
                                     aria-label={`Rimuovi ${labelOf(skill)}`}
-                                    className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-viola-400 hover:text-rosso-500 transition-colors hover:bg-rosso-50 rounded-lg"
+                                    className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center text-viola rounded-full hover:bg-white/60 transition-colors"
                                   >
                                     <X size={14} />
                                   </button>
@@ -492,8 +520,8 @@ export default function SettingsPage() {
                             ))
                           ) : (
                             <div className="flex flex-col items-center justify-center w-full py-4 text-viola-500">
-                              <BrainCircuit size={24} className="mb-2 opacity-30" />
-                              <p className="text-sm italic font-medium">Ancora nessuna competenza aggiunta</p>
+                              <BrainCircuit size={24} strokeWidth={1.75} className="mb-2 text-viola-400" aria-hidden="true" />
+                              <p className="text-body">Ancora nessuna competenza: aggiungine una qui sotto.</p>
                             </div>
                           )}
                         </AnimatePresence>
@@ -501,7 +529,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="relative pt-2">
-                      <Label htmlFor="skills-search" className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest mb-2 block">Aggiungi Nuove Skill</Label>
+                      <Label htmlFor="skills-search" className={cn(FIELD_LABEL, "mb-2 block")}>Aggiungi skill</Label>
                       <div className="relative">
                         <Input
                           id="skills-search"
@@ -515,9 +543,9 @@ export default function SettingsPage() {
                           }}
                           enterKeyHint="done"
                           placeholder="Cerca una tecnologia o soft skill..."
-                          className="rounded-xl h-14 border-viola-100 bg-viola-50/50 focus:bg-white transition-colors font-bold pl-12 text-base w-full shadow-inner"
+                          className="h-14 pl-12 pr-5 font-medium w-full"
                         />
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400" size={20} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-viola-400 pointer-events-none" size={20} strokeWidth={1.75} aria-hidden="true" />
                       </div>
 
                       <AnimatePresence>
@@ -526,25 +554,18 @@ export default function SettingsPage() {
                             initial={{ opacity: 0, y: -6 }}
                             animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
                             exit={{ opacity: 0, y: -6, transition: { duration: duration.feedback } }}
-                            className="absolute top-full left-0 w-full mt-3 bg-white border border-viola-100 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                            className="absolute top-full left-0 w-full mt-3 bg-white rounded-3xl shadow-card z-50 overflow-hidden p-2"
                           >
-                            <div className="p-2 border-b border-viola-50 bg-viola-50/30">
-                              <p className="text-[11px] font-black text-viola-500 uppercase tracking-[0.2em] px-3 py-1">Risultati suggeriti</p>
-                            </div>
+                            <p className="text-label text-viola-500 px-4 pt-2 pb-1">Risultati suggeriti</p>
                             {filteredSkills.map((s) => (
                               <button
                                 key={s.slug}
                                 type="button"
                                 onClick={() => selectSkill(s.slug)}
-                                className="w-full text-left px-5 py-3.5 md:py-4 hover:bg-rosso-50 hover:text-rosso-900 font-bold text-sm text-viola-700 transition-colors border-b border-viola-50 last:border-0 flex items-center justify-between group"
+                                className="w-full text-left px-4 py-3 rounded-full hover:bg-crema font-medium text-sm text-viola transition-colors flex items-center justify-between gap-3 group"
                               >
-                                <span className="flex items-center gap-3 min-w-0">
-                                  <span className="w-8 h-8 shrink-0 rounded-lg bg-white border border-viola-100 flex items-center justify-center text-viola-400 group-hover:text-rosso-600 group-hover:border-rosso-100 transition-colors shadow-sm">
-                                    <Zap size={14} />
-                                  </span>
-                                  <span className="truncate">{s.label}</span>
-                                </span>
-                                <span className="bg-rosso-100 text-rosso-700 p-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                <span className="truncate">{s.label}</span>
+                                <span className="shrink-0 w-8 h-8 rounded-full bg-rosa text-viola flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 transition-opacity">
                                   <Plus size={14} />
                                 </span>
                               </button>
@@ -557,65 +578,54 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Monitoring & Insights Card */}
-                <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
-                  <div className="flex items-center justify-between gap-3 mb-6 md:mb-8">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-blu-50 flex items-center justify-center text-blu-600 border border-blu-100 shrink-0">
-                        <BarChart3 size={18} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-lg font-display font-bold leading-tight">Monitoraggio & Insights</h3>
-                        <p className="hidden sm:block text-[11px] text-viola-500 font-medium uppercase tracking-wider">Analisi delle tue performance</p>
-                      </div>
-                    </div>
-                    <Badge className="shrink-0 h-auto bg-rosso-50 text-rosso-700 border-rosso-100 rounded-lg px-3 py-1 font-black text-[11px] uppercase tracking-widest">Live Sync</Badge>
+                <Card className="gap-0 p-6 md:p-8">
+                  <div className="flex items-start justify-between gap-3">
+                    <SectionHeading icon={BarChart3} title="Monitoraggio" description="Come stanno andando le tue skill." />
+                    <Badge className="shrink-0 h-7 px-3 text-label mt-2">Live sync</Badge>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 md:gap-6 mb-6 md:mb-8">
+                  {/* Flat colour blocks, rotating viola / rosa / rosso like the profile prompt cards */}
+                  <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
                     {[
-                      { label: 'Match Frequency', value: 'High', color: 'text-rosso-700', bg: 'bg-rosso-50', icon: Target },
-                      { label: 'Skill Rank', value: 'Top 5%', color: 'text-blu-700', bg: 'bg-blu-50', icon: BarChart3 },
-                      { label: 'Profile Strength', value: '85%', color: 'text-amber-700', bg: 'bg-amber-50', icon: Zap },
-                    ].map((stat, i) => (
-                      <div key={i} className={`${stat.bg} rounded-2xl p-3 md:p-5 border border-white shadow-sm min-w-0`}>
-                        <div className="flex items-center justify-between mb-2 md:mb-3">
-                          <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center ${stat.color} shadow-sm`}>
-                            <stat.icon size={16} />
-                          </div>
-                        </div>
-                        <p className={`text-[11px] font-black uppercase tracking-wide md:tracking-widest mb-1 leading-tight ${stat.color} opacity-80`}>{stat.label}</p>
-                        <p className={`text-xl md:text-2xl font-display font-bold ${stat.color}`}>{stat.value}</p>
+                      { label: 'Frequenza match', value: 'Alta', block: 'bg-viola text-white', labelColor: 'text-rosa', icon: Target },
+                      { label: 'Rank skill', value: 'Top 5%', block: 'bg-rosa text-viola', labelColor: 'text-viola', icon: BarChart3 },
+                      { label: 'Forza profilo', value: '85%', block: 'bg-rosso text-white', labelColor: 'text-white', icon: Zap },
+                    ].map((stat) => (
+                      <div key={stat.label} className={cn("rounded-3xl p-3 md:p-5 min-w-0", stat.block)}>
+                        <stat.icon size={20} strokeWidth={1.75} className="mb-3 md:mb-4" aria-hidden="true" />
+                        <p className={cn("text-label mb-1", stat.labelColor)}>{stat.label}</p>
+                        <p className="text-xl md:text-title font-bold tabular-nums">{stat.value}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-[11px] font-black text-viola-500 ml-2 uppercase tracking-widest">Dettaglio Competenze</Label>
-                    <div className="space-y-2">
+                  <div className="space-y-2">
+                    <p className={FIELD_LABEL}>Dettaglio competenze</p>
+                    <div className="divide-y divide-viola/15">
                       {skills.length > 0 ? skills.slice(0, 3).map((skill, i) => (
-                        <div key={skill} className="flex items-center justify-between gap-3 p-3 md:p-4 rounded-2xl border border-viola-50 bg-viola-50/30 group hover:bg-white hover:shadow-premium transition-[background-color,box-shadow]">
+                        <div key={skill} className="flex items-center justify-between gap-3 py-4">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-600 transition-colors font-bold text-xs">
+                            <div className="w-10 h-10 shrink-0 rounded-full bg-crema flex items-center justify-center text-viola font-bold text-xs" aria-hidden="true">
                               {labelOf(skill).substring(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-viola-900 truncate">{labelOf(skill)}</p>
+                              <p className="text-body font-medium text-viola truncate">{labelOf(skill)}</p>
                               <div className="flex items-center gap-2 mt-1">
-                                <div className="w-20 sm:w-32 h-1.5 rounded-full bg-viola-200 overflow-hidden">
-                                  <div className="h-full bg-rosso-500 rounded-full" style={{ width: `${80 - (i * 15)}%` }} />
+                                <div className="w-20 sm:w-32 h-1.5 rounded-full bg-viola/15 overflow-hidden">
+                                  <div className="h-full bg-rosso rounded-full" style={{ width: `${80 - (i * 15)}%` }} />
                                 </div>
-                                <span className="text-[11px] font-bold text-viola-500 whitespace-nowrap">{80 - (i * 15)}% Match</span>
+                                <span className="text-label font-normal text-viola-500 whitespace-nowrap">{80 - (i * 15)}% match</span>
                               </div>
                             </div>
                           </div>
                           <div className="hidden sm:block text-right shrink-0">
-                            <p className="text-[11px] font-black text-viola-500 uppercase tracking-tighter">Popolarità</p>
-                            <p className="text-xs font-bold text-rosso-600">+12% questo mese</p>
+                            <p className="text-label font-normal text-viola-500">Popolarità</p>
+                            <p className="text-label font-bold text-viola">+12% questo mese</p>
                           </div>
                         </div>
                       )) : (
-                        <p className="text-sm text-viola-500 italic text-center py-4 px-4 bg-viola-50/50 rounded-2xl border border-dashed border-viola-200">
-                          Aggiungi delle skill per vedere le analisi dettagliate
+                        <p className="text-body text-viola-500 text-center py-4 px-4 bg-crema rounded-2xl">
+                          Aggiungi delle skill per vedere le analisi dettagliate.
                         </p>
                       )}
                     </div>
@@ -625,35 +635,29 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Account Section */}
-            <TabsContent value="account" className="m-0 space-y-6 md:space-y-8 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
-              <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
-                <div className="flex items-center gap-4 mb-4 md:mb-8">
-                  <div className="w-10 h-10 rounded-xl bg-viola-100 flex items-center justify-center text-viola-900 border border-viola-200 shrink-0">
-                    <Lock size={18} />
-                  </div>
-                  <h3 className="text-lg font-display font-bold ">Sicurezza e Accesso</h3>
-                </div>
+            <TabsContent value="account" className="m-0 space-y-4 md:space-y-6 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
+              <Card className="gap-0 p-6 md:p-8">
+                <SectionHeading icon={Lock} title="Sicurezza e accesso" />
 
-                <div className="space-y-1 -mx-2 md:mx-0">
+                {/* Info rows: line icon, label over value, viola/15 divider */}
+                <div className="divide-y divide-viola/15">
                   {[
                     { icon: Mail, label: 'Email', value: email, action: 'Cambia' },
                     { icon: Shield, label: 'Password', value: 'Ultima modifica: 3 mesi fa', action: 'Aggiorna' },
                     { icon: CreditCard, label: 'Piano', value: 'Helllo Professional', action: 'Gestisci', badge: 'Premium' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between gap-3 py-4 md:py-5 px-2 md:px-5 rounded-2xl hover:bg-viola-50 transition-colors group">
-                      <div className="flex gap-3 md:gap-4 items-center min-w-0">
-                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-600 transition-colors shadow-sm">
-                          <item.icon size={20} />
-                        </div>
+                    <div key={idx} className="flex items-center justify-between gap-3 py-4">
+                      <div className="flex gap-4 items-center min-w-0">
+                        <item.icon size={24} strokeWidth={1.75} className="shrink-0 text-viola" aria-hidden="true" />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <p className="text-[11px] font-black text-viola-500 uppercase tracking-widest">{item.label}</p>
-                            {item.badge && <span className="bg-rosso-100 text-rosso-800 text-[11px] leading-none font-black uppercase px-1.5 py-0.5 rounded-full">{item.badge}</span>}
+                            <p className="text-label font-normal text-viola-500">{item.label}</p>
+                            {item.badge && <Badge className="h-5 px-2 text-xs">{item.badge}</Badge>}
                           </div>
-                          <p className="text-sm text-viola-950 font-bold truncate">{item.value}</p>
+                          <p className="text-body font-medium text-viola truncate">{item.value}</p>
                         </div>
                       </div>
-                      <Button variant="outline" className="pressable shrink-0 rounded-xl font-bold h-11 md:h-9 px-4 text-xs border-viola-200 hover:bg-white transition-colors">
+                      <Button variant="outline" className="shrink-0 h-11 md:h-9 px-4 text-xs">
                         {item.action}
                       </Button>
                     </div>
@@ -661,16 +665,17 @@ export default function SettingsPage() {
                 </div>
               </Card>
 
-              <Card className="border-rosso-100 shadow-premium rounded-[2rem] overflow-hidden bg-rosso-50/20 p-5 md:p-8 border-dashed">
+              {/* Danger zone: destructive tokens, always icon + text */}
+              <Card className="p-6 md:p-8 ring-destructive/30">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6">
                   <div className="text-center md:text-left">
-                    <h4 className="text-lg font-bold text-rosso-950 mb-1 font-display flex items-center gap-2 justify-center md:justify-start">
-                      <Trash2 size={18} /> Zona Pericolo
+                    <h4 className="text-title text-destructive mb-1 flex items-center gap-2 justify-center md:justify-start">
+                      <AlertTriangle size={22} strokeWidth={2} aria-hidden="true" /> Zona pericolo
                     </h4>
-                    <p className="text-sm text-rosso-800 font-medium">L&apos;eliminazione dell&apos;account è definitiva.</p>
+                    <p className="text-body text-viola-500">L&apos;eliminazione dell&apos;account è definitiva.</p>
                   </div>
-                  <Button variant="ghost" className="pressable w-full md:w-auto text-rosso-600 hover:text-white hover:bg-rosso-600 gap-2 rounded-xl font-bold h-11 md:h-10 px-6 border border-rosso-100 transition-colors text-sm md:text-xs">
-                    Elimina Account
+                  <Button variant="destructive" className="w-full md:w-auto gap-2 h-11 px-6 text-sm">
+                    <Trash2 size={16} /> Elimina account
                   </Button>
                 </div>
               </Card>
@@ -678,31 +683,24 @@ export default function SettingsPage() {
 
             {/* Notifications Section */}
             <TabsContent value="notifications" className="m-0 outline-none animate-in fade-in-50 duration-300 motion-reduce:animate-none">
-              <Card className="border-viola-100 shadow-premium rounded-[2rem] overflow-hidden bg-white p-5 md:p-8">
-                <div className="flex items-center gap-4 mb-6 md:mb-8">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100 shrink-0">
-                    <Bell size={18} />
-                  </div>
-                  <h3 className="text-lg font-display font-bold ">Notifiche</h3>
-                </div>
+              <Card className="gap-0 p-6 md:p-8">
+                <SectionHeading icon={Bell} title="Notifiche" />
 
-                <div className="grid grid-cols-1 gap-3">
+                <div className="divide-y divide-viola/15">
                   {[
-                    { id: 'profile-visible', icon: Eye, title: 'Visibilità Profilo', desc: 'Permetti agli altri di scoprirti.' },
-                    { id: 'email-notif', icon: Mail, title: 'Notifiche Email', desc: 'Ricevi avvisi per nuovi match.' },
-                    { id: 'push-notif', icon: Bell, title: 'Notifiche Push', desc: 'Avvisi in tempo reale nel browser.' }
+                    { id: 'profile-visible', icon: Eye, title: 'Visibilità profilo', desc: 'Permetti agli altri di scoprirti.' },
+                    { id: 'email-notif', icon: Mail, title: 'Notifiche email', desc: 'Ricevi avvisi per nuovi match.' },
+                    { id: 'push-notif', icon: Bell, title: 'Notifiche push', desc: 'Avvisi in tempo reale nel browser.' }
                   ].map((notif) => (
-                    <div key={notif.id} className="flex items-center justify-between gap-3 p-4 md:p-6 rounded-2xl border border-viola-50 bg-viola-50/30 hover:bg-white hover:border-viola-100 hover:shadow-premium transition-[background-color,border-color,box-shadow] group">
-                      <div className="flex gap-3 md:gap-4 items-center min-w-0">
-                        <div className="w-11 h-11 md:w-12 md:h-12 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-viola-500 group-hover:text-rosso-500 transition-colors shadow-sm">
-                          <notif.icon size={20} />
-                        </div>
+                    <div key={notif.id} className="flex items-center justify-between gap-3 py-4">
+                      <div className="flex gap-4 items-center min-w-0">
+                        <notif.icon size={24} strokeWidth={1.75} className="shrink-0 text-viola" aria-hidden="true" />
                         <div className="min-w-0">
-                          <Label htmlFor={notif.id} className="text-base font-bold text-viola-950 cursor-pointer block mb-0.5 group-hover:text-rosso-600 transition-colors">{notif.title}</Label>
-                          <p className="text-sm md:text-xs text-viola-500 font-medium">{notif.desc}</p>
+                          <Label htmlFor={notif.id} className="text-body font-medium text-viola cursor-pointer block mb-0.5">{notif.title}</Label>
+                          <p className="text-label font-normal text-viola-500">{notif.desc}</p>
                         </div>
                       </div>
-                      <Switch id={notif.id} defaultChecked className="shrink-0 scale-100 data-active:bg-rosso-600" />
+                      <Switch id={notif.id} defaultChecked className="shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -714,15 +712,12 @@ export default function SettingsPage() {
             <AnimatePresence>
               {isDirty && (
                 <BottomActionBar variant="floating" desktop="hidden">
-                  <div className="flex items-center gap-3 rounded-2xl bg-viola-950 text-white p-2 pl-4 shadow-premium">
-                    <p className="flex-1 min-w-0 text-sm font-semibold truncate">Modifiche non salvate</p>
+                  <div className="flex items-center gap-3 rounded-full bg-viola text-white p-2 pl-5 shadow-card">
+                    <p className="flex-1 min-w-0 text-sm font-medium truncate">Modifiche non salvate</p>
                     <Button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className={cn(
-                        "pressable h-11 px-5 rounded-xl bg-rosso-500 hover:bg-rosso-400 text-viola-950 font-bold text-sm gap-2 transition-colors",
-                        isSaving && "text-white"
-                      )}
+                      className="h-11 px-5 text-sm gap-2"
                     >
                       {saveLabel ?? (
                         <>

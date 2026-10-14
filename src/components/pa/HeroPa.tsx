@@ -2,6 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, BarChart3, CheckCircle2, FileText, Target, Users, TrendingUp, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface HeroPaProps {
@@ -27,178 +28,172 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
 
   const dashboardVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95, y: 40 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      y: 0, 
-      transition: { 
-        duration: 0.8, 
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
         delay: 0.5,
-        ease: [0.16, 1, 0.3, 1] 
-      } 
+        ease: [0.16, 1, 0.3, 1]
+      }
     },
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-24 pb-32">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-linear-to-b from-crema/30 to-transparent pointer-events-none" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-blu/5 rounded-full blur-3xl opacity-50 pointer-events-none" />
-      
+    <section className="relative overflow-hidden bg-white pt-20 pb-28">
       <div className="max-w-7xl w-full mx-auto px-6 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          
+
           {/* Text Content */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-7 space-y-10"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            <motion.div 
+            <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blu/5 border border-blu/10 text-[10px] font-black uppercase tracking-[0.2em] text-blu"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blu-50 text-chip text-blu-800"
             >
-              <Target size={12} className="text-blu" /> Partner Tecnologico per la PA
+              <Target size={14} className="text-blu" aria-hidden="true" /> Partner tecnologico per la PA
             </motion.div>
-            
+
             <div className="space-y-6">
-              <motion.h1 
+              <motion.h1
                 variants={itemVariants}
-                className="text-5xl md:text-7xl font-display font-bold text-viola-900 leading-[1.1] tracking-tight"
+                className="text-display md:text-6xl md:leading-[1.05] font-display font-bold text-viola"
               >
                 Helllo per la PA in Puglia: <br />
-                <span className="text-viola-400">Portiamo i NEET al lavoro.</span>
+                <span className="text-blu">Portiamo i NEET al lavoro.</span>
               </motion.h1>
-              <motion.p 
+              <motion.p
                 variants={itemVariants}
-                className="text-xl text-text-secondary leading-relaxed max-w-2xl"
+                className="text-xl text-viola-500 leading-relaxed max-w-2xl"
               >
                 Siamo il partner tecnologico che aiuta Comuni, Regioni ed enti pugliesi a tracciare il percorso dei giovani invisibili, riducendo il time-to-placement con la rendicontazione già pronta.
               </motion.p>
             </div>
 
-            <motion.div 
+            <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col sm:flex-row gap-3"
             >
-              <button 
+              <Button
                 onClick={() => {
                   if (onServiceClick) onServiceClick('demo');
                   document.getElementById('contatti')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="h-14 px-8 rounded-full bg-blu text-white font-black uppercase tracking-widest text-sm shadow-xl shadow-blu/20 hover:bg-blu-800 transition-all flex items-center justify-center gap-3 active:scale-95"
+                className="h-14 px-8 gap-3 text-base"
               >
-                Richiedi Demo Operativa <ArrowRight size={20} />
-              </button>
-              <button className="h-14 px-8 rounded-full bg-white border border-blu/20 text-blu font-bold text-lg hover:bg-crema transition-all flex items-center justify-center gap-3 active:scale-95">
-                Scarica Scheda Tecnica <FileText size={20} />
-              </button>
+                Richiedi demo operativa <ArrowRight size={20} aria-hidden="true" />
+              </Button>
+              <Button variant="outline" className="h-14 px-8 gap-3 text-base">
+                Scarica scheda tecnica <FileText size={20} aria-hidden="true" />
+              </Button>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               variants={itemVariants}
-              className="flex items-center gap-6 pt-4"
+              className="flex items-center gap-5 pt-2"
             >
-              <div className="flex -space-x-3">
+              <div className="flex -space-x-3" aria-hidden="true">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-crema flex items-center justify-center overflow-hidden">
-                    <div className="w-full h-full bg-blu/10 flex items-center justify-center">
-                       <Users size={16} className="text-blu/30" />
-                    </div>
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-blu-50 flex items-center justify-center">
+                    <Users size={16} className="text-blu" />
                   </div>
                 ))}
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Consigliato dai progettisti</p>
-                <p className="text-xs font-bold text-blu italic">Ideale per bandi FSE+, PNRR e GOL</p>
+              <div className="space-y-0.5">
+                <p className="text-label text-viola-500">Consigliato dai progettisti</p>
+                <p className="text-sm font-semibold text-viola">Ideale per bandi FSE+, PNRR e GOL</p>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Mockup Content */}
-          <motion.div 
+          {/* Dashboard Mockup Content: a flat crema pattern block holding the preview card */}
+          <motion.div
             className="lg:col-span-5 relative"
             variants={dashboardVariants}
             initial="hidden"
             animate="visible"
+            aria-hidden="true"
           >
-            <div className="bg-white rounded-[2.5rem] border border-blu/10 shadow-premium overflow-hidden aspect-square lg:aspect-4/5 relative z-10">
+            <div className="rounded-[36px] bg-crema bg-[url(/brand/pattern-crema.svg)] bg-cover bg-center p-5 sm:p-8">
+            <div className="bg-white rounded-card border border-viola/15 overflow-hidden aspect-square lg:aspect-4/5 relative">
               {/* Browser Header */}
-              <div className="h-12 bg-crema border-b border-blu/5 flex items-center justify-between px-6">
+              <div className="h-12 bg-white border-b border-viola/15 flex items-center justify-between px-6">
                  <div className="flex gap-2">
-                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-blu/10" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-viola-200" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-viola-200" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-viola-200" />
                  </div>
-                 <div className="h-5 w-48 bg-blu/5 rounded-full flex items-center px-3 gap-2">
-                    <Search size={10} className="text-blu/20" />
-                    <div className="h-1.5 w-full bg-blu/10 rounded-full" />
+                 <div className="h-5 w-40 bg-crema rounded-full flex items-center px-3 gap-2">
+                    <Search size={10} className="text-viola-400" />
+                    <div className="h-1.5 w-full bg-viola-200 rounded-full" />
                  </div>
               </div>
 
-              <div className="p-8 space-y-8 overflow-y-auto no-scrollbar max-h-full pb-20">
+              <div className="p-6 space-y-6 overflow-hidden max-h-full">
                 {/* KPI Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 bg-blu/5 rounded-3xl space-y-1 group hover:bg-blu/10 transition-colors">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blu/50">Presi in Carico</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-5 bg-blu rounded-3xl space-y-1">
+                    <p className="text-label text-blu-100">Presi in carico</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-display font-bold text-blu leading-none">1.284</p>
-                      <TrendingUp size={16} className="text-blu/40 mb-1" />
+                      <p className="text-4xl font-display font-bold text-white leading-none">1.284</p>
+                      <TrendingUp size={16} className="text-blu-100 mb-1" />
                     </div>
                   </div>
-                  <div className="p-6 bg-rosso-50 rounded-3xl space-y-1 group hover:bg-rosso-100/50 transition-colors">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-rosso-600/50">Tirocini</p>
+                  <div className="p-5 bg-crema rounded-3xl space-y-1">
+                    <p className="text-label text-viola-500">Tirocini</p>
                     <div className="flex items-end justify-between">
-                      <p className="text-4xl font-display font-bold text-rosso-600 leading-none">342</p>
-                      <CheckCircle2 size={16} className="text-rosso-600/40 mb-1" />
+                      <p className="text-4xl font-display font-bold text-viola leading-none">342</p>
+                      <CheckCircle2 size={16} className="text-viola-500 mb-1" />
                     </div>
                   </div>
                 </div>
 
                 {/* Progress Chart Mock */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-blu/60">Flusso Matching</h4>
-                    <span className="text-[10px] font-bold text-blu/40 italic">Ultimi 30 giorni</span>
+                    <h4 className="text-sm font-semibold text-viola">Flusso matching</h4>
+                    <span className="text-label text-viola-500">Ultimi 30 giorni</span>
                   </div>
-                  <div className="h-44 w-full bg-crema rounded-3xl border border-blu/5 p-6 flex items-end gap-2 justify-between">
+                  <div className="h-40 w-full bg-crema rounded-3xl p-5 flex items-end gap-2 justify-between">
                      {[40, 70, 45, 90, 60, 80, 50, 100].map((h, i) => (
-                       <motion.div 
-                        key={i} 
-                        className="w-full bg-blu/10 rounded-t-lg relative group"
+                       <motion.div
+                        key={i}
+                        className={cn("w-full rounded-t-lg", i === 7 ? "bg-blu" : "bg-blu-200")}
                         initial={{ height: 0 }}
                         animate={{ height: `${h}%` }}
                         transition={{ delay: 1 + i * 0.05, duration: 0.8, ease: "easeOut" }}
-                       >
-                         <div className="absolute inset-0 bg-blu/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg" />
-                       </motion.div>
+                       />
                      ))}
                   </div>
                 </div>
 
                 {/* Recent Activity List */}
-                <div className="space-y-4">
-                   <h4 className="text-xs font-black uppercase tracking-widest text-blu/60 px-1">Ultimi Onboarding (NEET)</h4>
-                   <div className="space-y-3">
+                <div className="space-y-3">
+                   <h4 className="text-sm font-semibold text-viola px-1">Ultimi onboarding (NEET)</h4>
+                   <div className="divide-y divide-viola/15">
                       {[
                         { name: "Marco V.", city: "Bari", status: "Matching" },
                         { name: "Sara L.", city: "Lecce", status: "Tirocinio" },
                         { name: "Giuseppe R.", city: "Taranto", status: "Call" },
                       ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-white border border-blu/5 rounded-2xl shadow-sm">
+                        <div key={i} className="flex items-center justify-between py-3 px-1">
                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-crema flex items-center justify-center text-[10px] font-bold text-blu">
+                              <div className="w-8 h-8 rounded-full bg-blu-50 flex items-center justify-center text-xs font-bold text-blu">
                                 {item.name.split(' ')[0][0]}
                               </div>
                               <div>
-                                 <p className="text-sm font-bold text-blu leading-none">{item.name}</p>
-                                 <p className="text-[10px] text-text-muted mt-0.5">{item.city}</p>
+                                 <p className="text-sm font-semibold text-viola leading-none">{item.name}</p>
+                                 <p className="text-xs text-viola-500 mt-1">{item.city}</p>
                               </div>
                            </div>
                            <span className={cn(
-                             "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
-                             item.status === 'Tirocinio' ? 'bg-rosso-50 text-rosso-600' : 'bg-blu/5 text-blu/60'
+                             "text-xs font-medium px-2.5 py-0.5 rounded-full",
+                             item.status === 'Tirocinio' ? 'bg-rosa text-viola' : 'bg-blu-50 text-blu-800'
                            )}>
                               {item.status}
                            </span>
@@ -207,28 +202,23 @@ export function HeroPa({ onServiceClick }: HeroPaProps) {
                    </div>
                 </div>
               </div>
-              
-              {/* Bottom Fade */}
-              <div className="absolute bottom-0 left-0 w-full h-20 bg-linear-to-t from-white to-transparent z-20 pointer-events-none" />
+            </div>
             </div>
 
-            {/* Floating Elements */}
-            <motion.div 
-              className="absolute -right-8 top-1/4 z-20 p-4 bg-white border border-blu/10 rounded-2xl shadow-premium flex items-center gap-3"
+            {/* Floating Element */}
+            <motion.div
+              className="absolute -right-4 top-1/4 z-20 p-4 bg-white border border-viola/15 rounded-3xl shadow-card flex items-center gap-3"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-               <div className="w-10 h-10 bg-blu/5 text-blu rounded-xl flex items-center justify-center">
+               <div className="w-10 h-10 bg-blu-50 text-blu rounded-full flex items-center justify-center">
                   <BarChart3 size={20} />
                </div>
                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blu/40 leading-none">Time to Match</p>
-                  <p className="text-lg font-bold text-blu leading-tight">-42% <span className="text-[10px] text-rosso-600 italic">v1</span></p>
+                  <p className="text-label text-viola-500 leading-none">Time to match</p>
+                  <p className="text-lg font-bold text-blu leading-tight">-42% <span className="text-xs font-medium text-viola-500">v1</span></p>
                </div>
             </motion.div>
-
-            {/* Decorative background circle */}
-            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-radial from-blu/5 to-transparent rounded-full blur-3xl opacity-30" />
           </motion.div>
 
         </div>

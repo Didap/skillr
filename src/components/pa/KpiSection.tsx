@@ -17,54 +17,54 @@ const kpis = [
 
 export function KpiSection() {
   return (
-    <section id="kpi" className="py-32 bg-white">
+    <section id="kpi" className="py-28 bg-white">
       <div className="max-w-7xl w-full mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+
           <div className="lg:col-span-4 space-y-8">
             <div className="space-y-4">
-              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-viola-400">Rendicontazione</h2>
-              <p className="text-4xl font-display font-bold text-viola-900 leading-tight tracking-tight">
+              <h2 className="text-label text-blu">Rendicontazione</h2>
+              <p className="text-display md:text-4xl md:leading-tight font-display font-bold text-viola">
                 I KPI che vincono i bandi.
               </p>
             </div>
-            <p className="text-lg text-text-secondary leading-relaxed">
+            <p className="text-lg text-viola-500 leading-relaxed">
               Helllo traccia nativamente gli indicatori richiesti dai programmi PNRR, GOL e FSE+, eliminando il carico manuale per l&apos;ente.
             </p>
-            
-            <div className="p-6 bg-crema rounded-[2rem] border border-blu/5 space-y-4">
-              <div className="flex items-center gap-3 text-blu">
-                <Info size={20} />
-                <span className="text-sm font-bold uppercase tracking-widest">Nota Tecnica</span>
+
+            <div className="p-6 bg-crema rounded-card space-y-3">
+              <div className="flex items-center gap-2 text-blu">
+                <Info size={20} aria-hidden="true" />
+                <span className="text-sm font-semibold text-viola">Nota tecnica</span>
               </div>
-              <p className="text-sm text-text-muted leading-relaxed italic">
+              <p className="text-sm text-viola-500 leading-relaxed">
                 Tutti i dati sono esportabili in formato CSV/Excel conformemente alle linee guida ANPAL e AGID per la rendicontazione dei servizi al lavoro.
               </p>
             </div>
           </div>
 
           <div className="lg:col-span-8">
-            <div className="bg-white rounded-[2.5rem] border border-viola-100 shadow-premium overflow-hidden">
+            <div className="bg-white rounded-card border border-viola/15 overflow-hidden">
               <Table>
-                <TableHeader className="bg-crema/50">
-                  <TableRow className="hover:bg-transparent border-viola-100">
-                    <TableHead className="h-16 px-8 text-[11px] font-black uppercase tracking-[0.2em] text-blu/60 w-1/2">Indicatore KPI</TableHead>
-                    <TableHead className="h-16 px-8 text-[11px] font-black uppercase tracking-[0.2em] text-blu/60">Tracciamento Helllo</TableHead>
+                <TableHeader className="bg-crema">
+                  <TableRow className="hover:bg-transparent border-viola/15">
+                    <TableHead className="h-14 px-6 md:px-8 text-label text-viola-500 w-1/2">Indicatore KPI</TableHead>
+                    <TableHead className="h-14 px-6 md:px-8 text-label text-viola-500">Tracciamento Helllo</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {kpis.map((item, i) => (
-                    <TableRow key={i} className="group hover:bg-blu/2 transition-colors border-viola-50">
-                      <TableCell className="py-6 px-8">
+                    <TableRow key={i} className="group hover:bg-blu-50/60 transition-colors border-viola/15">
+                      <TableCell className="py-5 px-6 md:px-8">
                         <div className="flex items-center gap-4">
-                          <div className="w-2 h-2 rounded-full bg-blu opacity-40" />
-                          <span className="font-bold text-viola-900 text-lg">{item.kpi}</span>
+                          <div className="w-2 h-2 rounded-full bg-blu shrink-0" aria-hidden="true" />
+                          <span className="font-semibold text-viola text-base">{item.kpi}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-6 px-8">
+                      <TableCell className="py-5 px-6 md:px-8">
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-sm text-text-secondary font-medium">{item.track}</span>
-                          <CheckCircle2 size={18} className="text-rosso-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                          <span className="text-sm text-viola-500">{item.track}</span>
+                          <CheckCircle2 size={18} className="text-blu opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                         </div>
                       </TableCell>
                     </TableRow>

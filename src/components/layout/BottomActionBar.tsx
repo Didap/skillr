@@ -40,11 +40,11 @@ export function BottomActionBar({
         className={cn(
           "fixed inset-x-0 bottom-tabbar z-40",
           variant === "bar"
-            ? "flex flex-wrap items-stretch gap-2 px-4 py-3 bg-white/90 backdrop-blur-xl border-t border-viola-100 [&>*]:flex-auto"
+            ? "flex flex-wrap items-stretch gap-2 px-4 py-3 bg-white border-t border-viola/15 [&>*]:flex-auto"
             : "px-4 pb-3",
           desktop === "hidden"
             ? "md:hidden"
-            : "md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-0 md:flex-nowrap md:[&>*]:flex-none md:transform-none! md:opacity-100!",
+            : "md:static md:z-auto md:p-0 md:bg-transparent md:border-0 md:flex-nowrap md:[&>*]:flex-none md:transform-none! md:opacity-100!",
           className
         )}
       >

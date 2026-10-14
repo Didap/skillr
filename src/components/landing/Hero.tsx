@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, Star } from "lucide-react";
+import { ArrowDown, ArrowRight, BadgeCheck, Bookmark, Image as ImageIcon, MapPin, X } from "lucide-react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { MockActionBar, MockChip } from "@/components/landing/MockParts";
+import { cn } from "@/lib/utils";
 
 const containerFade = {
   initial: { opacity: 0 },
@@ -17,66 +20,112 @@ const itemUp = {
 /** Landing hero: the only part of the page that needs client JS (the staggered entrance). */
 export function Hero() {
   return (
-    <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[800px] bg-linear-to-b from-rosso-50/50 to-transparent -z-10 rounded-[100%]" />
-
-      <div className="max-w-6xl mx-auto px-6 text-center">
+    <section className="relative pt-24 pb-16 md:pt-36 md:pb-28 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-center">
         <motion.div
           variants={containerFade}
           initial="initial"
           animate="animate"
-          className="flex flex-col items-center"
+          className="flex flex-col items-start"
         >
-          <motion.div variants={itemUp} className="mb-10">
-            <span className="px-4 py-1.5 rounded-full bg-white border border-viola-200 shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-rosso-700 flex items-center gap-2">
-              <Star size={12} fill="currentColor" /> Recruiting a doppio opt-in
-            </span>
-          </motion.div>
+          <motion.p
+            variants={itemUp}
+            className="mb-6 md:mb-8 inline-flex items-center rounded-full bg-rosa px-4 py-2 text-chip text-viola"
+          >
+            Recruiting a doppio opt-in
+          </motion.p>
 
           <motion.h1
             variants={itemUp}
-            className="font-display text-6xl sm:text-7xl md:text-9xl leading-[0.9] tracking-tighter text-viola-950 mb-10"
+            className="font-display text-display sm:text-6xl lg:text-7xl sm:leading-[1.05] lg:leading-[1.05] tracking-[-0.03em] text-viola mb-6 md:mb-8 text-balance"
           >
-            Trova il match.<br />
-            <span className="text-rosso-600 italic">Senza chiacchiere.</span>
+            Trova il match. Senza{" "}
+            <span className="font-script text-rosso">chiacchiere.</span>
           </motion.h1>
 
           <motion.p
             variants={itemUp}
-            className="text-xl md:text-2xl text-viola-500 max-w-2xl mx-auto mb-16 leading-relaxed font-medium"
+            className="text-lg md:text-xl text-viola-500 max-w-xl mb-10 md:mb-12 leading-relaxed"
           >
-            Vedi quanto paga, fai swipe, fissi una call di 30 minuti. La chat non c&apos;è.
+            Vedi quanto paga, fai swipe, fissi una call di 30 minuti. La chat non c&apos;è: il ghiaccio si rompe in call.
           </motion.p>
 
           <motion.div
             variants={itemUp}
-            className="w-full max-w-sm sm:max-w-none flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6"
+            className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
           >
             <Link
               href="/onboarding"
-              className="pressable group relative inline-flex w-full sm:w-auto h-16 items-center justify-center overflow-hidden rounded-full bg-viola-950 px-10 font-bold text-white transition-all hover:bg-rosso-900 shadow-2xl shadow-viola-300"
+              className={cn(buttonVariants({ variant: "default" }), "group h-14 px-8 text-base gap-2")}
             >
-              <span className="mr-2">Voglio assumere</span>
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              Voglio assumere
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" />
             </Link>
             <Link
               href="/onboarding"
-              className="pressable inline-flex w-full sm:w-auto h-16 items-center justify-center rounded-full border-2 border-viola-200 bg-white px-10 font-bold text-viola-900 transition-all hover:border-rosso-600 hover:text-rosso-600"
+              className={cn(buttonVariants({ variant: "outline" }), "h-14 px-8 text-base")}
             >
               Cerco lavoro
             </Link>
           </motion.div>
 
-          <motion.div variants={itemUp} className="mt-14">
+          <motion.div variants={itemUp} className="mt-8 md:mt-10">
             <Link
               href="#come-funziona"
-              className="inline-flex items-center gap-2 text-sm font-bold text-viola-500 hover:text-rosso-600 transition-colors"
+              className="inline-flex items-center gap-2 py-2 text-sm font-semibold text-viola underline decoration-viola/40 underline-offset-4 hover:decoration-viola"
             >
               Come funziona <ArrowDown size={16} />
             </Link>
           </motion.div>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.8, delay: 0.4 } }}
+        >
+          <HeroCard />
+        </motion.div>
       </div>
     </section>
+  );
+}
+
+/** The discover card from the app, drawn in markup on the rosa brand pattern. */
+function HeroCard() {
+  return (
+    <div
+      aria-hidden="true"
+      className="rounded-[2.25rem] bg-rosa bg-[url(/brand/pattern-rosa.svg)] bg-cover bg-center px-5 py-8 sm:p-10 lg:p-12"
+    >
+      <div className="mx-auto w-full max-w-sm">
+        <div className="relative h-36 sm:h-44 rounded-t-card bg-crema flex flex-col items-center justify-center gap-2 text-viola-400">
+          <ImageIcon size={28} strokeWidth={1.75} />
+          <span className="absolute -bottom-4 left-5 inline-flex items-center gap-2 rounded-full bg-rosso px-4 h-9 text-sm font-bold text-white">
+            <span className="size-2 rounded-full bg-white" /> Disponibile da subito
+          </span>
+        </div>
+        <div className="rounded-b-card bg-blu px-5 pt-8 pb-6 sm:px-6 text-white">
+          <p className="flex items-center gap-2 text-title">
+            Giulia
+            <BadgeCheck size={20} strokeWidth={2} className="text-white" />
+          </p>
+          <p className="mt-1 text-body text-rosa">UX/UI Designer</p>
+          <p className="mt-3 font-prompt text-[1.375rem] leading-7 font-medium tracking-[-0.01em] sm:text-prompt">
+            Disegno app che si usano senza{" "}
+            <span className="font-script text-rosa">manuale.</span>
+          </p>
+          <p className="mt-3 flex items-center gap-2 text-body text-white">
+            <MapPin size={18} strokeWidth={1.75} className="shrink-0" />
+            Torino · €350 / giorno
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <MockChip>Figma</MockChip>
+            <MockChip>Design System</MockChip>
+            <MockChip>User Research</MockChip>
+          </div>
+        </div>
+        <MockActionBar pass={X} save={Bookmark} />
+      </div>
+    </div>
   );
 }

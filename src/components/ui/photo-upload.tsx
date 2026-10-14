@@ -49,19 +49,19 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
 
   return (
     <div className={cn("space-y-3", className)}>
-      <Label className="font-bold text-viola-700 ml-1">{label}</Label>
+      <Label className="text-label text-viola ml-1">{label}</Label>
       <div className="flex items-center gap-6">
         <div className="relative group">
           <div className={cn(
-            "w-24 h-24 rounded-3xl border-2 border-dashed border-viola-200 flex items-center justify-center overflow-hidden transition-all",
-            value ? "border-solid border-rosso-500" : "hover:border-rosso-400 bg-viola-50/50"
+            "w-24 h-24 rounded-card border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors",
+            value ? "border-solid border-transparent" : "border-viola-200 bg-crema hover:border-viola-400 has-focus-visible:border-ring"
           )}>
             {isUploading ? (
-              <Loader2 className="w-8 h-8 text-rosso-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-viola-400 animate-spin" />
             ) : value ? (
               <Image src={value} alt="Upload" fill className="object-cover" unoptimized />
             ) : (
-              <Camera className="w-8 h-8 text-viola-300 group-hover:text-rosso-400 transition-colors" />
+              <Camera className="w-8 h-8 text-viola-400 group-hover:text-viola transition-colors" strokeWidth={1.75} />
             )}
             
             <input 
@@ -78,7 +78,7 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
               type="button"
               onClick={removePhoto}
               aria-label="Rimuovi foto"
-              className="absolute z-10 -top-2 -right-2 w-6 h-6 bg-rosso-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-rosso-600 transition-colors before:absolute before:-inset-2.5 before:content-['']"
+              className="absolute z-10 -top-2 -right-2 w-6 h-6 bg-viola text-white rounded-full ring-2 ring-white flex items-center justify-center hover:bg-viola-700 transition-colors before:absolute before:-inset-2.5 before:content-['']"
             >
               <X size={14} strokeWidth={3} />
             </button>
@@ -86,11 +86,11 @@ export function PhotoUpload({ value, onChange, label, className }: PhotoUploadPr
         </div>
         
         <div className="flex-1">
-          <p className="text-sm font-medium text-viola-500 leading-tight">
+          <p className="text-sm text-viola-500 leading-tight">
             {value ? "Ottima scelta! Puoi cambiarla quando vuoi." : "Una buona foto aumenta le probabilità di match del 30%."}
           </p>
           {!value && (
-             <p className="text-[10px] text-viola-400 font-bold uppercase tracking-widest mt-1">
+             <p className="text-label text-viola-400 mt-1">
                JPG, PNG o WEBP. Max 5MB.
              </p>
           )}

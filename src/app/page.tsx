@@ -2,11 +2,13 @@ import { Zap, Eye, Calendar } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { TrustSection } from "@/components/landing/TrustSection";
 import { SmartInterviews } from "@/components/landing/SmartInterviews";
 import { Faq } from "@/components/landing/Faq";
+import { SiteFooter } from "@/components/landing/SiteFooter";
 
 const NAV_LINKS = [
   { href: "#come-funziona", label: "Come funziona" },
@@ -15,60 +17,64 @@ const NAV_LINKS = [
   { href: "#faq", label: "FAQ" },
 ];
 
+// Prompt-card rotation on the viola block: rosa, white, blu (text pairs from DESIGN.md)
 const PILLARS = [
   {
     icon: Eye,
     title: "Il budget si vede",
     body: "Le offerte dicono quanto pagano, i professionisti quanto chiedono. Prima dello swipe.",
+    card: "bg-rosa text-viola",
+    muted: "text-viola",
   },
   {
     icon: Zap,
     title: "Il contatto è reciproco",
     body: "Un'azienda ti scrive solo se hai detto sì anche tu.",
+    card: "bg-white text-viola",
+    muted: "text-viola-500",
   },
   {
     icon: Calendar,
     title: "Niente chat",
     body: "Dopo il match, una call di 30 minuti. Tutto qui.",
+    card: "bg-blu text-white",
+    muted: "text-crema",
   },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background selection:bg-rosso-100 selection:text-rosso-900">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-viola-100 bg-white/70 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <span className="font-display text-3xl font-bold tracking-tight text-viola-900">
-            Helllo<span className="text-rosso-600">.</span>
-          </span>
-          <div className="hidden md:flex items-center gap-10">
+      <nav className="fixed top-0 w-full z-50 border-b border-viola/15 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-3">
+          <Link href="/" aria-label="Helllo, home" className="shrink-0 rounded-full">
+            <Logo title={null} className="h-7 md:h-9" />
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map(({ href, label }) => (
-              <Link key={href} href={href} className="text-sm font-semibold text-viola-500 hover:text-rosso-600 transition-colors">
+              <Link
+                key={href}
+                href={href}
+                className="text-sm font-semibold text-viola underline-offset-4 decoration-viola/40 hover:underline"
+              >
                 {label}
               </Link>
             ))}
-            <Link href="/login" className="text-sm font-semibold text-viola-900 hover:opacity-70 transition-opacity">
-              Accedi
-            </Link>
-            <Link
-              href="/onboarding"
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "rounded-full px-8 h-12 bg-viola-900 text-white hover:bg-rosso-800 transition-all shadow-xl shadow-viola-200"
-              )}
-            >
-              Inizia ora
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "h-11 px-6 text-sm")}>
+                Accedi
+              </Link>
+              <Link href="/onboarding" className={cn(buttonVariants({ variant: "default" }), "h-11 px-6 text-sm")}>
+                Inizia ora
+              </Link>
+            </div>
           </div>
-          <div className="flex md:hidden items-center gap-5">
-            <Link href="/login" className="pressable px-3 py-3 text-sm font-semibold text-viola-900">
+          <div className="flex md:hidden items-center gap-2">
+            <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "h-10 px-4 text-sm")}>
               Accedi
             </Link>
-            <Link
-              href="/onboarding"
-              className="inline-flex h-10 items-center rounded-full bg-viola-900 px-5 text-sm font-bold text-white"
-            >
+            <Link href="/onboarding" className={cn(buttonVariants({ variant: "default" }), "h-10 px-5 text-sm")}>
               Inizia ora
             </Link>
           </div>
@@ -81,19 +87,19 @@ export default function LandingPage() {
         <HowItWorks />
 
         {/* The "Three Pillars" Section */}
-        <section className="py-20 md:py-32 border-y border-viola-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <h2 className="font-display text-5xl md:text-7xl text-viola-950 leading-tight mb-20 max-w-3xl">
-              Tre regole <span className="italic text-rosso-600">che non cambiamo.</span>
+        <section className="py-20 md:py-32 bg-viola">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <h2 className="font-display text-display md:text-6xl md:leading-[1.05] tracking-[-0.03em] text-white mb-10 md:mb-16 max-w-3xl text-balance">
+              Tre regole che non{" "}
+              <span className="font-script text-rosa">cambiamo.</span>
             </h2>
-            <div className="grid md:grid-cols-3 gap-16 md:gap-20">
-              {PILLARS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="group space-y-6">
-                  <div className="w-16 h-16 rounded-3xl bg-rosso-50 flex items-center justify-center text-rosso-600 group-hover:scale-110 transition-transform">
-                    <Icon size={32} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-viola-950 tracking-tight">{title}</h3>
-                  <p className="text-viola-500 leading-relaxed font-medium">{body}</p>
+            <div className="grid md:grid-cols-3 gap-3 md:gap-4">
+              {PILLARS.map(({ icon: Icon, title, body, card, muted }) => (
+                <div key={title} className={cn("rounded-card p-6 md:p-8 flex flex-col gap-4", card)}>
+                  <Icon size={28} strokeWidth={1.75} />
+                  <h3 className="font-prompt text-prompt">{title}</h3>
+                  {/* Plain template, not cn(): tailwind-merge would read text-body as a colour */}
+                  <p className={`text-body ${muted}`}>{body}</p>
                 </div>
               ))}
             </div>
@@ -106,15 +112,17 @@ export default function LandingPage() {
 
         <Faq />
 
-        {/* CTA Section */}
-        <section className="py-24 md:py-40 bg-background">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="font-display text-5xl md:text-7xl text-viola-950 mb-12 leading-tight">
-              Pronto per il tuo <br /><span className="italic text-rosso-600 underline underline-offset-8 decoration-rosso-200">prossimo match?</span>
+        {/* CTA Section: the brand banner, crema pattern with the wordmark */}
+        <section className="py-16 md:py-28 px-4 md:px-6 bg-crema bg-[url(/brand/pattern-crema.svg)] bg-cover bg-center">
+          <div className="max-w-2xl mx-auto rounded-[2.25rem] bg-white px-6 py-12 md:px-16 md:py-16 text-center">
+            <Logo className="h-12 md:h-16 mx-auto mb-8" />
+            <h2 className="font-display text-display md:text-5xl md:leading-[1.1] tracking-[-0.03em] text-viola mb-10 text-balance">
+              Pronto per il tuo prossimo{" "}
+              <span className="font-script text-rosso">match?</span>
             </h2>
             <Link
               href="/onboarding"
-              className="inline-flex h-16 md:h-20 items-center justify-center rounded-full bg-viola-950 px-10 md:px-16 text-lg md:text-xl font-bold text-white transition-all hover:scale-105 hover:bg-rosso-900 shadow-2xl shadow-viola-300"
+              className={cn(buttonVariants({ variant: "default" }), "h-14 md:h-16 px-8 md:px-12 text-base md:text-lg")}
             >
               Crea il profilo, è gratis
             </Link>
@@ -122,22 +130,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-20 border-t border-viola-100">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="font-display text-2xl font-bold text-viola-950">
-            Helllo<span className="text-rosso-600">.</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-8 md:gap-x-12 gap-y-1 md:gap-y-4 text-sm font-bold text-viola-500 [&>a]:py-3 md:[&>a]:py-0">
-            <Link href="/pa" className="text-rosso-600 hover:text-rosso-700 transition-colors">Helllo per la PA</Link>
-            <Link href="/privacy" className="hover:text-viola-900 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-viola-900 transition-colors">Termini</Link>
-            <Link href="/cookies" className="hover:text-viola-900 transition-colors">Cookies</Link>
-          </div>
-          <p className="text-sm font-medium text-viola-400">
-            © 2026 Helllo
-          </p>
-        </div>
-      </footer>
+      <SiteFooter note="© 2026 Helllo" />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { BadgeCheck, Building2, Check, Euro, ShieldCheck, Star } from "lucide-react";
+import { BadgeCheck, Bookmark, Building2, Euro, MapPin, Star, X } from "lucide-react";
+import { MockActionBar, MockChip } from "@/components/landing/MockParts";
 
 const POINTS = [
   {
@@ -25,32 +26,27 @@ const POINTS = [
 
 export function TrustSection() {
   return (
-    <section id="fiducia" className="py-20 md:py-40 bg-viola-950 relative overflow-hidden scroll-mt-20">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-rosso-500/20 blur-[120px]" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-rosso-500/10 blur-[120px]" />
-
-      <div className="relative max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-20 lg:gap-24 items-center">
-          <div className="space-y-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-rosso-500/10 border border-rosso-500/20 text-rosso-400 text-[11px] font-bold uppercase tracking-widest">
-              <ShieldCheck size={14} /> Fiducia
+    <section id="fiducia" className="py-20 md:py-32 bg-rosa scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="grid lg:grid-cols-2 gap-14 lg:gap-24 items-center">
+          <div className="space-y-8 md:space-y-10">
+            <div className="space-y-5">
+              <p className="text-label text-viola">Fiducia</p>
+              <h2 className="font-display text-display md:text-6xl md:leading-[1.05] tracking-[-0.03em] text-viola text-balance">
+                Sai chi c&apos;è dall&apos;altra{" "}
+                <span className="font-script">parte.</span>
+              </h2>
+              <p className="text-lg text-viola leading-relaxed">
+                Cosa trovi su ogni profilo e ogni offerta.
+              </p>
             </div>
-            <h2 className="font-display text-5xl md:text-7xl text-white leading-tight">
-              Sai chi c&apos;è <br />
-              <span className="italic text-rosso-400">dall&apos;altra parte.</span>
-            </h2>
-            <p className="text-viola-400 text-lg font-medium leading-relaxed">
-              Cosa trovi su ogni profilo e ogni offerta.
-            </p>
 
-            <div className="grid sm:grid-cols-2 gap-8">
+            <div className="grid sm:grid-cols-2 gap-3">
               {POINTS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="space-y-3">
-                  <div className="w-11 h-11 rounded-2xl bg-rosso-500/10 border border-rosso-500/20 flex items-center justify-center text-rosso-400">
-                    <Icon size={20} />
-                  </div>
-                  <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
-                  <p className="text-viola-400 font-medium leading-relaxed text-sm">{body}</p>
+                <div key={title} className="rounded-card bg-white p-6 space-y-3 text-viola">
+                  <Icon size={24} strokeWidth={1.75} />
+                  <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+                  <p className="text-viola-500 leading-relaxed text-sm">{body}</p>
                 </div>
               ))}
             </div>
@@ -63,49 +59,47 @@ export function TrustSection() {
   );
 }
 
+/** A candidate card as it appears in the app: blu info block, rosa chips. */
 function SampleProfile() {
   return (
-    <div className="relative group" aria-hidden="true">
-      <div className="absolute inset-0 bg-rosso-500/20 rounded-3xl blur-2xl group-hover:bg-rosso-500/30 transition-all" />
-      <div className="relative bg-viola-900 border border-viola-800 rounded-3xl p-8 sm:p-10 shadow-2xl">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 rounded-full bg-rosso-500 flex items-center justify-center font-display text-2xl text-viola-950">
+    <div className="mx-auto w-full max-w-md" aria-hidden="true">
+      <div className="rounded-card overflow-hidden bg-white">
+        <div className="flex items-center gap-4 p-6">
+          <div className="size-16 shrink-0 rounded-full bg-crema flex items-center justify-center text-2xl font-bold text-viola">
             G
           </div>
-          <div className="min-w-0">
-            <p className="font-bold text-white">Giulia Bianchi</p>
-            <p className="text-sm text-viola-400 font-medium">UX/UI Designer · Torino</p>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rosso px-3 h-8 text-xs font-bold text-white">
+              <span className="size-1.5 rounded-full bg-white" /> Competenze verificate
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-crema px-3 h-8 text-xs font-semibold text-viola">
+              <Star size={12} fill="currentColor" /> 4,9 · 12 recensioni
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-8">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rosso-500/10 border border-rosso-500/20 text-rosso-400 text-[11px] font-bold">
-            <Check size={12} /> Competenze verificate
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-viola-800 text-viola-300 text-[11px] font-bold">
-            <Star size={12} fill="currentColor" className="text-rosso-400" /> 4,9 · 12 recensioni
-          </span>
-        </div>
+        <div className="bg-blu px-6 pt-6 pb-7 text-white">
+          <p className="flex items-center gap-2 text-title">
+            Giulia Bianchi <BadgeCheck size={20} />
+          </p>
+          <p className="mt-1 text-rosa">UX/UI Designer</p>
+          <p className="mt-3 flex items-center gap-2">
+            <MapPin size={18} strokeWidth={1.75} className="shrink-0" /> Torino
+          </p>
 
-        <div className="space-y-3 mb-10">
-          {["Figma", "Design System", "User Research"].map((skill) => (
-            <div key={skill} className="flex items-center justify-between rounded-2xl bg-viola-800/60 px-4 h-11">
-              <span className="text-sm font-semibold text-viola-200">{skill}</span>
-              <BadgeCheck size={16} className="text-rosso-400" />
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between pt-6 border-t border-viola-800">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-viola-500 mb-1">Tariffa</p>
-            <p className="font-bold text-white text-lg">€350 / giorno</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["Figma", "Design System", "User Research"].map((skill) => (
+              <MockChip key={skill}>{skill}</MockChip>
+            ))}
           </div>
-          <span className="inline-flex h-11 items-center px-6 rounded-full bg-rosso-500 text-viola-950 text-sm font-bold">
-            Interessa
-          </span>
+
+          <div className="mt-6 pt-5 border-t border-white/25">
+            <p className="text-[13px] leading-4 font-medium text-crema mb-1">Tariffa</p>
+            <p className="font-bold text-lg">€350 / giorno</p>
+          </div>
         </div>
       </div>
+      <MockActionBar pass={X} save={Bookmark} />
     </div>
   );
 }

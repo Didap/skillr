@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
-import { User, Building2, ChevronRight, Check, Zap, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { User, Building2, ChevronRight, Check, ShieldCheck, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence, useIsPresent } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -28,6 +28,8 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { credentialsErrorMessage } from "@/components/auth/login-errors";
 import { duration, ease } from "@/lib/motion";
 import { ONBOARDING_DRAFT_KEY as DRAFT_KEY } from "@/lib/onboarding-draft";
+import { Logo } from "@/components/brand/Logo";
+import { LogoMark } from "@/components/brand/LogoMark";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
@@ -229,8 +231,8 @@ export default function OnboardingPage() {
 
 
   if (status === "loading") return (
-    <div className="min-h-dvh flex items-center justify-center">
-      <Zap className="text-rosso-500 animate-pulse motion-reduce:animate-none" size={48} />
+    <div className="min-h-dvh flex items-center justify-center bg-crema" role="status" aria-label="Caricamento">
+      <LogoMark className="size-14 animate-pulse motion-reduce:animate-none" />
     </div>
   );
 
@@ -239,56 +241,31 @@ export default function OnboardingPage() {
 
   return (
     <StepNavSlot.Provider value={navSlot}>
-    <div className="min-h-dvh bg-background flex flex-col items-center justify-start md:justify-center px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:p-6 selection:bg-rosso-100 selection:text-rosso-900">
+    <div className="min-h-dvh bg-crema flex flex-col items-center justify-start md:justify-center px-4 pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:p-6">
       <div className="max-w-lg w-full">
-        {/* Header: compact with a segmented progress strip on phones, centred with a step badge from md up */}
-        <div className="mb-5 md:mb-8 md:text-center">
-          <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-50 text-rosso-700 text-[11px] font-black uppercase tracking-[0.15em] mb-4">
-            <Zap size={10} fill="currentColor" /> Step {step + 1} di {totalSteps}
-          </div>
-          <div className="flex items-baseline justify-between gap-4 mb-3 md:mb-0 md:block">
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-viola-950 tracking-tight">
-              Configura Profilo
+        {/* Header: wordmark, headline and a segmented progress strip (viola track, rosso fill) */}
+        <div className="mb-5 md:mb-8">
+          <Logo className="h-8 md:h-9 mb-5 md:mb-8" />
+          <div className="flex items-end justify-between gap-4 mb-3">
+            <h1 className="text-title text-viola">
+              Piacere di <span className="font-script text-rosso">conoscerti</span>
             </h1>
-            <span className="md:hidden text-sm font-bold text-viola-500 tabular-nums shrink-0" aria-label={`Step ${step + 1} di ${totalSteps}`}>
+            <span className="text-label text-viola-500 tabular-nums shrink-0 pb-1" aria-label={`Passo ${step + 1} di ${totalSteps}`}>
               {step + 1}/{totalSteps}
             </span>
           </div>
-          <div className="flex md:hidden gap-1.5" aria-hidden="true">
+          <div className="flex gap-1.5" aria-hidden="true">
             {Array.from({ length: totalSteps }, (_, i) => (
-              <span key={i} className="h-1.5 flex-1 rounded-full bg-viola-100 overflow-hidden">
+              <span key={i} className="h-1.5 flex-1 rounded-full bg-viola/15 overflow-hidden">
                 <span
                   className={cn(
-                    "block h-full rounded-full bg-rosso-500 origin-left transition-transform duration-300 ease-out motion-reduce:transition-none",
+                    "block h-full rounded-full bg-rosso origin-left transition-transform duration-300 ease-out motion-reduce:transition-none",
                     i <= step ? "scale-x-100" : "scale-x-0"
                   )}
                 />
               </span>
             ))}
           </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="hidden md:flex mb-8 justify-between items-center relative px-6">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-viola-100 -translate-y-1/2 z-0 rounded-full" />
-          <motion.div 
-            className="absolute top-1/2 left-0 h-1 bg-rosso-500 -translate-y-1/2 z-0 rounded-full"
-            initial={{ width: "0%" }}
-            animate={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
-          />
-          {Array.from({ length: totalSteps }, (_, i) => i).map((i) => (
-            <div 
-              key={i}
-              className={cn(
-                "w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-500 shadow-sm",
-                step === i ? "bg-rosso-600 border-rosso-600 text-white scale-125 ring-4 ring-rosso-500/20" : 
-                step > i ? "bg-rosso-500 border-rosso-500 text-white" : 
-                "bg-white border-viola-100 text-viola-300"
-              )}
-            >
-              {step > i ? <Check size={14} strokeWidth={4} /> : <span className="font-black text-[10px]">{i + 1}</span>}
-            </div>
-          ))}
         </div>
 
         <AnimatePresence mode="wait" custom={direction} initial={false}>
@@ -301,12 +278,12 @@ export default function OnboardingPage() {
             exit="exit"
           >
             {/* overflow-visible lets the skill counter stay sticky while the page scrolls */}
-            <Card className="border-viola-100 shadow-premium rounded-[2rem] bg-white overflow-visible">
+            <Card className="overflow-visible">
               {step === 0 && (
                 <>
-                  <CardHeader className="text-center pt-8 md:pt-10 pb-2 md:pb-4 px-5 md:px-8">
-                    <CardTitle className="text-3xl font-display font-bold text-viola-950">Chi sei?</CardTitle>
-                    <CardDescription className="text-viola-500 font-semibold mt-1 text-[15px] md:text-sm">Scegli il tuo ruolo</CardDescription>
+                  <CardHeader className="pt-6 md:pt-8 pb-2 px-5 md:px-8">
+                    <CardTitle className="text-title text-viola">Chi sei?</CardTitle>
+                    <CardDescription className="text-body text-viola-500">Scegli il tuo ruolo.</CardDescription>
                   </CardHeader>
                   <CardContent className="px-5 md:px-8 pb-6 md:pb-8 pt-4">
                     <RadioGroup
@@ -351,7 +328,7 @@ export default function OnboardingPage() {
                   {isVerifyingEmail ? (
                     <div className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="verificationCode" className="text-xs font-bold text-viola-500 ml-1 uppercase tracking-widest">Codice di Verifica</Label>
+                        <Label htmlFor="verificationCode" className="text-label text-viola">Codice di verifica</Label>
                         <Input 
                           placeholder="000000"
                           type="text"
@@ -360,7 +337,7 @@ export default function OnboardingPage() {
                           id="verificationCode"
                           value={verificationCode}
                           onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          className="h-16 text-center text-3xl font-black tracking-[0.5em] rounded-2xl border-viola-100 bg-viola-50/30 focus:bg-white transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-bold"
+                          className="h-16 text-center text-3xl font-bold tabular-nums tracking-[0.5em] placeholder:tracking-normal placeholder:text-base placeholder:font-medium"
                           maxLength={6}
                         />
                       </div>
@@ -402,11 +379,11 @@ export default function OnboardingPage() {
                             setIsSubmitting(false);
                           }
                         }}
-                        className="w-full h-14 rounded-2xl bg-rosso-600 hover:bg-rosso-700 text-white transition-all font-bold text-lg shadow-xl shadow-rosso-100 flex items-center justify-center gap-2 group"
+                        className="group w-full h-14 text-base gap-2"
                       >
                         {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : (
                           <>
-                            <span>Verifica e Continua</span>
+                            <span>Verifica e continua</span>
                             <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                           </>
                         )}
@@ -424,57 +401,58 @@ export default function OnboardingPage() {
                               toast.error(res.error);
                             }
                           }}
-                          className="min-h-11 px-2 text-sm md:text-xs font-bold text-viola-500 hover:text-blu transition-colors"
+                          className="min-h-11 px-2 rounded-full text-sm text-viola-500 hover:text-viola transition-colors"
                         >
-                          Non hai ricevuto il codice? <span className="text-blu underline underline-offset-4">Inviamene un altro</span>
+                          Non hai ricevuto il codice? <span className="font-bold text-viola underline decoration-viola/40 underline-offset-4">Inviamene un altro</span>
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="text-xs font-bold text-viola-500 ml-1">Email</Label>
-                        <Input 
-                          placeholder="mario.rossi@email.com" 
+                        <Label htmlFor="email" className="text-label text-viola">Email</Label>
+                        <Input
+                          placeholder="mario.rossi@email.com"
                           type="email"
                           id="email"
                           autoComplete="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="h-12 md:h-14 px-4 rounded-2xl border-viola-100 bg-viola-50/30 focus:bg-white transition-colors"
+                          className="h-12 md:h-14 px-5"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="password" className="text-xs font-bold text-viola-500 ml-1">Password</Label>
-                        <Input 
-                          placeholder="Minimo 8 caratteri" 
+                        <Label htmlFor="password" className="text-label text-viola">Password</Label>
+                        <Input
+                          placeholder="Minimo 8 caratteri"
                           type="password"
                           id="password"
                           autoComplete={isLoginMode ? "current-password" : "new-password"}
                           value={formData.password}
                           onChange={handleChange}
-                          className="h-12 md:h-14 px-4 rounded-2xl border-viola-100 bg-viola-50/30 focus:bg-white transition-colors"
+                          className="h-12 md:h-14 px-5"
                         />
                       </div>
-                      
+
                       {!isLoginMode && (
-                        <div className="flex items-start gap-3 p-4 bg-viola-50/50 rounded-2xl border border-viola-100 mb-2">
-                          <input 
-                            type="checkbox" 
-                            id="legalConsent" 
-                            checked={legalConsent} 
+                        <div className="flex items-start gap-3 p-4 bg-crema rounded-2xl mb-2">
+                          <input
+                            type="checkbox"
+                            id="legalConsent"
+                            checked={legalConsent}
                             onChange={(e) => setLegalConsent(e.target.checked)}
-                            className="mt-0.5 h-5 w-5 md:h-4 md:w-4 shrink-0 rounded border-viola-300 accent-rosso-600 text-rosso-600 focus:ring-rosso-500 cursor-pointer"
+                            className="mt-0.5 h-5 w-5 md:h-4 md:w-4 shrink-0 rounded border-viola-300 accent-rosso cursor-pointer"
                           />
-                          <Label htmlFor="legalConsent" className="block text-[13px] md:text-[11px] font-medium text-viola-500 leading-relaxed cursor-pointer select-none">
-                            Accetto i <Link href="/terms" target="_blank" className="text-rosso-600 font-bold underline decoration-rosso-200">Termini di Servizio</Link> e la <Link href="/privacy" target="_blank" className="text-rosso-600 font-bold underline decoration-rosso-200">Privacy Policy</Link> di Helllo.
+                          <Label htmlFor="legalConsent" className="block text-label font-normal text-viola-500 leading-relaxed cursor-pointer select-none">
+                            Accetto i <Link href="/terms" target="_blank" className="text-viola font-bold underline decoration-viola/40 underline-offset-2 hover:decoration-viola">Termini di Servizio</Link> e la <Link href="/privacy" target="_blank" className="text-viola font-bold underline decoration-viola/40 underline-offset-2 hover:decoration-viola">Privacy Policy</Link> di Helllo.
                           </Label>
                         </div>
                       )}
 
                       {sendError && !isLoginMode && (
-                        <div role="alert" className="p-4 rounded-2xl border border-rosso-100 bg-rosso-50 text-xs font-bold text-rosso-600 leading-relaxed">
-                          {sendError} Premi di nuovo &quot;Crea Account&quot; per riprovare.
+                        <div role="alert" className="flex items-start gap-3 p-4 rounded-2xl bg-rosso-50 text-label text-destructive leading-relaxed">
+                          <AlertCircle size={18} className="shrink-0" aria-hidden="true" />
+                          <p>{sendError} Premi di nuovo &quot;Crea account&quot; per riprovare.</p>
                         </div>
                       )}
 
@@ -528,13 +506,13 @@ export default function OnboardingPage() {
                             setIsSubmitting(false);
                           }
                         }}
-                        className="w-full h-14 rounded-2xl bg-viola-950 hover:bg-rosso-800 text-white transition-all font-bold text-lg shadow-xl shadow-viola-200 mt-2 flex items-center justify-center gap-2 group"
+                        className="group w-full h-14 mt-2 text-base gap-2"
                       >
                         {isSubmitting ? (
                           <Loader2 className="animate-spin" size={18} />
                         ) : (
                           <>
-                            <span>{isLoginMode ? "Accedi" : "Crea Account"}</span>
+                            <span>{isLoginMode ? "Accedi" : "Crea account"}</span>
                             <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                           </>
                         )}
@@ -542,18 +520,18 @@ export default function OnboardingPage() {
 
                       <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-viola-100"></span>
+                          <span className="w-full border-t border-viola/15"></span>
                         </div>
-                        <div className="relative flex justify-center text-[11px] uppercase tracking-widest font-black text-viola-500">
-                          <span className="bg-white px-4">Oppure</span>
+                        <div className="relative flex justify-center text-label text-viola-500">
+                          <span className="bg-white px-4">oppure</span>
                         </div>
                       </div>
 
                       <div className="grid gap-3">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
-                          className="w-full h-12 rounded-xl border-viola-100 bg-white hover:bg-viola-50 transition-all font-bold text-viola-700 flex items-center justify-center gap-3 text-sm"
+                          className="w-full h-12 gap-3 text-sm font-bold"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24">
                             <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.273 0 3.191 2.691 1.245 6.655l4.021 3.11z" />
@@ -564,8 +542,8 @@ export default function OnboardingPage() {
                           {isLoginMode ? "Accedi con Google" : "Registrati con Google"}
                         </Button>
                         <div className="text-center">
-                          <p className="text-sm md:text-xs text-viola-500 font-medium">
-                            {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button type="button" onClick={() => setIsLoginMode(!isLoginMode)} className="inline-flex items-center min-h-11 px-1 text-rosso-700 font-bold hover:underline">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
+                          <p className="text-sm text-viola-500">
+                            {isLoginMode ? "Non hai un account?" : "Hai già un account?"} <button type="button" onClick={() => setIsLoginMode(!isLoginMode)} className="inline-flex items-center min-h-11 px-1 rounded-full text-viola font-bold underline decoration-viola/40 underline-offset-4 hover:decoration-viola">{isLoginMode ? "Registrati qui" : "Accedi qui"}</button>
                           </p>
                         </div>
                       </div>
@@ -576,28 +554,28 @@ export default function OnboardingPage() {
 
               {step === 2 && role === "professional" && (
                 <StepLayout 
-                  title="Dati Personali"
+                  title="Dati personali"
                   description="Come ti presenterai agli altri."
                   onBack={prevStep}
                   onNext={nextStep}
                   nextDisabled={!formData.firstName.trim() || !formData.lastName.trim()}
                 >
                   <div className="grid grid-cols-2 gap-3 md:gap-6">
-                    <div className="space-y-3 min-w-0">
-                      <Label htmlFor="firstName" className="font-bold text-viola-700 ml-1">Nome</Label>
-                      <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="es. Mario" className="h-12 rounded-xl border-viola-100" />
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="firstName" className="text-label text-viola">Nome</Label>
+                      <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="es. Mario" className="h-12 px-5" />
                     </div>
-                    <div className="space-y-3 min-w-0">
-                      <Label htmlFor="lastName" className="font-bold text-viola-700 ml-1">Cognome</Label>
-                      <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="es. Rossi" className="h-12 rounded-xl border-viola-100" />
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="lastName" className="text-label text-viola">Cognome</Label>
+                      <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="es. Rossi" className="h-12 px-5" />
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <Label htmlFor="title" className="font-bold text-viola-700 ml-1">Titolo Professionale</Label>
-                    <Input id="title" value={formData.title} onChange={handleChange} placeholder="es. Senior Backend Engineer" className="h-12 rounded-xl border-viola-100" />
+                  <div className="space-y-2">
+                    <Label htmlFor="title" className="text-label text-viola">Titolo professionale</Label>
+                    <Input id="title" value={formData.title} onChange={handleChange} placeholder="es. Senior Backend Engineer" className="h-12 px-5" />
                   </div>
-                  <PhotoUpload 
-                    label="Foto Profilo" 
+                  <PhotoUpload
+                    label="Foto profilo"
                     value={formData.photoUrl} 
                     onChange={(url) => setFormData({ ...formData, photoUrl: url })} 
                   />
@@ -606,8 +584,8 @@ export default function OnboardingPage() {
 
               {step === 3 && role === "professional" && (
                 <StepLayout 
-                  title="Macro Cluster" 
-                  description="In quali settori ti muovi?"
+                  title="I tuoi settori"
+                  description="In quali settori ti muovi? Puoi sceglierne più di uno."
                   onBack={prevStep}
                   onNext={nextStep}
                   nextDisabled={formData.selectedClusters.length === 0}
@@ -628,13 +606,16 @@ export default function OnboardingPage() {
                           });
                         }}
                         className={cn(
-                          "pressable min-h-14 p-4 rounded-2xl border text-left transition-colors font-bold text-sm leading-snug wrap-break-word",
+                          "pressable min-h-14 p-4 rounded-2xl border text-left transition-colors font-bold text-sm text-viola leading-snug wrap-break-word flex items-start justify-between gap-2",
                           formData.selectedClusters.includes(cluster.slug)
-                            ? "bg-rosso-600 border-rosso-600 text-white shadow-lg shadow-rosso-200"
-                            : "bg-white border-viola-100 text-viola-600 hover:border-rosso-400"
+                            ? "bg-rosa border-rosa"
+                            : "bg-white border-viola/15 hover:bg-crema"
                         )}
                       >
-                        {cluster.label}
+                        <span className="min-w-0">{cluster.label}</span>
+                        {formData.selectedClusters.includes(cluster.slug) && (
+                          <Check size={16} strokeWidth={2.5} className="shrink-0 mt-0.5" aria-hidden="true" />
+                        )}
                       </button>
                     ))}
                   </div>
@@ -643,7 +624,7 @@ export default function OnboardingPage() {
 
               {step === 4 && role === "professional" && (
                 <StepLayout 
-                  title="Le tue Top 3 Skill" 
+                  title="Le tue 3 skill"
                   description="Scegli esattamente 3 competenze chiave."
                   onBack={prevStep}
                   onNext={nextStep}
@@ -652,7 +633,7 @@ export default function OnboardingPage() {
                   <div className="space-y-6">
                     {catalog.filter(c => formData.selectedClusters.includes(c.slug)).map(cluster => (
                       <div key={cluster.id} className="space-y-3">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-viola-500">{cluster.label}</h3>
+                        <h3 className="text-label text-viola-500">{cluster.label}</h3>
                         <div className="flex flex-wrap gap-2">
                           {cluster.skills.map((skill: Skill) => (
                             <button
@@ -670,12 +651,15 @@ export default function OnboardingPage() {
                                 });
                               }}
                               className={cn(
-                                "pressable min-h-11 md:min-h-10 px-4 py-2 rounded-full border text-sm transition-colors font-semibold",
+                                "pressable min-h-11 md:min-h-10 px-4 py-2 rounded-full border text-chip text-viola inline-flex items-center gap-1.5 transition-colors",
                                 formData.topSkills.includes(skill.slug)
-                                  ? "bg-viola-900 border-viola-900 text-white"
-                                  : "bg-white border-viola-100 text-viola-500 hover:border-viola-300"
+                                  ? "bg-rosa border-rosa"
+                                  : "bg-white border-viola/15 hover:bg-crema"
                               )}
                             >
+                              {formData.topSkills.includes(skill.slug) && (
+                                <Check size={14} strokeWidth={2.5} className="shrink-0 -ml-1" aria-hidden="true" />
+                              )}
                               {skill.label}
                             </button>
                           ))}
@@ -684,12 +668,13 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                   {/* Phones: stays in view above the bottom bar while scrolling the skill list */}
-                  <div className="sticky z-10 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:static mt-4 p-4 bg-viola-50 rounded-2xl flex justify-between items-center shadow-card md:shadow-none">
-                    <span className="text-sm font-bold text-viola-500">Skill selezionate:</span>
+                  <div className="sticky z-10 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:static mt-4 py-3 px-5 bg-crema rounded-full flex justify-between items-center shadow-card md:shadow-none">
+                    <span className="text-sm font-medium text-viola">Skill selezionate</span>
                     <span className={cn(
-                      "text-xl font-black tabular-nums",
-                      formData.topSkills.length === 3 ? "text-rosso-600" : "text-viola-300"
+                      "inline-flex items-center gap-1.5 text-xl font-bold tabular-nums",
+                      formData.topSkills.length === 3 ? "text-viola" : "text-viola-400"
                     )}>
+                      {formData.topSkills.length === 3 && <Check size={18} strokeWidth={2.5} aria-hidden="true" />}
                       {formData.topSkills.length}/3
                     </span>
                   </div>
@@ -698,23 +683,23 @@ export default function OnboardingPage() {
 
               {step === 5 && role === "professional" && (
                 <StepLayout 
-                  title="Tariffa & RAL" 
-                  description="La trasparenza è il nostro valore."
+                  title="Tariffa e RAL"
+                  description="La trasparenza è il nostro valore: la cifra si vede sulla tua card."
                   onBack={prevStep}
                   onNext={nextStep}
                 >
                   <div className="grid grid-cols-3 gap-3 md:gap-6">
-                    <div className="col-span-2 space-y-3 min-w-0">
-                      <Label htmlFor="rateAmount" className="font-bold text-viola-700 ml-1">Tariffa (EUR)</Label>
-                      <Input id="rateAmount" value={formData.rateAmount} onChange={handleChange} type="number" inputMode="numeric" placeholder="500" className="h-12 rounded-xl border-viola-100" />
+                    <div className="col-span-2 space-y-2 min-w-0">
+                      <Label htmlFor="rateAmount" className="text-label text-viola">Tariffa (EUR)</Label>
+                      <Input id="rateAmount" value={formData.rateAmount} onChange={handleChange} type="number" inputMode="numeric" placeholder="500" className="h-14 px-5 text-xl md:text-xl font-bold tabular-nums" />
                     </div>
-                    <div className="space-y-3 min-w-0">
-                      <Label htmlFor="rateType" className="font-bold text-viola-700 ml-1">Tipo</Label>
-                      <Select 
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="rateType" className="text-label text-viola">Tipo</Label>
+                      <Select
                         value={formData.rateType}
                         onValueChange={(val) => setFormData({ ...formData, rateType: val as "daily" | "hourly" | "ral_annual" })}
                       >
-                        <SelectTrigger className="h-12! w-full rounded-xl border-viola-100">
+                        <SelectTrigger className="h-14! w-full px-4 text-base font-medium">
                           <SelectValue>
                             {formData.rateType === "daily" ? "Giorno" : 
                              formData.rateType === "hourly" ? "Ora" : 
@@ -735,7 +720,7 @@ export default function OnboardingPage() {
 
               {step === 6 && role === "professional" && (
                 <StepLayout 
-                  title="Identità & Documenti" 
+                  title="CV e portfolio"
                   description="Carica il tuo CV e Portfolio per completare il profilo."
                   onBack={prevStep}
                   onNext={nextStep}
@@ -757,9 +742,9 @@ export default function OnboardingPage() {
                       onChange={(url) => setFormData({ ...formData, portfolioUrls: url ? [url] : [] })}
                     />
 
-                    <div className="p-5 bg-viola-50 rounded-3xl border border-viola-100">
-                       <p className="text-[11px] text-viola-500 leading-relaxed font-medium">
-                        <span className="font-bold text-blu">Nota:</span> I documenti caricati verranno mostrati alle aziende durante la fase di matching per validare le tue competenze.
+                    <div className="p-5 bg-crema rounded-2xl">
+                       <p className="text-label font-normal text-viola-500 leading-relaxed">
+                        <span className="font-bold text-viola">Nota:</span> I documenti caricati verranno mostrati alle aziende durante la fase di matching per validare le tue competenze.
                        </p>
                     </div>
                   </div>
@@ -768,26 +753,27 @@ export default function OnboardingPage() {
 
               {step === 7 && role === "professional" && (
                 <StepLayout 
-                  title="Bio & Conclusione" 
+                  title="La tua bio"
                   description="Raccontaci la tua marcia in più."
                   onBack={prevStep}
                   onNext={handleComplete}
                   nextLabel={isSubmitting ? "Salvataggio..." : "Inizia a fare swipe"}
                   loading={isSubmitting}
                 >
-                  <div className="space-y-3">
-                    <Label htmlFor="bioLong" className="font-bold text-viola-700 ml-1">Bio Professionale</Label>
-                    <Textarea 
-                      id="bioLong" 
+                  {/* Prompt card: the bio is the user's own voice, so it is written in Prompt style */}
+                  <div className="rounded-card bg-rosa p-5 md:p-6 space-y-2 has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
+                    <Label htmlFor="bioLong" className="text-label text-viola">Bio professionale</Label>
+                    <Textarea
+                      id="bioLong"
                       value={formData.bioLong}
                       onChange={handleChange}
-                      placeholder="Raccontaci chi sei in due righe..." 
-                      className="min-h-[140px] rounded-[1.5rem] border-viola-100 p-4 focus:ring-2 focus:ring-rosso-500 outline-none resize-none"
+                      placeholder="Raccontaci chi sei in due righe..."
+                      className="min-h-[140px] p-0 rounded-none border-0 bg-transparent font-prompt text-xl leading-7 md:text-prompt font-medium text-viola placeholder:text-viola/60 resize-none hover:border-0 focus-visible:ring-0"
                     />
                   </div>
-                  <div className="flex items-center gap-4 p-5 bg-rosso-50 rounded-2xl border border-rosso-100">
-                    <Sparkles className="text-rosso-600" size={24} />
-                    <p className="text-xs text-rosso-800 font-bold leading-relaxed italic">
+                  <div className="flex items-center gap-4 p-5 bg-crema rounded-2xl">
+                    <Sparkles className="text-viola shrink-0" size={22} aria-hidden="true" />
+                    <p className="text-label text-viola leading-relaxed">
                       I profili con una bio chiara e onesta ricevono il 40% di match in più.
                     </p>
                   </div>
@@ -796,63 +782,68 @@ export default function OnboardingPage() {
 
               {step === 2 && role === "company" && (
                 <StepLayout 
-                  title="Dati Aziendali" 
+                  title="Dati aziendali"
                   description="Verifichiamo la tua azienda per la sicurezza di tutti."
                   onBack={prevStep}
                   onNext={handleComplete}
-                  nextLabel={isSubmitting ? "Salvataggio..." : "Conferma e Inizia"}
+                  nextLabel={isSubmitting ? "Salvataggio..." : "Conferma e inizia"}
                   loading={isSubmitting}
                   nextDisabled={!validateItalianVAT(formData.vatNumber) || !formData.vatDisclaimerAccepted || !formData.companyName}
                 >
-                  <div className="space-y-3">
-                    <Label htmlFor="companyName" className="font-bold text-viola-700 ml-1">Nome Azienda</Label>
-                    <Input id="companyName" value={formData.companyName} onChange={handleChange} placeholder="es. Helllo S.r.l." className="h-12 rounded-xl border-viola-100" />
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-label text-viola">Nome azienda</Label>
+                    <Input id="companyName" value={formData.companyName} onChange={handleChange} placeholder="es. Helllo S.r.l." className="h-12 px-5" />
                   </div>
-                  <div className="space-y-3">
-                    <Label htmlFor="vatNumber" className="font-bold text-viola-700 ml-1">Partita IVA</Label>
-                    <Input 
-                      id="vatNumber" 
-                      value={formData.vatNumber} 
-                      onChange={handleChange} 
-                      placeholder="11 cifre (es. 12345678901)" 
+                  <div className="space-y-2">
+                    <Label htmlFor="vatNumber" className="text-label text-viola">Partita IVA</Label>
+                    <Input
+                      id="vatNumber"
+                      value={formData.vatNumber}
+                      onChange={handleChange}
+                      placeholder="11 cifre (es. 12345678901)"
+                      aria-invalid={formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber)}
+                      aria-describedby={formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) ? "vatNumber-error" : undefined}
                       className={cn(
-                        "h-12 rounded-xl border-viola-100",
-                        formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) && "border-rosso-500 focus:ring-rosso-500",
-                        formData.vatNumber.length > 0 && validateItalianVAT(formData.vatNumber) && "border-rosso-500 focus:ring-rosso-500"
-                      )} 
-                      maxLength={13} 
+                        "h-12 px-5 tabular-nums",
+                        formData.vatNumber.length > 0 && validateItalianVAT(formData.vatNumber) && "border-success"
+                      )}
+                      maxLength={13}
                     />
                     {formData.vatNumber.length > 0 && !validateItalianVAT(formData.vatNumber) && (
-                      <p className="text-xs md:text-[11px] text-rosso-600 font-bold ml-1">Formato Partita IVA non valido.</p>
+                      <p id="vatNumber-error" className="flex items-center gap-1.5 text-label text-destructive">
+                        <AlertCircle size={14} className="shrink-0" aria-hidden="true" />
+                        Formato Partita IVA non valido.
+                      </p>
                     )}
                   </div>
-                  <PhotoUpload 
-                    label="Logo Aziendale" 
-                    value={formData.photoUrl} 
-                    onChange={(url) => setFormData({ ...formData, photoUrl: url })} 
+                  <PhotoUpload
+                    label="Logo aziendale"
+                    value={formData.photoUrl}
+                    onChange={(url) => setFormData({ ...formData, photoUrl: url })}
                   />
-                  
+
                   {/* Disclaimer */}
-                  <div className="mt-6 p-5 bg-viola-50 rounded-3xl border border-viola-100 space-y-4">
+                  <div className="mt-6 p-5 bg-crema rounded-2xl">
                     <div className="flex items-start gap-4">
-                      <div className="mt-1">
-                        <Switch 
+                      <div className="mt-0.5">
+                        <Switch
+                          id="vatDisclaimer"
                           checked={formData.vatDisclaimerAccepted}
                           onCheckedChange={(checked) => setFormData(prev => ({ ...prev, vatDisclaimerAccepted: checked }))}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-sm font-bold text-viola-700 leading-none">Assunzione di Responsabilità</Label>
-                        <p className="text-[11px] text-viola-500 leading-relaxed">
+                        <Label htmlFor="vatDisclaimer" className="text-sm font-bold text-viola leading-snug cursor-pointer">Assunzione di responsabilità</Label>
+                        <p className="text-label font-normal text-viola-500 leading-relaxed">
                           Dichiaro che i dati forniti sono veritieri. La piattaforma non si assume responsabilità per dichiarazioni false o mendaci.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-5 bg-rosso-50 rounded-2xl border border-rosso-100 mt-4">
-                    <ShieldCheck className="text-rosso-600" size={24} />
-                    <p className="text-xs md:text-[11px] text-rosso-800 font-bold leading-relaxed">
+                  <div className="flex items-center gap-4 p-5 bg-rosa rounded-2xl mt-4">
+                    <ShieldCheck className="text-viola shrink-0" size={22} aria-hidden="true" />
+                    <p className="text-label text-viola leading-relaxed">
                       La verifica della P.IVA garantisce che sulla piattaforma ci siano solo realtà professionali serie.
                     </p>
                   </div>
@@ -866,7 +857,7 @@ export default function OnboardingPage() {
       {/* Phones: fixed step navigation; each step portals its buttons in here (hidden when empty) */}
       <div
         ref={setNavSlot}
-        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-viola-100 bg-white/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] empty:hidden"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-viola/15 bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] empty:hidden"
       />
     </div>
     </StepNavSlot.Provider>
@@ -880,39 +871,36 @@ function RoleOption({ id, value, icon, label, description, isSelected }: { id: s
       <Label
         htmlFor={id}
         className={cn(
-          "pressable flex flex-row sm:flex-col items-center sm:justify-between gap-4 sm:gap-0 rounded-3xl border-4 p-4 pr-12 sm:p-6 cursor-pointer transition-colors h-full relative overflow-hidden",
+          "pressable flex flex-row sm:flex-col items-center sm:justify-between gap-4 sm:gap-0 rounded-card border p-4 pr-12 sm:p-6 cursor-pointer transition-colors h-full relative overflow-hidden text-viola peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2",
           isSelected
-            ? "bg-rosso-600 border-rosso-600 text-white shadow-2xl shadow-rosso-200 ring-4 ring-rosso-500/20"
-            : "bg-white border-viola-50 text-viola-900 hover:border-rosso-200 hover:bg-viola-50 shadow-sm"
+            ? "bg-rosa border-rosa"
+            : "bg-white border-viola/15 hover:bg-crema"
         )}
       >
         <div className={cn(
-          "absolute top-1/2 -translate-y-1/2 right-4 sm:top-3 sm:right-3 sm:translate-y-0 transition-[opacity,scale] duration-200",
+          "absolute top-1/2 -translate-y-1/2 right-4 sm:top-4 sm:right-4 sm:translate-y-0 transition-[opacity,scale] duration-200",
           isSelected ? "scale-100 opacity-100" : "scale-0 opacity-0"
         )}>
-          <div className="bg-white text-rosso-600 rounded-full p-1 shadow-lg">
-            <Check size={14} strokeWidth={4} />
+          <div className="bg-viola text-white rounded-full p-1">
+            <Check size={14} strokeWidth={3} />
           </div>
         </div>
 
         <div className={cn(
-          "w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl flex items-center justify-center transition-[background-color,color,scale] duration-300 sm:mb-4",
-          isSelected ? "bg-white/20 text-white" : "bg-viola-50 text-viola-500 group-hover:scale-105"
+          "w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-full flex items-center justify-center transition-[background-color,scale] duration-300 sm:mb-4",
+          isSelected ? "bg-white" : "bg-crema group-hover:scale-105"
         )}>
            {icon}
         </div>
 
         <div className="flex flex-col sm:items-center min-w-0">
-          <span className={cn(
-            "sm:text-center font-black text-lg mb-0.5",
-            isSelected ? "text-white" : "text-viola-900"
-          )}>
+          <span className="sm:text-center font-bold text-lg mb-0.5">
             {label}
           </span>
 
           <span className={cn(
-            "text-[11px] font-black uppercase tracking-wider sm:tracking-widest leading-tight sm:text-center",
-            isSelected ? "text-rosso-50" : "text-viola-500"
+            "text-label font-normal sm:text-center",
+            isSelected ? "text-viola" : "text-viola-500"
           )}>
             {description}
           </span>
@@ -961,15 +949,15 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
         )}
       >
         {onBack && (
-          <Button variant="ghost" onClick={handleBack} className="pressable rounded-xl h-12 px-6 font-black text-viola-500 hover:text-viola-900 text-sm">Indietro</Button>
+          <Button variant="outline" onClick={handleBack} className="h-14 px-6 text-base">Indietro</Button>
         )}
         {!hideNext && (
           <Button
             onClick={handleNext}
             disabled={loading || nextDisabled}
             className={cn(
-              "pressable group rounded-2xl h-14 px-10 bg-viola-950 hover:bg-rosso-800 text-white transition-colors font-black text-base shadow-xl shadow-viola-200 flex items-center justify-center gap-2",
-              !onBack && "w-full text-lg"
+              "group h-14 px-10 text-base gap-2",
+              !onBack && "w-full"
             )}
           >
             {nextContent}
@@ -981,9 +969,9 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
         <div className="flex items-center gap-2">
           {onBack && (
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handleBack}
-              className="pressable shrink-0 rounded-2xl h-12 px-4 font-black text-viola-500 hover:text-viola-900 text-[15px]"
+              className="shrink-0 h-12 px-5 text-[15px]"
             >
               Indietro
             </Button>
@@ -991,7 +979,7 @@ function StepNav({ onBack, onNext, nextLabel = "Continua", loading = false, next
           <Button
             onClick={handleNext}
             disabled={loading || nextDisabled}
-            className="pressable flex-1 min-w-0 rounded-2xl h-12 px-5 bg-viola-950 hover:bg-rosso-800 text-white transition-colors font-black text-base flex items-center justify-center gap-2"
+            className="flex-1 min-w-0 h-12 px-5 text-base gap-2"
           >
             {nextContent}
           </Button>
@@ -1006,8 +994,8 @@ function StepLayout({ title, description, children, ...nav }: StepNavProps & { t
   return (
     <>
       <CardHeader className="px-5 md:px-8 pt-6 md:pt-8 pb-2 md:pb-4">
-        <CardTitle className="text-2xl font-display font-bold text-viola-950">{title}</CardTitle>
-        <CardDescription className="text-viola-500 font-medium text-[15px] md:text-sm">{description}</CardDescription>
+        <CardTitle className="text-title text-viola">{title}</CardTitle>
+        <CardDescription className="text-body text-viola-500">{description}</CardDescription>
       </CardHeader>
       <CardContent className="px-5 md:px-8 pb-6 md:pb-8 pt-2 space-y-4">
         {children}

@@ -36,19 +36,19 @@ export function DatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "w-full justify-start text-left font-bold h-14 rounded-2xl border-2 border-transparent bg-viola-50 shadow-sm hover:bg-white hover:border-rosso-500 transition-all px-6",
+              "w-full justify-start text-left font-medium h-14 rounded-full border-transparent bg-crema hover:bg-crema hover:border-viola-200 aria-expanded:bg-crema aria-expanded:border-ring px-6",
               !value && "text-viola-400",
-              value && "text-viola-950",
+              value && "text-viola",
               className
             )}
           >
-            <span className="text-xl">
+            <span className="text-lg">
               {value ? format(value, "dd/MM/yyyy", { locale: it }) : placeholder}
             </span>
           </Button>
         }
       />
-      <PopoverContent className="w-auto p-0 border-viola-100 shadow-premium rounded-3xl overflow-hidden" align="start" side="top" sideOffset={8}>
+      <PopoverContent className="w-auto p-0 rounded-card overflow-hidden" align="start" side="top" sideOffset={8}>
         <Calendar
           mode="single"
           selected={value}

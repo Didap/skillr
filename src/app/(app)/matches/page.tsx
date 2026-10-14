@@ -15,6 +15,7 @@ import { duration, ease } from "@/lib/motion";
 import { MyApplications, type MyApplicationsResult } from "@/components/matches/MyApplications";
 import { formatEventDayShort, formatEventTime } from "@/lib/rome-time";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { LogoMark } from "@/components/brand/LogoMark";
 
 interface MatchSummary {
   id: string;
@@ -58,11 +59,12 @@ function getCallStatus(match: MatchSummary, role: string | undefined, now: Date)
     : { label: "Scegli l'orario", tone: "action" };
 }
 
+// Status pills: rosso when it's your move (bold white label), rosa once the call is set
 const TONE_CLASSES: Record<CallTone, string> = {
-  action: "bg-rosso-600 text-white border-rosso-600",
-  waiting: "bg-viola-50 text-viola-500 border-viola-200",
-  scheduled: "bg-rosso-50 text-rosso-700 border-rosso-100",
-  done: "bg-viola-50 text-viola-500 border-viola-100",
+  action: "bg-rosso text-white font-bold",
+  waiting: "bg-crema text-viola",
+  scheduled: "bg-rosa text-viola",
+  done: "bg-viola-50 text-viola-500",
 };
 
 // First-load stagger: a short cascade, capped so the last row is in by ~200ms.
@@ -114,7 +116,7 @@ export default function MatchesPage() {
         subtitle="L'inizio di qualcosa di grande"
         actions={
           !isLoading && (
-            <span className="inline-flex h-8 items-center rounded-full border border-viola-200 bg-white px-3 text-xs font-bold text-viola-500 tabular-nums">
+            <span className="inline-flex h-8 items-center rounded-full bg-rosa px-3 text-chip text-viola tabular-nums">
               {matches.length}
               <span className="hidden md:inline">&nbsp;match</span>
               &nbsp;attivi
@@ -126,10 +128,11 @@ export default function MatchesPage() {
       <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-tabbar">
         <main className="max-w-4xl w-full mx-auto px-4 py-5 md:p-12">
           {/* Search */}
-          <div className="mb-5 md:mb-10 relative group">
+          <div className="mb-5 md:mb-8 relative group">
             <Search
               aria-hidden="true"
-              className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-viola-400 group-focus-within:text-rosso-500 transition-colors pointer-events-none"
+              strokeWidth={1.75}
+              className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 z-10 text-viola-400 group-focus-within:text-viola transition-colors pointer-events-none"
               size={20}
             />
             <Input
@@ -138,19 +141,19 @@ export default function MatchesPage() {
               placeholder="Cerca per nome o ruolo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 md:pl-16 pr-4 md:pr-6 rounded-2xl h-12 md:h-16 bg-white border-viola-100 shadow-card md:shadow-premium focus:ring-2 focus:ring-rosso-500 transition-all font-medium text-base md:text-lg"
+              className="pl-12 md:pl-14 pr-4 md:pr-6 rounded-full h-12 md:h-14 text-base"
             />
           </div>
 
           {isLoading ? (
             <div className="grid gap-3 md:gap-4" aria-busy="true" aria-label="Caricamento dei match">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 md:p-6 rounded-3xl md:rounded-[2rem] bg-white border border-viola-50 shadow-card">
-                  <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-viola-100 animate-pulse motion-reduce:animate-none shrink-0" />
+                <div key={i} className="flex items-center gap-4 p-4 md:p-5 rounded-card bg-crema">
+                  <div className="size-14 md:size-16 rounded-full bg-viola-100 animate-pulse motion-reduce:animate-none shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 w-2/5 rounded-full bg-viola-100 animate-pulse motion-reduce:animate-none" />
                     <div className="h-3 w-3/5 rounded-full bg-viola-100 animate-pulse motion-reduce:animate-none" />
-                    <div className="h-5 w-28 rounded-lg bg-viola-100 animate-pulse motion-reduce:animate-none" />
+                    <div className="h-6 w-28 rounded-full bg-viola-100 animate-pulse motion-reduce:animate-none" />
                   </div>
                 </div>
               ))}
@@ -174,13 +177,13 @@ export default function MatchesPage() {
                     >
                       <Link
                         href={`/matches/${match.id}`}
-                        className="pressable group flex items-center gap-3 md:gap-6 min-h-16 p-4 md:p-6 rounded-3xl md:rounded-[2rem] bg-white border border-viola-50 shadow-card hover:shadow-premium hover:border-rosso-100 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-rosso-500"
+                        className="pressable group flex items-center gap-3 md:gap-5 min-h-16 p-4 md:p-5 rounded-card bg-white border border-viola/15 hover:bg-crema transition-colors"
                       >
-                        <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-viola-100 overflow-hidden shrink-0 ring-2 md:ring-4 ring-viola-50">
+                        <div className="size-14 md:size-16 rounded-full bg-rosa overflow-hidden shrink-0">
                           {match.targetImage ? (
-                            <Image src={match.targetImage} alt="" width={80} height={80} className="w-full h-full object-cover" />
+                            <Image src={match.targetImage} alt="" width={64} height={64} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-viola-400 font-display text-2xl md:text-3xl ">
+                            <div className="w-full h-full flex items-center justify-center text-viola text-xl md:text-2xl font-bold">
                               {match.targetName[0]}
                             </div>
                           )}
@@ -188,31 +191,31 @@ export default function MatchesPage() {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
-                            <h3 className="text-base md:text-xl font-bold text-viola-950 truncate group-hover:text-rosso-700 transition-colors">
+                            <h3 className="text-body md:text-xl font-bold text-viola truncate">
                               {match.targetName}
                             </h3>
                             {rating > 0 && (
-                              <span className="inline-flex items-center gap-1 shrink-0 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-md border border-amber-100 text-[11px] font-bold tabular-nums">
-                                <Star size={10} fill="currentColor" aria-hidden="true" />
+                              <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-crema group-hover:bg-white px-2 py-0.5 text-label text-viola tabular-nums">
+                                <Star size={12} className="fill-rosso text-rosso" aria-hidden="true" />
                                 {match.targetRating}
                               </span>
                             )}
                           </div>
                           {match.targetTitle && (
-                            <p className="text-sm text-rosso-700 font-semibold truncate">{match.targetTitle}</p>
+                            <p className="text-sm text-viola-500 font-medium truncate">{match.targetTitle}</p>
                           )}
 
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 min-w-0">
                             <span
                               className={cn(
-                                "inline-flex max-w-full items-center rounded-lg border px-2 py-1 text-xs font-bold leading-none",
+                                "inline-flex max-w-full items-center rounded-full px-3 py-1.5 text-label leading-none",
                                 TONE_CLASSES[callStatus.tone]
                               )}
                             >
                               <span className="truncate">{callStatus.label}</span>
                             </span>
-                            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-viola-400">
-                              <Calendar size={12} className="text-rosso-500" aria-hidden="true" />
+                            <span className="hidden sm:inline-flex items-center gap-1.5 text-label text-viola-400">
+                              <Calendar size={14} strokeWidth={1.75} aria-hidden="true" />
                               Match del {match.matchedAt ? formatEventDayShort(match.matchedAt) : '—'}
                               {match.targetReviewCount > 0 && (
                                 <>
@@ -224,33 +227,30 @@ export default function MatchesPage() {
                           </div>
                         </div>
 
-                        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full md:rounded-xl flex items-center justify-center text-viola-400 md:bg-viola-50 group-hover:text-rosso-700 transition-colors shrink-0">
-                          <ChevronRight size={20} aria-hidden="true" />
+                        <div className="size-8 md:size-11 rounded-full flex items-center justify-center text-viola md:border md:border-viola md:bg-white shrink-0">
+                          <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
                         </div>
                       </Link>
                     </motion.li>
                   );
                 })
               ) : matches.length > 0 ? (
-                <li className="text-center py-12 px-6 rounded-3xl border border-dashed border-viola-200">
-                  <p className="font-semibold text-viola-500">Nessun match per &ldquo;{search}&rdquo;</p>
-                  <p className="text-sm text-viola-400 mt-1">Prova con un altro nome o ruolo.</p>
+                <li className="text-center py-12 px-6 rounded-card bg-crema">
+                  <p className="text-body font-bold text-viola">Nessun match per &ldquo;{search}&rdquo;</p>
+                  <p className="text-sm text-viola-500 mt-1">Prova con un altro nome o ruolo.</p>
                 </li>
               ) : (
-                <li className="text-center py-14 md:py-24 px-6 bg-white rounded-3xl md:rounded-[3rem] border border-dashed border-viola-200">
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-viola-50 rounded-3xl flex items-center justify-center text-viola-300 mx-auto mb-5 md:mb-6">
-                    <Star size={32} aria-hidden="true" />
-                  </div>
-                  <h3 className="text-2xl font-display text-viola-500">Ancora nessun match</h3>
-                  <p className="text-viola-500 font-medium mt-2">Torna allo swipe per trovare il tuo prossimo collaboratore.</p>
+                <li className="text-center py-14 md:py-20 px-6 bg-crema rounded-card">
+                  <LogoMark className="size-16 mx-auto mb-5" />
+                  <h3 className="text-title text-viola">Ancora nessun match</h3>
+                  <p className="text-body text-viola-500 mt-2 max-w-sm mx-auto">
+                    Di&apos; helllo a qualcuno: quando ricambia, il match compare qui.
+                  </p>
                   <Link
                     href="/dashboard"
-                    className={cn(
-                      buttonVariants(),
-                      "pressable mt-6 md:mt-8 rounded-full h-12 px-8 text-base bg-viola-950 hover:bg-rosso-800 transition-colors"
-                    )}
+                    className={cn(buttonVariants(), "mt-6 md:mt-8 h-12 px-8 text-base")}
                   >
-                    Inizia ora
+                    Inizia a scoprire
                   </Link>
                 </li>
               )}
@@ -259,12 +259,12 @@ export default function MatchesPage() {
 
           {/* How matches work: a compact note after the list, so the list stays first */}
           {!isLoading && (
-            <aside className="mt-6 md:mt-10 flex items-start gap-3 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-rosso-50/70 border border-rosso-100">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-rosso-600 shadow-sm shrink-0">
-                <Mail size={18} aria-hidden="true" />
+            <aside className="mt-6 md:mt-10 flex items-start gap-3 p-5 md:p-6 rounded-card bg-rosa">
+              <div className="size-10 rounded-full bg-white flex items-center justify-center text-viola shrink-0">
+                <Mail size={20} strokeWidth={1.75} aria-hidden="true" />
               </div>
-              <p className="text-sm text-rosso-900/80 font-medium leading-relaxed">
-                <span className="font-bold text-rosso-900">Zero chat, massima efficienza.</span>{" "}
+              <p className="text-sm text-viola leading-relaxed">
+                <span className="font-bold">Zero chat, massima efficienza.</span>{" "}
                 Su Helllo non si perde tempo a chattare. Entra nel match, guarda gli slot proposti e fissa la tua videochiamata conoscitiva.
               </p>
             </aside>

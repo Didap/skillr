@@ -21,7 +21,7 @@ export default async function PaDashboardPage() {
   }
 
   return (
-    <div className="bg-viola-50 min-h-screen">
+    <div className="bg-crema min-h-screen">
       <PaDashboardClient initialStats={result.stats} />
     </div>
   );

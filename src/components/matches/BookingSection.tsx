@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange, Sparkles, ChevronLeft, X } from "lucide-react";
+import { Calendar, Clock, Check, Plus, Video, Download, Loader2, Trash2, CalendarRange, Sparkles, ChevronLeft, X, Globe, type LucideIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -14,20 +14,21 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
 import { BottomActionBar } from "@/components/layout/BottomActionBar";
-import { CALL_DURATION_MS, generateIcsString, joinState } from "@/lib/calendar-utils";
+import { CALL_DURATION_MINUTES, CALL_DURATION_MS, generateIcsString, joinState } from "@/lib/calendar-utils";
 import { romeDateTimeToDate, formatRomeDate, normalizeMeetingUrl } from "@/lib/rome-time";
 
 // On phones each state is its own card under the profile; from md it sits inside the page's card.
 const PHONE_CARD =
-  "bg-white rounded-3xl border border-border-subtle shadow-card p-5 md:bg-transparent md:rounded-none md:border-0 md:shadow-none md:p-0";
+  "bg-white rounded-card ring-1 ring-viola/15 p-6 md:bg-transparent md:rounded-none md:ring-0 md:p-0";
 
-// Buttons: compact sans on phones (thumb bar), the original display-italic look from md.
-const PRIMARY_BTN =
-  "pressable h-12 md:h-16 rounded-2xl px-6 md:px-12 text-base md:text-xl font-bold md:font-display md:italic gap-2 md:gap-3 bg-viola-950 text-white hover:bg-rosso-600 shadow-premium transition-colors";
-const SECONDARY_BTN =
-  "pressable h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 border-viola-200 text-viola-700 bg-white hover:bg-viola-50 transition-colors";
+// Rosso pill (Button default) and white pill with a viola outline (Button outline)
+const PRIMARY_BTN = "h-12 md:h-14 px-6 md:px-10 text-base md:text-lg gap-2";
+const SECONDARY_BTN = "h-12 md:h-14 px-5 md:px-8 text-base gap-2";
 
-const LABEL = "text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 pl-1";
+const LABEL = "text-label text-viola pl-4";
+
+// Small status pill above the headings, from md up
+const STATUS_PILL = "hidden md:inline-flex items-center gap-2 h-8 px-4 rounded-full text-chip";
 
 // Every action bar here sits inside a phone card, where BottomActionBar's own spacer would
 // show up as blank card space: each state's wrapper reserves the room on phones instead
@@ -40,21 +41,33 @@ const stepMotion = {
   exit: { opacity: 0, x: -16, transition: { duration: duration.feedback, ease: ease.in } },
 };
 
-/** Calendar-leaf tile: day number over the short month, in Italian time. */
-function DateTile({ date, active = false, className }: { date: Date; active?: boolean; className?: string }) {
+/** Round calendar leaf: day number over the short month, in Italian time. */
+function DateTile({ date, className }: { date: Date; className?: string }) {
   return (
     <div
       className={cn(
-        "w-14 h-14 shrink-0 rounded-2xl flex flex-col items-center justify-center border transition-colors",
-        active ? "bg-rosso-500 border-rosso-500 text-white" : "bg-viola-50 border-viola-100 text-viola-950",
+        "w-12 h-12 shrink-0 rounded-full bg-white text-viola flex flex-col items-center justify-center",
         className
       )}
       aria-hidden="true"
     >
-      <span className="text-xl font-bold leading-none tabular-nums">{formatRomeDate(date, { day: "numeric" })}</span>
-      <span className={cn("mt-1 text-[11px] font-black uppercase tracking-wider leading-none", active ? "text-rosso-50" : "text-viola-500")}>
+      <span className="text-lg font-bold leading-none tabular-nums">{formatRomeDate(date, { day: "numeric" })}</span>
+      <span className="mt-0.5 text-[11px] font-semibold leading-none text-viola-500">
         {formatRomeDate(date, { month: "short" }).replace(".", "")}
       </span>
+    </div>
+  );
+}
+
+/** Profile-style info row: line icon, small label over a medium value. */
+function InfoRow({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 py-3">
+      <Icon size={24} strokeWidth={1.75} className="shrink-0 mt-1 text-viola" aria-hidden="true" />
+      <div className="min-w-0">
+        <dt className="text-label text-viola">{label}</dt>
+        <dd className="text-body font-medium text-viola">{children}</dd>
+      </div>
     </div>
   );
 }
@@ -229,44 +242,41 @@ export function BookingSection({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: duration.view, ease: ease.out } }}
-          className="bg-white rounded-3xl border border-border-subtle md:border-viola-100 shadow-card md:shadow-sm p-5 md:p-8"
+          className="bg-white rounded-card ring-1 ring-viola/15 p-6 md:p-8"
         >
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-5 md:gap-10">
             <div className="flex-1 min-w-0 space-y-4">
               <div className={cn(
-                "hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-[0.2em]",
-                isCompleted ? "bg-viola-100 text-viola-600" : "bg-rosso-500/10 text-rosso-700"
+                STATUS_PILL,
+                isCompleted ? "border border-viola/30 text-viola-500" : "bg-rosso text-white font-bold"
               )}>
-                 {isCompleted ? <Check size={12} strokeWidth={3} /> : <Clock size={12} />}
-                 {isCompleted ? 'Incontro Concluso' : 'Appuntamento Fissato'}
+                 {isCompleted ? <Check size={14} strokeWidth={2.5} /> : <span className="w-2 h-2 rounded-full bg-white" aria-hidden="true" />}
+                 {isCompleted ? 'Incontro concluso' : 'Colloquio fissato'}
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
+                <h3 className="text-title md:text-display font-display text-viola">
                   {isCompleted ? 'Com\'è andato l\'incontro?' : 'Ci vediamo presto!'}
                 </h3>
                 {isCompleted && (
-                  <p className="text-[15px] md:text-lg text-viola-500 max-w-xl leading-relaxed">
+                  <p className="text-body md:text-lg text-viola-500 max-w-xl">
                     {`L'incontro con ${targetName} si è concluso. Lascia un feedback per completare il match.`}
                   </p>
                 )}
               </div>
 
               {/* When: the one thing to remember */}
-              <div className="flex items-center gap-4 p-3 md:p-4 rounded-2xl bg-viola-50/70 border border-viola-100 max-w-md">
-                <DateTile date={startTime} active={!isCompleted} />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-viola-500">
-                    {isCompleted ? "Incontro concluso" : "Il tuo incontro è programmato per"}
-                  </p>
-                  <p className="font-bold text-viola-950 first-letter:uppercase truncate">
+              <dl className="max-w-md divide-y divide-viola/15">
+                <InfoRow icon={Calendar} label={isCompleted ? "Incontro concluso" : "Quando"}>
+                  <span className="block first-letter:uppercase truncate">
                     {formatRomeDate(startTime, { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </p>
-                  <p className="text-sm font-semibold text-viola-600 tabular-nums">
+                  </span>
+                </InfoRow>
+                <InfoRow icon={Clock} label="Orario (ora italiana)">
+                  <span className="tabular-nums">
                     {formatRomeDate(startTime, { hour: '2-digit', minute: '2-digit' })}–{formatRomeDate(endTime, { hour: '2-digit', minute: '2-digit' })}
-                    <span className="text-viola-400 font-medium"> · ora italiana</span>
-                  </p>
-                </div>
-              </div>
+                  </span>
+                </InfoRow>
+              </dl>
             </div>
 
             {hasActions && (
@@ -274,9 +284,9 @@ export function BookingSection({
                 {isCompleted ? (
                   <>
                     {showReview && (
-                      <Button onClick={() => setIsReviewOpen(true)} className={cn(PRIMARY_BTN, "md:px-10")}>
-                        <Sparkles size={20} className="text-amber-400" />
-                        Lascia Feedback
+                      <Button onClick={() => setIsReviewOpen(true)} className={PRIMARY_BTN}>
+                        <Sparkles size={20} />
+                        Lascia un feedback
                       </Button>
                     )}
                     {showRejoin && (
@@ -300,10 +310,8 @@ export function BookingSection({
                         aria-disabled={!isActive}
                         className={cn(
                           buttonVariants({ variant: "default" }),
-                          "h-12 md:h-14 rounded-2xl px-5 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
-                          isActive
-                            ? "pressable bg-rosso-600 hover:bg-rosso-700 text-white shadow-lg shadow-rosso-500/20"
-                            : "bg-viola-100 text-viola-500 cursor-not-allowed"
+                          "h-12 md:h-14 px-5 md:px-8 text-base gap-2",
+                          !isActive && "bg-crema text-viola-500 hover:bg-crema cursor-not-allowed"
                         )}
                       >
                         <Video size={20} /> {isActive ? 'Entra in Meet' : 'Link non ancora attivo'}
@@ -343,28 +351,28 @@ export function BookingSection({
           {formStep === 0 ? (
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-5 md:gap-10">
               <div className="flex-1 space-y-4">
-                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em]">
-                   Scheduling
+                <div className={cn(STATUS_PILL, "bg-rosa text-viola")}>
+                   È un helllo!
                 </div>
                 <div className="space-y-2 md:space-y-3">
-                  <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
+                  <h3 className="text-title md:text-display font-display text-viola">
                     Pianifica la tua call conoscitiva
                   </h3>
-                  <p className="text-[15px] md:text-lg text-viola-500 max-w-xl leading-relaxed font-medium">
-                    Proponi fino a 3 slot orari. Il match verrà ufficializzato appena lo slot verrà confermato.
+                  <p className="text-body md:text-lg text-viola-500 max-w-xl">
+                    Proponi fino a 3 orari. Il colloquio è fissato appena {targetName} ne conferma uno.
                   </p>
                 </div>
               </div>
               <BottomActionBar desktop="static" spacerClassName={NO_SPACER}>
                 <Button onClick={() => setFormStep(1)} className={PRIMARY_BTN}>
-                  <CalendarRange size={20} />
-                  Proponi Slot
+                  <Calendar size={20} />
+                  Fissa un colloquio
                 </Button>
               </BottomActionBar>
             </div>
           ) : (
             <div className="space-y-5 md:space-y-8">
-              <div className="flex items-center justify-between gap-3 border-b border-viola-100 pb-4 md:pb-6">
+              <div className="flex items-center justify-between gap-3 border-b border-viola/15 pb-4 md:pb-6">
                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
                     <button
                       type="button"
@@ -377,20 +385,20 @@ export function BookingSection({
                         }
                         setFormStep(formStep - 1);
                       }}
-                      className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center border border-viola-200 text-viola-500 hover:bg-viola-50 hover:text-viola-950 transition-colors"
+                      className="pressable w-11 h-11 shrink-0 rounded-full flex items-center justify-center border border-viola bg-white text-viola hover:bg-crema transition-colors"
                     >
                       {formStep === 2 ? <ChevronLeft size={20} /> : <X size={18} />}
                     </button>
                     <div className="min-w-0">
-                      <h4 className="text-lg md:text-xl font-display text-viola-950 truncate">
-                        {formStep === 1 ? "Selezione Disponibilità" : "Metodo Incontro"}
+                      <h4 className="text-lg md:text-2xl font-display font-bold text-viola truncate">
+                        {formStep === 1 ? "Scegli gli orari" : "Scegli dove vedervi"}
                       </h4>
-                      <p className="text-[11px] font-bold text-viola-500 uppercase tracking-widest">Step {formStep} di 2</p>
+                      <p className="text-label text-viola-500">Passo {formStep} di 2</p>
                     </div>
                  </div>
                  <div className="flex gap-1.5 shrink-0" aria-hidden="true">
                     {[1, 2].map(s => (
-                      <div key={s} className={cn("w-6 md:w-8 h-1.5 rounded-full transition-colors duration-300", formStep >= s ? "bg-rosso-500" : "bg-viola-100")} />
+                      <div key={s} className={cn("w-6 md:w-8 h-1.5 rounded-full transition-colors duration-300", formStep >= s ? "bg-rosso" : "bg-crema")} />
                     ))}
                  </div>
               </div>
@@ -400,19 +408,19 @@ export function BookingSection({
                   <motion.div key="step1" {...stepMotion} className="space-y-3 md:space-y-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                       {newSlots.map((s, idx) => (
-                        <div key={idx} className="bg-white border border-viola-100 rounded-2xl md:rounded-3xl p-4 md:p-6 md:shadow-sm hover:border-rosso-100 transition-colors">
-                          <div className="space-y-4 md:space-y-6">
+                        <div key={idx} className="bg-white ring-1 ring-viola/15 rounded-card p-5 md:p-6">
+                          <div className="space-y-4 md:space-y-5">
                             <div className="flex justify-between items-center min-h-11">
                               <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-rosso-50 text-rosso-700 flex items-center justify-center text-xs font-black">{idx + 1}</div>
-                                <span className="text-lg font-display text-viola-950">Disponibilità</span>
+                                <div className="w-8 h-8 rounded-full bg-rosa text-viola flex items-center justify-center text-sm font-bold">{idx + 1}</div>
+                                <span className="text-lg font-display font-bold text-viola">Disponibilità</span>
                               </div>
                               {newSlots.length > 1 && (
                                 <button
                                   type="button"
                                   aria-label={`Rimuovi disponibilità ${idx + 1}`}
                                   onClick={() => setNewSlots(newSlots.filter((_, i) => i !== idx))}
-                                  className="pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-viola-400 hover:text-rosso-500 hover:bg-rosso-50 transition-colors"
+                                  className="pressable w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-viola-500 hover:text-rosso-700 hover:bg-rosso-50 transition-colors"
                                 >
                                   <Trash2 size={18} />
                                 </button>
@@ -435,7 +443,7 @@ export function BookingSection({
                                 />
                                 {/* disablePast only blocks past days: today's earlier hours are caught here. */}
                                 {isPastSlot(s, now.getTime()) && (
-                                  <p role="alert" className="text-xs font-bold text-rosso-600 pl-1">
+                                  <p role="alert" className="text-label font-bold text-destructive pl-4">
                                     Orario già passato: scegline uno successivo.
                                   </p>
                                 )}
@@ -448,12 +456,12 @@ export function BookingSection({
                         <button
                           type="button"
                           onClick={() => setNewSlots([...newSlots, EMPTY_SLOT])}
-                          className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-2xl md:rounded-3xl border-2 border-dashed border-viola-200 md:border-viola-100 bg-white md:bg-viola-50/50 hover:border-rosso-200 hover:bg-rosso-50/30 transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 group text-viola-700 md:text-viola-500 hover:text-rosso-700"
+                          className="pressable w-full h-12 md:h-full md:min-h-[200px] rounded-full md:rounded-card bg-crema hover:bg-rosa transition-colors flex md:flex-col items-center justify-center gap-2 md:gap-3 text-viola"
                         >
-                          <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white border border-viola-100 flex items-center justify-center shadow-sm md:group-hover:scale-110 transition-transform">
+                          <span className="w-7 h-7 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center">
                              <Plus className="size-[18px] md:size-6" />
                           </span>
-                          <span className="font-bold text-base md:font-display md:italic md:text-lg">Aggiungi slot</span>
+                          <span className="font-bold text-base md:text-lg">Aggiungi un orario</span>
                         </button>
                       )}
                     </div>
@@ -465,7 +473,7 @@ export function BookingSection({
                     <div role="radiogroup" aria-label="Metodo incontro" className="grid sm:grid-cols-2 gap-3 md:gap-6">
                       {([
                         { value: "meet", Icon: Video, title: "Google Meet", desc: "Link generato alla conferma dello slot." },
-                        { value: "custom", Icon: Calendar, title: "Link Esterno", desc: "Zoom, Teams o altro." },
+                        { value: "custom", Icon: Globe, title: "Link esterno", desc: "Zoom, Teams o altro." },
                       ] as const).map(({ value, Icon, title, desc }) => {
                         const selected = meetingMethod === value;
                         return (
@@ -476,19 +484,19 @@ export function BookingSection({
                             aria-checked={selected}
                             onClick={() => setMeetingMethod(value)}
                             className={cn(
-                              "pressable relative w-full flex sm:flex-col items-center sm:items-start gap-4 p-4 pr-12 sm:pr-8 md:p-8 rounded-3xl md:rounded-[2.5rem] text-left border-2 transition-colors group",
-                              selected ? "border-rosso-500 bg-rosso-50/50 md:shadow-premium" : "border-viola-100 bg-white hover:border-rosso-200"
+                              "pressable relative w-full flex sm:flex-col items-center sm:items-start gap-4 p-5 pr-12 sm:pr-8 md:p-7 rounded-card text-left border-2 transition-colors group",
+                              selected ? "border-rosso bg-rosso-50" : "border-viola/15 bg-white hover:border-viola/40"
                             )}
                           >
                             <div className={cn(
-                              "w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-colors",
-                              selected ? "bg-rosso-500 text-white shadow-lg" : "bg-viola-50 text-viola-500 group-hover:bg-rosso-100 group-hover:text-rosso-700"
+                              "w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-colors",
+                              selected ? "bg-rosso text-white" : "bg-crema text-viola group-hover:bg-rosa"
                             )}>
-                              <Icon size={24} />
+                              <Icon size={24} strokeWidth={1.75} />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-display text-lg md:text-xl text-viola-950">{title}</p>
-                              <p className="text-sm md:text-xs text-viola-500 leading-relaxed font-medium">{desc}</p>
+                              <p className="font-display font-bold text-lg md:text-xl text-viola">{title}</p>
+                              <p className="text-label text-viola-500">{desc}</p>
                             </div>
                             <AnimatePresence initial={false}>
                               {selected && (
@@ -515,7 +523,7 @@ export function BookingSection({
                           exit={{ opacity: 0, y: 8, transition: { duration: duration.feedback, ease: ease.in } }}
                           className="space-y-2"
                         >
-                          <Label htmlFor={`meeting-link-${matchId}`} className={LABEL}>URL Chiamata</Label>
+                          <Label htmlFor={`meeting-link-${matchId}`} className={LABEL}>Link della chiamata</Label>
                           <input
                             id={`meeting-link-${matchId}`}
                             type="url"
@@ -526,7 +534,7 @@ export function BookingSection({
                             placeholder="https://zoom.us/j/..."
                             value={customMeetingLink}
                             onChange={(e) => setCustomMeetingLink(e.target.value)}
-                            className="w-full h-14 px-4 md:px-6 rounded-2xl border-2 border-viola-100 focus:border-rosso-500 outline-none transition-colors font-bold text-base text-viola-950"
+                            className="w-full h-14 px-6 rounded-full bg-crema outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-shadow font-medium text-base text-viola placeholder:text-viola-400"
                           />
                         </motion.div>
                       )}
@@ -545,8 +553,8 @@ export function BookingSection({
                     Continua
                   </Button>
                 ) : (
-                  <Button onClick={handleProposeSlots} disabled={isPending} className={cn(PRIMARY_BTN, "md:px-20")}>
-                    {isPending ? <Loader2 className="animate-spin" /> : "Invia Proposta"}
+                  <Button onClick={handleProposeSlots} disabled={isPending} className={cn(PRIMARY_BTN, "md:px-16")}>
+                    {isPending ? <Loader2 className="animate-spin" /> : "Invia proposta"}
                   </Button>
                 )}
               </BottomActionBar>
@@ -563,37 +571,37 @@ export function BookingSection({
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-4xl mx-auto md:text-center space-y-5 md:space-y-12")}>
            <div className="space-y-2 md:space-y-4">
-              <div className="hidden md:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em] mb-4">
-                 <Check size={12} strokeWidth={3} /> Proposta Inviata
+              <div className={cn(STATUS_PILL, "mb-4", allExpired ? "border border-viola/30 text-viola-500" : "bg-rosa text-viola")}>
+                 <Check size={14} strokeWidth={2.5} /> Proposta inviata
               </div>
-              <h3 className="text-2xl md:text-4xl font-display text-viola-950 tracking-tight">
+              <h3 className="text-title md:text-display font-display text-viola">
                 {allExpired ? "Gli orari proposti sono passati" : "Proposta inviata!"}
               </h3>
-              <p className="text-[15px] md:text-lg text-viola-500 max-w-lg md:mx-auto leading-relaxed font-medium">
+              <p className="text-body md:text-lg text-viola-500 max-w-lg md:mx-auto">
                 {allExpired
                   ? "Nessuno slot è stato confermato in tempo. Proponi nuovi orari per fissare la call."
                   : "Le tue disponibilità sono state inviate. Riceverai una notifica appena lo slot verrà confermato."}
               </p>
            </div>
 
-           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 max-w-3xl mx-auto">
+           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 md:gap-3 max-w-3xl mx-auto">
              {initialSlots.map((slot, idx) => {
                const expired = isExpired(slot);
                return (
                  <li
                    key={idx}
                    className={cn(
-                     "flex items-center justify-between gap-3 md:block bg-white border border-viola-100 p-4 md:p-6 rounded-2xl md:rounded-3xl md:shadow-sm text-left",
+                     "flex items-center justify-between gap-3 bg-crema text-viola pl-6 pr-5 py-3 rounded-full text-left",
                      expired && "opacity-50"
                    )}
                  >
                    <div className="min-w-0">
-                     <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 md:mb-2">
+                     <p className="text-label text-viola-500">
                        Opzione {idx + 1}{expired && " · Scaduto"}
                      </p>
-                     <p className="text-base md:text-lg font-bold text-viola-950">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
+                     <p className="text-base font-bold">{formatRomeDate(slot.startTime, { day: 'numeric', month: 'short' })}</p>
                    </div>
-                   <p className="text-base md:text-sm font-bold md:font-medium text-viola-600 md:text-viola-500 tabular-nums">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
+                   <p className="text-base font-bold tabular-nums">{formatRomeDate(slot.startTime, { hour: '2-digit', minute: '2-digit' })}</p>
                  </li>
                );
              })}
@@ -610,10 +618,7 @@ export function BookingSection({
                  setIsReproposing(true);
                  setFormStep(1);
                }}
-               className={cn(
-                 "pressable h-12 md:h-14 rounded-2xl px-6 md:px-8 text-base font-bold gap-2 md:gap-3 transition-colors",
-                 allExpired ? "bg-viola-950 text-white hover:bg-rosso-600" : "border-viola-200 text-viola-700 bg-white hover:bg-viola-50"
-               )}
+               className={SECONDARY_BTN}
              >
                <CalendarRange size={20} /> {allExpired ? "Proponi nuovi orari" : "Modifica proposta"}
              </Button>
@@ -623,16 +628,16 @@ export function BookingSection({
              <motion.div
                initial={{ opacity: 0, y: 8 }}
                animate={{ opacity: 1, y: 0, transition: { duration: duration.state, ease: ease.out } }}
-               className="max-w-md mx-auto p-4 md:p-6 rounded-2xl md:rounded-3xl bg-viola-50 border border-viola-100 space-y-3"
+               className="max-w-md mx-auto p-5 md:p-6 rounded-card bg-crema space-y-3"
              >
-               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500">Dettagli Incontro</p>
+               <p className="text-label text-viola-500 md:text-center">Dettagli dell&apos;incontro</p>
                <div className="flex items-center md:justify-center gap-3">
-                 <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-viola-100 flex items-center justify-center text-rosso-600">
-                    <Video size={20} />
+                 <div className="w-11 h-11 shrink-0 rounded-full bg-white flex items-center justify-center text-viola">
+                    <Video size={20} strokeWidth={1.75} />
                  </div>
                  <div className="text-left min-w-0">
-                    <p className="font-bold text-viola-950">Link della call</p>
-                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-sm md:text-xs text-rosso-700 hover:underline font-medium break-all">
+                    <p className="font-bold text-viola">Link della call</p>
+                    <a href={meetingLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blu underline decoration-blu/40 underline-offset-2 hover:decoration-blu font-medium break-all">
                       {meetingLink}
                     </a>
                  </div>
@@ -650,14 +655,14 @@ export function BookingSection({
       <div className="pb-24 md:p-16">
         <div className={cn(PHONE_CARD, "max-w-5xl mx-auto space-y-5 md:space-y-16")}>
           <div className="md:text-center space-y-2 md:space-y-4">
-            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rosso-500/10 text-rosso-700 text-[11px] font-black uppercase tracking-[0.2em]">
-               Scheduling
+            <div className={cn(STATUS_PILL, "bg-rosa text-viola")}>
+               È un helllo!
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl md:text-5xl font-display text-viola-950 tracking-tight">
+              <h3 className="text-title md:text-display font-display text-viola">
                 Quando sei disponibile?
               </h3>
-              <p className="text-[15px] md:text-xl text-viola-500 max-w-2xl md:mx-auto leading-relaxed font-medium">
+              <p className="text-body md:text-lg text-viola-500 max-w-2xl md:mx-auto">
                 {allExpired
                   ? "Gli orari proposti sono passati: l'azienda dovrà proporne di nuovi."
                   : `L'azienda ha proposto questi slot ${meetingLink ? "con un link alla call" : "per un incontro su Google Meet"}. Seleziona quello che preferisci per confermare.`}
@@ -665,7 +670,7 @@ export function BookingSection({
             </div>
           </div>
 
-          <div role="radiogroup" aria-label="Orari proposti" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+          <div role="radiogroup" aria-label="Orari proposti" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {initialSlots.map((slot) => {
               const expired = isExpired(slot);
               const selected = selectedSlotId === slot.id;
@@ -683,32 +688,30 @@ export function BookingSection({
                   haptic();
                 }}
                 className={cn(
-                  "relative w-full min-h-16 flex items-center gap-4 p-3 pr-4 md:p-6 rounded-2xl md:rounded-[2rem] border-2 text-left outline-none",
-                  "transition-[border-color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-rosso-500 focus-visible:ring-offset-2",
+                  "relative w-full min-h-16 flex items-center gap-3 py-2.5 pl-2.5 pr-4 rounded-full text-left outline-none",
+                  "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   expired
-                    ? "border-viola-100 bg-white opacity-50 cursor-not-allowed"
+                    ? "bg-crema text-viola opacity-50 cursor-not-allowed"
                     : selected
-                      ? "border-rosso-500 bg-rosso-50 ring-4 ring-rosso-500/15 md:shadow-premium"
-                      : "border-viola-100 bg-white hover:border-rosso-200"
+                      ? "bg-rosso text-white"
+                      : "bg-crema text-viola hover:bg-rosa"
                 )}
               >
-                <DateTile date={start} active={selected} className="md:w-16 md:h-16" />
+                <DateTile date={start} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-viola-500 truncate">
+                  <p className={cn("text-label truncate first-letter:uppercase", selected ? "font-bold" : "text-viola-500")}>
                     {formatRomeDate(start, { weekday: 'long' })}{expired && " · Scaduto"}
                   </p>
-                  <p className="text-lg md:text-2xl font-display text-viola-950 truncate">
+                  <p className="text-body font-bold truncate">
                     {formatRomeDate(start, { day: 'numeric', month: 'long' })}
-                  </p>
-                  <p className="text-base md:text-lg font-bold text-viola-600 tabular-nums">
-                    {formatRomeDate(start, { hour: '2-digit', minute: '2-digit' })}
+                    <span className="tabular-nums"> · {formatRomeDate(start, { hour: '2-digit', minute: '2-digit' })}</span>
                   </p>
                 </div>
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "w-7 h-7 shrink-0 rounded-full border-2 flex items-center justify-center text-white transition-colors duration-200",
-                    selected ? "bg-rosso-500 border-rosso-500" : "bg-white border-viola-200"
+                    "w-7 h-7 shrink-0 rounded-full flex items-center justify-center transition-colors duration-200",
+                    selected ? "bg-white text-rosso-600" : "bg-white ring-1 ring-viola/30"
                   )}
                 >
                   <AnimatePresence initial={false}>
@@ -729,16 +732,22 @@ export function BookingSection({
             })}
           </div>
 
+          {/* What to know before confirming, like the profile's info card */}
+          <dl className="max-w-md md:mx-auto rounded-card ring-1 ring-viola/15 px-5 py-1 divide-y divide-viola/15">
+            <InfoRow icon={Clock} label="Durata">{CALL_DURATION_MINUTES} minuti, ora italiana</InfoRow>
+            <InfoRow icon={Video} label="Dove">{meetingLink ? "Link alla call dell'azienda" : "Google Meet"}</InfoRow>
+          </dl>
+
           <BottomActionBar desktop="static" spacerClassName={NO_SPACER} className="md:justify-center">
             <Button
               onClick={handleConfirmSlot}
               disabled={!selectedSlotId || isPending || initialSlots.some(s => s.id === selectedSlotId && isExpired(s))}
-              className={cn(PRIMARY_BTN, "md:h-20 md:rounded-[2rem] md:px-20 md:text-2xl")}
+              className={cn(PRIMARY_BTN, "md:h-16 md:px-16")}
             >
               {isPending ? <Loader2 className="animate-spin" /> : (
                 <>
-                  <Check size={22} strokeWidth={2.5} />
-                  Conferma Incontro
+                  <Calendar size={22} />
+                  Fissa il colloquio
                 </>
               )}
             </Button>
@@ -753,12 +762,12 @@ export function BookingSection({
     <div className="md:p-24">
       <div className={cn(PHONE_CARD, "py-8 text-center")}>
         <div className="max-w-md mx-auto space-y-4 md:space-y-6">
-           <div className="w-16 h-16 md:w-20 md:h-20 bg-viola-50 border border-viola-100 rounded-3xl md:rounded-[2rem] flex items-center justify-center mx-auto text-viola-500">
-              <Calendar size={28} strokeWidth={1.5} />
+           <div className="w-16 h-16 md:w-20 md:h-20 bg-rosa rounded-full flex items-center justify-center mx-auto text-viola">
+              <Calendar size={28} strokeWidth={1.75} />
            </div>
            <div className="space-y-2">
-             <h3 className="text-2xl font-display text-viola-950">In attesa dell&apos;azienda</h3>
-             <p className="text-[15px] md:text-lg text-viola-500 leading-relaxed font-medium">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
+             <h3 className="text-title font-display text-viola">In attesa dell&apos;azienda</h3>
+             <p className="text-body md:text-lg text-viola-500">L&apos;azienda non ha ancora proposto degli slot. Riceverai una notifica appena potrai scegliere l&apos;orario.</p>
            </div>
         </div>
       </div>

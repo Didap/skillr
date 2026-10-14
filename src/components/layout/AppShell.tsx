@@ -20,7 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [landingPath] = useState(pathname);
 
   return (
-    <div className="h-dvh bg-background flex selection:bg-rosso-100 selection:text-rosso-900 overflow-hidden">
+    <div className="h-dvh bg-background flex overflow-hidden">
       <DashboardSidebar />
       {/* Keyed by route: each page eases in, so tab switches read as a change of place */}
       <motion.div

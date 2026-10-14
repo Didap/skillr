@@ -11,6 +11,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface ApplicationRejectedEmailProps {
   firstName?: string;
@@ -31,6 +32,9 @@ export const ApplicationRejectedEmail = ({
     <Preview>{`Aggiornamento sulla candidatura: ${jobTitle}`}</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
+        <Section style={styles.header}>
+          <EmailLogo />
+        </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>Ciao{firstName ? ` ${firstName}` : ''},</Text>
           <Text style={styles.text}>
@@ -38,7 +42,7 @@ export const ApplicationRejectedEmail = ({
           </Text>
           <Text style={styles.text}>
             Ci sono altre ricerche in linea con il tuo profilo:{' '}
-            <Link href={dashboardUrl} style={{ color: '#059669', fontWeight: 600 }}>
+            <Link href={dashboardUrl} style={styles.link}>
               continua a cercare su Helllo
             </Link>
             .
@@ -46,9 +50,7 @@ export const ApplicationRejectedEmail = ({
           <Text style={styles.text}>Il team Helllo</Text>
         </Section>
         <Hr style={styles.hr} />
-        <Section style={styles.footer}>
-          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
-        </Section>
+        <EmailFooter />
       </Container>
     </Body>
   </Html>

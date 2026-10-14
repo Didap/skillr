@@ -86,6 +86,11 @@ rosso buttons). `destructive` is `rosso-700`; pair errors with an icon/text, nev
 - `public/brand/pattern-rosa.svg` (viola squiggles on rosa) and `pattern-crema.svg` (blu
   squiggles on crema): hero/banner backgrounds, used with `bg-cover`.
 - App icon (rosa + rosso "lll") for the home screen; favicon (rosso + white "l") for tabs.
+- Standalone files exported from Figma, in `public/brand/`: `logo-rosso.svg`, `logo-bianco.svg`,
+  `logo-viola.svg` (+ `logo-rosso.png`, `logo-bianco.png` for emails), `logo-mark.svg`,
+  `favicon.svg`, `app-icon.svg`, `banner-rosa.svg/.png`, `banner-crema.svg/.png` (wordmark on
+  pattern, 1920×1080). Wired up by Next: `src/app/icon.svg`, `favicon.ico`, `apple-icon.png`,
+  `opengraph-image.png` / `twitter-image.png` (from the rosa banner), PWA icons in `public/icons/`.
 
 ## Voice
 Italian, informal "tu", short sentences. Say "helllo" where others say "like/candidati":

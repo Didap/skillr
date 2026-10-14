@@ -12,6 +12,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface InterviewLinkEmailProps {
   userName: string;
@@ -34,12 +35,13 @@ export const InterviewLinkEmail = ({
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
-          <Heading style={styles.h1}>Link del Meeting Disponibile</Heading>
+          <EmailLogo />
+          <Heading style={styles.h1}>Link del meeting disponibile</Heading>
         </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>Ciao {userName},</Text>
           <Text style={styles.text}>
-            Il link per partecipare alla tua **Smart Interview** con **{companyName}** è ora disponibile.
+            Il link per partecipare alla tua <strong>Smart Interview</strong> con <strong>{companyName}</strong> è ora disponibile.
           </Text>
           <Section style={styles.card}>
              <Text style={styles.matchedNameText}>{eventTitle}</Text>
@@ -47,19 +49,17 @@ export const InterviewLinkEmail = ({
           </Section>
           <Section style={styles.buttonContainer}>
             <Button style={styles.button} href={meetingLink}>
-              Partecipa al Meeting
+              Partecipa al meeting
             </Button>
           </Section>
           <Text style={styles.text}>
             Se il pulsante sopra non funziona, puoi copiare e incollare questo link nel tuo browser:
             <br />
-            <span style={{ color: '#10b981', fontSize: '12px', wordBreak: 'break-all' }}>{meetingLink}</span>
+            <span style={styles.rawLink}>{meetingLink}</span>
           </Text>
         </Section>
         <Hr style={styles.hr} />
-        <Section style={styles.footer}>
-          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
-        </Section>
+        <EmailFooter />
       </Container>
     </Body>
   </Html>

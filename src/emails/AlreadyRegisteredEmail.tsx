@@ -12,6 +12,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface AlreadyRegisteredEmailProps {
   // Absent when the app URL is not configured: the email then points to the login page in words.
@@ -27,13 +28,14 @@ export const AlreadyRegisteredEmail = ({ loginUrl }: AlreadyRegisteredEmailProps
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Section style={styles.header}>
+          <EmailLogo />
           <Heading style={styles.h1}>Hai già un account Helllo</Heading>
         </Section>
         <Section style={styles.content}>
           <Text style={styles.text}>
             Qualcuno ha provato a registrarsi su Helllo con questo indirizzo email, ma esiste già un account. Se eri tu,{' '}
             {loginUrl ? (
-              <Link href={loginUrl} style={{ color: '#10b981', fontWeight: 700 }}>
+              <Link href={loginUrl} style={styles.link}>
                 accedi qui
               </Link>
             ) : (
@@ -41,14 +43,12 @@ export const AlreadyRegisteredEmail = ({ loginUrl }: AlreadyRegisteredEmailProps
             )}
             : se non ricordi la password puoi usare il Magic Link.
           </Text>
-          <Text style={{ ...styles.text, color: '#94a3b8', fontSize: '12px', fontStyle: 'italic' }}>
+          <Text style={styles.note}>
             Se non sei stato tu, ignora questa email: il tuo account non è stato modificato.
           </Text>
         </Section>
         <Hr style={styles.hr} />
-        <Section style={styles.footer}>
-          <Text style={styles.footerText}>Helllo - The next-gen job matching platform</Text>
-        </Section>
+        <EmailFooter />
       </Container>
     </Body>
   </Html>

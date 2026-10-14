@@ -32,12 +32,12 @@ const models = [
 
 export function EngagementModels() {
   return (
-    <section className="py-32 bg-white">
+    <section className="py-28 bg-white">
       <div className="max-w-7xl w-full mx-auto px-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
           <div className="max-w-2xl space-y-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-viola-400">Flessibilità Contrattuale</h2>
-            <p className="text-5xl font-display font-bold text-viola-900 leading-tight tracking-tight">
+            <h2 className="text-label text-blu">Flessibilità contrattuale</h2>
+            <p className="text-display md:text-5xl md:leading-tight font-display font-bold text-viola">
               Come collaborare con noi.
             </p>
           </div>
@@ -51,17 +51,17 @@ export function EngagementModels() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               viewport={{ once: true }}
-              className="p-8 rounded-[2rem] border border-viola-100 bg-crema/30 hover:bg-white hover:shadow-xl hover:border-blu/10 transition-all duration-500 flex flex-col h-full"
+              className="p-8 rounded-card bg-crema flex flex-col h-full"
             >
-              <div className="w-12 h-12 rounded-xl bg-blu/5 text-blu flex items-center justify-center mb-8">
-                <model.icon size={24} strokeWidth={1.5} />
+              <div className="w-12 h-12 rounded-full bg-white text-blu flex items-center justify-center mb-8" aria-hidden="true">
+                <model.icon size={22} strokeWidth={1.75} />
               </div>
               <div className="space-y-4 grow">
-                <div className="inline-block px-3 py-1 rounded-full bg-blu/5 text-[9px] font-black uppercase tracking-widest text-blu">
+                <div className="inline-flex px-3 py-1 rounded-full bg-white text-label text-viola">
                   {model.tag}
                 </div>
-                <h3 className="text-2xl font-display font-bold text-viola-900 leading-tight">{model.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed">
+                <h3 className="text-2xl font-display font-bold text-viola leading-tight">{model.title}</h3>
+                <p className="text-sm text-viola-500 leading-relaxed">
                   {model.desc}
                 </p>
               </div>

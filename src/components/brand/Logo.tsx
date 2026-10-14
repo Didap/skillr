@@ -14,7 +14,7 @@ const PATHS = [
 export function Logo({ className, title = "Helllo" }: { className?: string; title?: string | null }) {
   return (
     <svg
-      viewBox="0 0 166 54"
+      viewBox="0 2 141 52"
       fill="currentColor"
       className={cn("h-7 w-auto text-rosso", className)}
       role={title ? "img" : undefined}

@@ -23,33 +23,33 @@ export function ReviewCard({ authorName, authorImage, stars, text, createdAt }: 
   const dateToFormat = createdAt ? new Date(createdAt) : new Date();
 
   return (
-    <div className="p-8 rounded-[2.5rem] bg-white border border-viola-100 shadow-sm hover:shadow-premium transition-all duration-300">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-viola-50 flex items-center justify-center text-viola-300 border border-viola-100 overflow-hidden shrink-0 relative">
+    <div className="p-6 rounded-card bg-white border border-viola/15">
+      <div className="flex justify-between items-start gap-3 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-full bg-rosa flex items-center justify-center text-viola overflow-hidden shrink-0 relative">
             {authorImage ? (
-              <Image 
-                src={authorImage} 
-                alt={displayName} 
+              <Image
+                src={authorImage}
+                alt={displayName}
                 fill
-                className="object-cover" 
+                className="object-cover"
               />
             ) : (
-              <User size={24} />
+              <User size={22} strokeWidth={1.75} />
             )}
           </div>
-          <div>
-            <p className="font-bold text-viola-900">{displayName}</p>
-            <p className="text-[10px] text-viola-400 font-black uppercase tracking-widest">
+          <div className="min-w-0">
+            <p className="font-bold text-viola truncate">{displayName}</p>
+            <p className="text-label text-viola-400 first-letter:uppercase">
               {format(dateToFormat, "MMMM yyyy", { locale: it })}
             </p>
           </div>
         </div>
-        <StarRating value={stars} readonly size={18} />
+        <StarRating value={stars} readonly size={16} className="shrink-0 pt-1" />
       </div>
-      
+
       {text && (
-        <p className="text-text-secondary leading-relaxed italic text-lg">
+        <p className="font-prompt text-xl leading-7 font-medium text-viola wrap-break-word">
           &ldquo;{text}&rdquo;
         </p>
       )}

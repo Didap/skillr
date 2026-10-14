@@ -12,32 +12,13 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 import * as styles from './styles';
+import { EmailFooter, EmailLogo } from './EmailBrand';
 
 interface PaNewsletterVerificationEmailProps {
   verificationLink: string;
 }
 
-const paStyles = {
-  ...styles,
-  h1: {
-    ...styles.h1,
-    color: '#004c81', // PA Blue
-  },
-  button: {
-    backgroundColor: '#004c81',
-    borderRadius: '5px',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    textDecoration: 'none',
-    textAlign: 'center' as const,
-    display: 'block',
-    width: '100%',
-    padding: '12px',
-    marginTop: '25px',
-    marginBottom: '25px',
-  }
-};
+const paStyles = styles;
 
 export const PaNewsletterVerificationEmail = ({
   verificationLink,
@@ -48,7 +29,8 @@ export const PaNewsletterVerificationEmail = ({
     <Body style={paStyles.main}>
       <Container style={paStyles.container}>
         <Section style={paStyles.header}>
-          <Heading style={paStyles.h1}>Conferma Iscrizione</Heading>
+          <EmailLogo />
+          <Heading style={paStyles.h1}>Conferma iscrizione</Heading>
         </Section>
         <Section style={paStyles.content}>
           <Text style={paStyles.text}>Gentile utente,</Text>
@@ -58,13 +40,15 @@ export const PaNewsletterVerificationEmail = ({
           <Text style={paStyles.text}>
             Per completare l&apos;attivazione del servizio e iniziare a ricevere i nostri approfondimenti, La preghiamo di confermare il Suo indirizzo email cliccando il pulsante sottostante:
           </Text>
-          <Button style={paStyles.button} href={verificationLink}>
-            Conferma Iscrizione
-          </Button>
+          <Section style={paStyles.buttonContainer}>
+            <Button style={paStyles.button} href={verificationLink}>
+              Conferma iscrizione
+            </Button>
+          </Section>
           <Text style={paStyles.text}>
             Se il pulsante non dovesse funzionare, può copiare e incollare il seguente link nel browser:
           </Text>
-          <Text style={{ ...paStyles.text, fontSize: '12px', color: '#666' }}>
+          <Text style={{ ...paStyles.text, ...paStyles.rawLink }}>
             {verificationLink}
           </Text>
           <Text style={paStyles.text}>
@@ -76,11 +60,9 @@ export const PaNewsletterVerificationEmail = ({
           </Text>
         </Section>
         <Hr style={paStyles.hr} />
-        <Section style={paStyles.footer}>
-          <Text style={paStyles.footerText}>
-            Helllo PA - Tecnologia per l&apos;impiego pubblico in Puglia.
-          </Text>
-        </Section>
+        <EmailFooter>
+          Helllo per la PA — tecnologia per l&apos;impiego pubblico in Puglia.
+        </EmailFooter>
       </Container>
     </Body>
   </Html>
