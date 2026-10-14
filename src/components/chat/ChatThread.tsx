@@ -26,6 +26,7 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
   const listRef = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
   const prependFrom = useRef<number | null>(null);
+  const tailKey = useRef<string | null>(null);
 
   const onScroll = () => {
     const el = listRef.current;
@@ -42,8 +43,18 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
       prependFrom.current = null;
       return;
     }
-    if (atBottom.current || thread.messages.at(-1)?.senderId === viewerId) el.scrollTop = el.scrollHeight;
+    const tail = thread.messages.at(-1);
+    const key = tail ? (tail.clientId ?? tail.id) : null;
+    const appendedByMe = key !== tailKey.current && tail?.senderId === viewerId;
+    tailKey.current = key;
+    if (atBottom.current || appendedByMe) el.scrollTop = el.scrollHeight;
   }, [thread.messages, viewerId]);
+
+  // Images have no reserved size: re-pin to the bottom once they load
+  const onImageLoad = () => {
+    const el = listRef.current;
+    if (el && atBottom.current) el.scrollTop = el.scrollHeight;
+  };
 
   // A hidden thread has no height: land at the bottom when it is shown
   useEffect(() => {
@@ -121,6 +132,7 @@ export function ChatThread({ matchId, viewerId, otherName, initial }: ChatThread
                             : "Inviato"
                           : null
                       }
+                      onImageLoad={onImageLoad}
                       onRetry={() => thread.retry(m.clientId!)}
                       onDiscard={() => thread.discard(m.clientId!)}
                     />
@@ -156,12 +168,14 @@ function MessageBubble({
   message,
   mine,
   receipt,
+  onImageLoad,
   onRetry,
   onDiscard,
 }: {
   message: ThreadMessage;
   mine: boolean;
   receipt: "Letto" | "Inviato" | null;
+  onImageLoad: () => void;
   onRetry: () => void;
   onDiscard: () => void;
 }) {
@@ -179,7 +193,12 @@ function MessageBubble({
           message.status === "failed" && "opacity-60"
         )}
       >
-        {message.attachment && <ChatAttachment attachment={message.attachment} mine={mine} />}
+        {message.attachment && <ChatAttachment
+            attachment={message.attachment}
+            mine={mine}
+            pending={message.status === "sending"}
+            onImageLoad={onImageLoad}
+          />}
         {message.body && (
           <p className={cn("whitespace-pre-wrap break-words", message.attachment && "mt-2")}>{message.body}</p>
         )}

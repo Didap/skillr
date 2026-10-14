@@ -3,9 +3,25 @@ import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/chat/format";
 import type { MessageAttachment } from "@/lib/chat/types";
 
-export function ChatAttachment({ attachment, mine }: { attachment: MessageAttachment; mine: boolean }) {
-  // Optimistic message: the file is still uploading
+interface ChatAttachmentProps {
+  attachment: MessageAttachment;
+  mine: boolean;
+  /** True only while the message is still being sent. */
+  pending: boolean;
+  onImageLoad?: () => void;
+}
+
+export function ChatAttachment({ attachment, mine, pending, onImageLoad }: ChatAttachmentProps) {
+  // No URL yet: uploading while pending, otherwise (e.g. failed) just the file name
   if (!attachment.url) {
+    if (!pending) {
+      return (
+        <span className="flex items-center gap-2 text-sm">
+          <FileText size={16} className="shrink-0" aria-hidden="true" />
+          <span className="truncate">{attachment.name}</span>
+        </span>
+      );
+    }
     return (
       <span className="flex items-center gap-2 text-sm">
         <Loader2 size={16} className="animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
@@ -19,7 +35,7 @@ export function ChatAttachment({ attachment, mine }: { attachment: MessageAttach
       <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="block -mx-1.5 -mt-0.5">
         {/* Signed Cloudinary URL of unknown size: a plain img, not next/image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={attachment.url} alt={attachment.name} loading="lazy" className="max-h-72 w-auto max-w-full rounded-2xl" />
+        <img src={attachment.url} alt={attachment.name} onLoad={onImageLoad} className="max-h-72 w-auto max-w-full rounded-2xl" />
       </a>
     );
   }
