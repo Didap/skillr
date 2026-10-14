@@ -102,11 +102,11 @@ rest of `src/app/actions`.
 
 | Action | Behaviour |
 |---|---|
-| `getConversations()` | Mutual matches of the viewer with counterpart name/image/detail (reusing `companyDisplayName` / `professionalDisplayName`), last message preview, `last_message_at`, unread count, blocked flag. Ordered by `coalesce(last_message_at, matched_at)` desc. One query for matches + one aggregate query for unread counts/last message, no N+1. |
+| `getMatches()` (existing, extended) | The `/matches` list already loads the viewer's mutual matches with counterpart and call state. Each row gains `chat: { lastMessage, lastMessageAt, unread, blocked }` from one aggregate query (`loadChatSummaries` in `src/lib/chat/summaries.ts`, lateral join for the last message + correlated count for unread, no N+1), and rows are ordered by `coalesce(last_message_at, matched_at)` desc. No separate `getConversations` action: the inbox *is* the match list. |
 | `getUnreadTotal()` | Total unread messages across the viewer's conversations, for the nav badge. |
-| `getMessages(matchId, { before?, after? })` | Page of up to 50 messages. `before` (cursor on `created_at`, then `id`) loads older ones; `after` fetches anything newer than the last seen message (reconnect catch-up). Attachments come back with a signed URL valid 1 hour. Also returns the other side's `last_read_at`, the blocked state and who blocked. |
+| `getMessages(matchId, { before?, after? })` | Page of up to 50 messages. `before` (cursor on `created_at`, then `id`) loads older ones; `after` fetches anything newer than the last seen message (reconnect catch-up). Cursors are message ids (compared as `(created_at, id)` in SQL, so millisecond truncation in JS never skips or repeats a message). Attachments come back with a Cloudinary signed delivery URL. Also returns the other side's `last_read_at`, the blocked state and who blocked. |
 | `sendMessage(matchId, { body?, attachment?, clientId })` | Zod-validated. Rejects empty, >2000 chars, blocked, not mutual, rate-limited (more than 20 messages by this sender in the last 10 s, counted in DB). Inserts the row, updates `last_message_at` and the sender's own `*_last_read_at`, then triggers Pusher events. Returns the stored message plus the echoed `clientId` so the client can reconcile its optimistic bubble. |
-| `uploadChatAttachment(matchId, formData)` | Checks access and not blocked; accepts `image/*` and `application/pdf` up to 5 MB; uploads to Cloudinary folder `helllo/chat/{matchId}` with `type: "authenticated"`; returns `{ publicId, name, mime, size }`. `sendMessage` re-checks that the public id is under the match folder. |
+| `uploadChatAttachment(matchId, formData)` | Checks access and not blocked; accepts `image/jpeg`, `image/png`, `image/webp`, `image/gif` and `application/pdf` up to 5 MB; uploads to Cloudinary folder `helllo/chat/{matchId}` with `type: "authenticated"`, `resource_type: "image"` (Cloudinary treats PDFs as images); returns `{ publicId, name, mime, size }`. `sendMessage` re-checks that the public id is under the match folder. |
 | `markRead(matchId)` | Sets the viewer's `*_last_read_at = now()`, triggers `message:read` on the thread and `inbox:update` on the viewer's own user channel (badge sync across tabs). |
 | `blockConversation(matchId)` | Sets `blocked_by_id` / `blocked_at` if not already blocked; triggers `conversation:blocked`. |
 | `unblockConversation(matchId)` | Only `blocked_by_id` can unblock; clears both columns; triggers `conversation:unblocked`. |
@@ -132,6 +132,14 @@ rest of `src/app/actions`.
 - **Pusher dashboard requirement**: "Enable client events" must be on for the app, otherwise
   typing indicators silently do nothing (everything else still works).
 
+### Attachment URLs
+
+Attachments are uploaded as Cloudinary `authenticated` resources: the plain public URL returns
+401, only URLs signed with our API secret (`cloudinary.url(publicId, { type: "authenticated",
+sign_url: true, ... })`) are served. Signed URLs are generated server-side for participants
+only. They do not expire (expiring URLs need Cloudinary token auth, a paid add-on), which is
+acceptable: they are unguessable and only handed to the two participants.
+
 ### Message payload shape (server → client)
 
 ```ts
@@ -145,9 +153,8 @@ type ChatMessage = {
 };
 ```
 
-Pusher events carry the message without the signed URL (`attachment.url` empty); a client
-that receives a message with an attachment refetches it via `getMessages(after)` to get a
-signed URL. This keeps signed URLs out of third-party infrastructure.
+Pusher events carry the same payload, signed URL included (Pusher only relays it over TLS
+and does not store it). Payloads stay well under Pusher's 10 KB limit (body ≤ 2000 chars).
 
 ## Client
 
@@ -167,10 +174,13 @@ typing state.
 - Typing: `client-typing` sent at most once every 3 s while the input changes; the indicator
   hides 5 s after the last event or when a message from that user arrives.
 
-### Hook `useUnreadTotal()` — `src/components/chat/useUnreadTotal.ts`
+### `ChatRealtimeProvider` — `src/components/chat/ChatRealtimeProvider.tsx`
 
-Loads `getUnreadTotal()`, subscribes to `private-user-{me}` and refetches on `inbox:update`.
-Used by `DashboardSidebar` and `MobileTabBar` to show a badge on the "Match" item.
+Mounted once in `AppShell`, so the sidebar, the tab bar and the inbox share one subscription
+to `private-user-{me}`. It loads `getUnreadTotal()`, refetches it on `inbox:update` (and every
+60 s as a fallback without Pusher), and exposes `{ unreadTotal, refreshUnread, onInboxUpdate }`
+through `useChatRealtime()`. `DashboardSidebar` and `MobileTabBar` show a badge on the
+"Match" item.
 
 ### Components (`src/components/chat/`)
 
@@ -190,8 +200,8 @@ Visual language follows `DESIGN.md` / the Helllo tokens in `globals.css`; no new
 
 ### Pages
 
-- `/matches` (`src/app/(app)/matches/page.tsx`): the list becomes the inbox using
-  `getConversations()`, refreshed on `inbox:update`. Existing call/review state indicators on
+- `/matches` (`src/app/(app)/matches/page.tsx`): the list becomes the inbox using the
+  extended `getMatches()`, refreshed via `onInboxUpdate`. Existing call/review state indicators on
   each row stay. The "Zero chat, massima efficienza" aside is replaced.
 - `/matches/[id]`: two-column layout from `md` up (details + booking left, `ChatThread`
   right); on mobile a segmented control "Chat" / "Dettagli", defaulting to "Chat". Initial
@@ -212,7 +222,6 @@ Visual language follows `DESIGN.md` / the Helllo tokens in `globals.css`; no new
 | Pusher keys missing / service down | No realtime, 10 s polling while visible; no user-facing error |
 | Upload too large / wrong type | Inline error in composer before upload starts (client check) and on server |
 | Cloudinary failure | Error toast via `sonner`; message not sent |
-| Signed URL expired (tab open > 1 h) | Attachment click refetches the message page to get a fresh URL |
 
 ## Copy and docs
 
@@ -249,3 +258,5 @@ Visual language follows `DESIGN.md` / the Helllo tokens in `globals.css`; no new
   and leave it untouched (drop separately if unused).
 - Enable client events in the Pusher dashboard.
 - Set `CHAT_MODERATION_EMAIL`.
+- Cloudinary: Settings → Security → enable "Allow delivery of PDF and ZIP files", otherwise
+  PDF attachments upload but return 401 on download (free plans block PDF delivery by default).
